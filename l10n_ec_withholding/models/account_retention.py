@@ -39,26 +39,67 @@ class AccountRetention(models.Model):
         ('cancel', 'Cancelled')
     ], string='Status', default='draft', required=True, tracking=True)
 
-    @api.constrains('date', 'invoice_id')
-    def _check_5_day_rule(self):
+    # =========================================================================
+    # REGULACIONES SRI 2026 (Res. NAC-DGERCGC25-00000017)
+    # =========================================================================
+    # - Transmisión INMEDIATA de comprobantes electrónicos
+    # - Anulación permitida hasta día 7 del mes siguiente
+    # - Anulación requiere aceptación del receptor en 5 días hábiles
+    # - La regla de 5 días para retención YA NO APLICA desde 2026
+    # =========================================================================
+
+    def _check_cancellation_allowed(self):
         """
-        Enforce Rule VAL-R02: Retention must be issued within 5 days of invoice date.
+        Valida si el documento puede ser anulado según regulaciones SRI 2026.
+
+        Regla: Anulación solo hasta el día 7 del mes siguiente a la emisión.
+        Resolución NAC-DGERCGC25-00000017
+        """
+        from datetime import date
+        self.ensure_one()
+
+        if not self.date:
+            return True
+
+        today = date.today()
+        emission_date = self.date
+
+        # Calcular fecha límite: día 7 del mes siguiente
+        if emission_date.month == 12:
+            limit_date = date(emission_date.year + 1, 1, 7)
+        else:
+            limit_date = date(emission_date.year, emission_date.month + 1, 7)
+
+        if today > limit_date:
+            raise ValidationError(_(
+                "No se puede anular este documento.\n\n"
+                "Según Resolución NAC-DGERCGC25-00000017, la anulación solo es "
+                "permitida hasta el día 7 del mes siguiente a la emisión.\n\n"
+                "Fecha de emisión: %s\n"
+                "Fecha límite de anulación: %s\n"
+                "Fecha actual: %s"
+            ) % (emission_date, limit_date, today))
+
+        return True
+
+    @api.constrains('date', 'invoice_id')
+    def _check_retention_date(self):
+        """
+        Valida que la fecha de retención sea coherente con la factura.
+
+        NOTA: La regla de 5 días fue ELIMINADA en 2026.
+        Solo validamos que la fecha no sea anterior a la factura.
         """
         for record in self:
             if record.invoice_id and record.date:
                 inv_date = record.invoice_id.invoice_date
                 if not inv_date:
                     continue
-                # 5 Days tolerance
-                delta = (record.date - inv_date).days
-                if delta > 5:
+                if record.date < inv_date:
                     raise ValidationError(_(
-                        "SRI Regulation Check Failed (VAL-R02): "
-                        "Retention date %s is %s days after Invoice date %s. "
-                        "Maximum allowed is 5 days."
-                    ) % (record.date, delta, inv_date))
-                if delta < 0:
-                    raise ValidationError(_("Retention date cannot be before Invoice date."))
+                        "La fecha de retención (%s) no puede ser anterior "
+                        "a la fecha de la factura (%s)."
+                    ) % (record.date, inv_date))
 
     @api.model
     def create(self, vals):

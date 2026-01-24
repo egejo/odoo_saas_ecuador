@@ -56,20 +56,33 @@ class AccountMove(models.Model):
                     ) % (CF_LIMIT_USD, move.amount_total))
 
     @api.constrains('state')
-    def _check_7_day_annulment_rule(self):
+    def _check_annulment_deadline(self):
         """
-        SRI 2026 Rule: Authorized invoices can only be annulled within 7 days.
+        SRI 2026 Rule: Authorized invoices can only be annulled until
+        day 7 of the month following emission.
         Resolution NAC-DGERCGC25-00000017
         """
+        from datetime import date
         for move in self:
             if move.state == 'cancel' and move.l10n_ec_sri_status == 'authorized':
                 if move.invoice_date:
-                    days_since = (fields.Date.today() - move.invoice_date).days
-                    if days_since > MAX_ANNULMENT_DAYS:
+                    emission_date = move.invoice_date
+                    today = date.today()
+
+                    # Calculate deadline: day 7 of next month
+                    if emission_date.month == 12:
+                        deadline = date(emission_date.year + 1, 1, 7)
+                    else:
+                        deadline = date(emission_date.year, emission_date.month + 1, 7)
+
+                    if today > deadline:
                         raise ValidationError(_(
-                            "SRI 2026 Regulation: Cannot cancel authorized invoice after %d days. "
-                            "Invoice date: %s, Days elapsed: %d"
-                        ) % (MAX_ANNULMENT_DAYS, move.invoice_date, days_since))
+                            "SRI 2026 (Res. NAC-DGERCGC25-00000017): "
+                            "No se puede anular esta factura autorizada.\n\n"
+                            "Fecha de emisión: %s\n"
+                            "Fecha límite de anulación: %s\n"
+                            "Fecha actual: %s"
+                        ) % (emission_date, deadline, today))
 
     # 2026 Mandate: No cancellation of Consumidor Final
     def button_cancel_sri(self):
