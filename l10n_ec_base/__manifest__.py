@@ -35,8 +35,6 @@ This module provides the base localization for Ecuador:
         'security/l10n_ec_groups.xml',
         'security/ir.model.access.csv',
         'data/account_chart_template.xml',
-        'data/account.account.template.csv',
-        'data/account.tax.template.csv',
         'data/l10n_latam.document.type.csv',
         'views/res_partner_views.xml',
         'views/res_company_views.xml',
@@ -47,4 +45,3 @@ This module provides the base localization for Ecuador:
     'application': False,
     'auto_install': False,
 }
-
