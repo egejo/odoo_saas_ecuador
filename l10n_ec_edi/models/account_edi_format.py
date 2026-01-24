@@ -14,7 +14,12 @@ class AccountEdiFormat(models.Model):
         Maps Partner Identifier type to SRI Table 07:
         RUC = 04, Cedula = 05, Pasaporte = 06, Consumidor Final = 07, Exterior = 08
         """
-        if partner.vat == '9999999999999':
+        # Get CF RUC from config (not hardcoded)
+        cf_ruc = self.env['ir.config_parameter'].sudo().get_param(
+            'l10n_ec.consumidor_final_ruc', '9999999999999'
+        )
+
+        if partner.vat == cf_ruc:
             return '07'
         type_map = {
             'ruc': '04',

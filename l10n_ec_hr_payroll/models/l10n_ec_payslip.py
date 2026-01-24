@@ -68,12 +68,21 @@ class L10nEcPayslip(models.Model):
 
     @api.depends('total_income')
     def _compute_iess(self):
+        """
+        Calculate IESS contributions using configurable rates.
+        Rates from ir.config_parameter for easy regulatory updates.
+        """
+        ICP = self.env['ir.config_parameter'].sudo()
+
+        # Get IESS rates from config (configurable, not hardcoded)
+        iess_personal_rate = float(ICP.get_param('l10n_ec.iess_aporte_personal', '9.45')) / 100
+        iess_employer_rate = float(ICP.get_param('l10n_ec.iess_aporte_patronal', '12.15')) / 100
+
         for rec in self:
-            # IESS base usually excludes some bonuses, but simplified here
-            # IESS Personal = 9.45%
-            rec.iess_personal = rec.total_income * 0.0945
-            # IESS Employer = 12.15% (assuming general regime)
-            rec.iess_employer = rec.total_income * 0.1215
+            # IESS Personal contribution
+            rec.iess_personal = rec.total_income * iess_personal_rate
+            # IESS Employer contribution
+            rec.iess_employer = rec.total_income * iess_employer_rate
 
     @api.depends('total_income', 'contract_id.l10n_ec_accumulate_13', 'contract_id.l10n_ec_accumulate_14', 'contract_id.l10n_ec_accumulate_reserve')
     def _compute_benefits(self):
