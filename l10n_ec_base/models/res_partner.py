@@ -128,3 +128,141 @@ class ResPartner(models.Model):
              return check_digit == verifier and document_number[10:] != '000'
 
         return False
+
+    # =========================================================================
+    # SRI AUTO-LOAD: Carga automática de datos del SRI al ingresar RUC
+    # =========================================================================
+
+    @api.onchange('vat')
+    def _onchange_vat_load_sri(self):
+        """
+        Carga automáticamente los datos del contribuyente desde el SRI
+        cuando se ingresa un RUC válido de Ecuador.
+        """
+        if not self.vat:
+            return
+
+        # Solo para Ecuador o si no hay país definido
+        if self.country_id and self.country_id.code != 'EC':
+            return
+
+        vat = str(self.vat).strip()
+
+        # Solo consultar si parece un RUC ecuatoriano (13 dígitos)
+        if len(vat) != 13 or not vat.isdigit():
+            return
+
+        # Evitar consultas repetidas
+        if hasattr(self, '_sri_loaded_ruc') and self._sri_loaded_ruc == vat:
+            return
+
+        try:
+            service = self.env['l10n_ec.sri.ruc.service']
+            result = service.consultar_ruc(vat)
+
+            if result.get('success'):
+                data = result['data']
+
+                # Auto-completar campos
+                if not self.name or self.name == '/':
+                    self.name = data.get('razon_social', '')
+
+                if data.get('nombre_comercial'):
+                    self.company_registry = data.get('nombre_comercial')
+
+                # Dirección
+                if not self.street:
+                    self.street = data.get('direccion', '')
+                if not self.city:
+                    self.city = data.get('canton', '')
+
+                # Contacto
+                if not self.phone and data.get('telefono'):
+                    self.phone = data.get('telefono')
+                if not self.email and data.get('email'):
+                    self.email = data.get('email')
+
+                # País Ecuador
+                if not self.country_id:
+                    self.country_id = self.env.ref('base.ec')
+
+                # Tipo de identificación
+                self.l10n_ec_identifier_type = 'ruc'
+
+                # Tipo de contribuyente según SRI
+                if data.get('regimen_rimpe'):
+                    if 'EMPRENDEDOR' in data.get('regimen_rimpe', '').upper():
+                        self.l10n_ec_taxpayer_type = 'rimpe_e'
+                    elif 'POPULAR' in data.get('regimen_rimpe', '').upper():
+                        self.l10n_ec_taxpayer_type = 'rimpe_p'
+                elif data.get('contribuyente_especial'):
+                    self.l10n_ec_taxpayer_type = 'special'
+                else:
+                    self.l10n_ec_taxpayer_type = 'general'
+
+                # Marcar como cargado
+                self._sri_loaded_ruc = vat
+
+                # Advertir si no está ACTIVO
+                estado = data.get('estado', '').upper()
+                if estado and estado != 'ACTIVO':
+                    return {
+                        'warning': {
+                            'title': '⚠️ Contribuyente No Activo',
+                            'message': f"El contribuyente '{data.get('razon_social')}' tiene estado: {estado}. "
+                                       f"Verifique en el SRI antes de continuar."
+                        }
+                    }
+
+        except Exception as e:
+            # Silenciamos errores para no interrumpir el flujo
+            import logging
+            _logger = logging.getLogger(__name__)
+            _logger.warning(f"Error al consultar SRI para RUC {vat}: {e}")
+
+    def action_load_from_sri(self):
+        """
+        Acción para cargar/actualizar datos desde el SRI manualmente.
+        Puede ser invocado desde un botón en la vista.
+        """
+        self.ensure_one()
+
+        if not self.vat:
+            raise ValidationError(_("Ingrese un RUC para consultar en el SRI"))
+
+        service = self.env['l10n_ec.sri.ruc.service']
+        result = service.consultar_ruc(self.vat)
+
+        if not result.get('success'):
+            raise ValidationError(_(result.get('error', 'Error al consultar SRI')))
+
+        data = result['data']
+
+        # Actualizar todos los campos
+        vals = {
+            'name': data.get('razon_social', self.name),
+            'street': data.get('direccion', self.street),
+            'city': data.get('canton', self.city),
+            'phone': data.get('telefono', self.phone),
+            'email': data.get('email', self.email),
+            'country_id': self.env.ref('base.ec').id,
+            'l10n_ec_identifier_type': 'ruc',
+        }
+
+        if data.get('nombre_comercial'):
+            vals['company_registry'] = data.get('nombre_comercial')
+
+        self.write(vals)
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': '✅ Datos Cargados del SRI',
+                'message': f"Contribuyente: {data.get('razon_social')}\n"
+                           f"Estado: {data.get('estado')}\n"
+                           f"Tipo: {data.get('tipo_contribuyente')}",
+                'type': 'success',
+                'sticky': False,
+            }
+        }
