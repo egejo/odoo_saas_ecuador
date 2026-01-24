@@ -1,118 +1,229 @@
-# 🇪🇨 Odoo Ecuador Localization (SRI 2026)
+# 🇪🇨 Localización Ecuador para Odoo 18
 
-[![License: LGPL-3](https://img.shields.io/badge/License-LGPL--3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
+<div align="center">
+
+[![License: LGPL-3](https://img.shields.io/badge/Licencia-LGPL--3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 [![Odoo Version](https://img.shields.io/badge/Odoo-18.0-purple.svg)](https://www.odoo.com)
-[![Compliance](https://img.shields.io/badge/SRI-2026%20Certified-green.svg)](https://sri.gob.ec)
+[![SRI](https://img.shields.io/badge/SRI-2026%20Certificado-green.svg)](https://sri.gob.ec)
+[![Python](https://img.shields.io/badge/Python-3.10+-yellow.svg)](https://python.org)
 
-Complete Ecuadorian localization for Odoo 18, fully compliant with SRI 2026 regulations.
+**Localización completa para Ecuador, 100% compatible con regulaciones SRI 2026**
 
-**Developed by [Somatech.dev](https://somatech.dev)**
+[Instalación](#-instalación) •
+[Módulos](#-módulos) •
+[Características](#-características) •
+[Documentación](#-documentación) •
+[Soporte](#-soporte)
 
----
-
-## 📦 Modules
-
-| Module | Description | Application |
-|--------|-------------|-------------|
-| `l10n_ec_base` | Chart of Accounts (NEC), RUC/Cédula validation, Tax Templates | ✅ Core |
-| `l10n_ec_edi` | XML Generation, XAdES-BES Signing, Access Key | ✅ Core |
-| `l10n_ec_sri` | SRI SOAP Integration (Test/Production) | ✅ Core |
-| `l10n_ec_withholding` | Retenciones (IR + IVA), 5-day Rule | Accounting |
-| `l10n_ec_stock` | Guía de Remisión | Inventory |
-| `l10n_ec_pos` | POS Electronic Invoicing | Point of Sale |
-| `l10n_ec_reports` | ATS, Form 104 | Reporting |
-| `l10n_ec_hr_payroll` | IESS, Décimos, Utilidades | HR |
-| `l10n_ec_customs` | DAU, Tariff Codes, FODINFA | Import/Export |
+</div>
 
 ---
 
-## ⚡ Key Features
+## 🏢 Desarrollado por
 
-### Electronic Invoicing (SRI 2026)
-- ✅ Real-time SRI transmission (mandatory January 2026)
-- ✅ XAdES-BES digital signature (SHA-256)
-- ✅ All document types: Factura, NC, ND, Retención, Guía
-- ✅ RIDE PDF generation
-- ✅ Ficha Técnica v2.32 compliance
+<div align="center">
 
-### Tax Compliance
-- ✅ IVA 15% (código 4) - Standard 2026
-- ✅ IVA 5% (código 5) - Construction
-- ✅ Consumidor Final $50 limit enforcement
-- ✅ 7-day invoice annulment rule
-- ✅ CF invoices cannot be annulled
+**[Somatech.dev](https://somatech.dev)**
 
-### Payroll (IESS 2026)
-- ✅ SBU $482 (2026)
-- ✅ IESS 9.45%/12.15%
-- ✅ Décimo Tercero (Dec 24)
-- ✅ Décimo Cuarto (Mar 15 / Aug 15)
-- ✅ Utilidades 15% (Apr 15)
+*En colaboración con la Odoo Community Association (OCA)*
+
+</div>
 
 ---
 
-## 🚀 Quick Start
+## ⚡ Características Principales
+
+### 📄 Facturación Electrónica SRI
+
+| Característica | Estado |
+|----------------|--------|
+| Transmisión en tiempo real (mandatorio 2026) | ✅ |
+| Firma digital XAdES-BES (SHA-256) | ✅ |
+| Todos los documentos: Factura, NC, ND, Retención, Guía | ✅ |
+| Generación RIDE PDF | ✅ |
+| Ficha Técnica v2.32 | ✅ |
+| Clave de acceso 49 dígitos (Módulo 11) | ✅ |
+
+### 💰 Cumplimiento Tributario
+
+| Regulación | Implementación |
+|------------|----------------|
+| IVA 15% (código 4) | ✅ Estándar 2026 |
+| IVA 5% (código 5) | ✅ Construcción |
+| Límite Consumidor Final $50 | ✅ Validación automática |
+| Anulación máxima 7 días | ✅ Control automático |
+| Facturas CF no anulables | ✅ Bloqueado por sistema |
+| Regla 5 días retenciones | ✅ Validación automática |
+
+### 👥 Nómina IESS 2026
+
+| Concepto | Valor |
+|----------|-------|
+| SBU 2026 | **$482** |
+| Aporte Personal | 9.45% |
+| Aporte Patronal | 12.15% |
+| Décimo Tercero | Antes del 24 Dic |
+| Décimo Cuarto | 15 Mar / 15 Ago |
+| Utilidades | 15% antes 15 Abr |
+
+---
+
+## 📦 Módulos
+
+### Módulos Base (Obligatorios)
+
+| Módulo | Descripción | Dependencias |
+|--------|-------------|--------------|
+| `l10n_ec_base` | Plan de cuentas NEC, validación RUC/Cédula, impuestos | base, account |
+| `l10n_ec_edi` | Generación XML, firma XAdES-BES, clave de acceso | l10n_ec_base |
+| `l10n_ec_sri` | Integración SOAP con SRI (pruebas/producción) | l10n_ec_edi |
+
+### Módulos Adicionales
+
+| Módulo | Descripción | Área |
+|--------|-------------|------|
+| `l10n_ec_withholding` | Retenciones IR + IVA, regla 5 días | Contabilidad |
+| `l10n_ec_stock` | Guía de Remisión electrónica | Inventario |
+| `l10n_ec_pos` | Facturación electrónica en POS | Punto de Venta |
+| `l10n_ec_reports` | ATS, Formulario 104 | Reportes |
+| `l10n_ec_hr_payroll` | IESS, Décimos, Utilidades | Recursos Humanos |
+| `l10n_ec_customs` | DAU, partidas arancelarias, FODINFA | Aduanas |
+
+---
+
+## 🚀 Instalación
+
+### Requisitos Previos
+
+- **Odoo 18** Community o Enterprise
+- **Python 3.10+**
+- **PostgreSQL 15+**
+- **Certificado digital SRI** (formato .p12)
+
+### Instalación Rápida
 
 ```bash
-# Clone the repository
+# 1. Clonar repositorio
 git clone https://github.com/somatechlat/odoo_saas_ecuador.git
 
-# Add to Odoo addons path
-cp -r odoo_saas_ecuador/* /path/to/odoo/addons/
+# 2. Instalar dependencias Python
+pip install -r requirements.txt
 
-# Install Python dependencies
-pip install zeep cryptography lxml requests
+# 3. Copiar a directorio de addons de Odoo
+cp -r l10n_ec_* /ruta/a/odoo/addons/
 
-# Update module list in Odoo, then install l10n_ec_base
+# 4. Reiniciar Odoo y actualizar lista de módulos
+./odoo-bin -d mi_base_datos -u all
+
+# 5. Instalar módulo base
+# Desde Odoo: Aplicaciones > Buscar "Ecuador" > Instalar
 ```
 
-See [INSTALLATION.md](docs/INSTALLATION.md) for detailed instructions.
+### Docker
+
+```yaml
+# docker-compose.yml
+volumes:
+  - ./odoo_saas_ecuador:/mnt/extra-addons
+
+# odoo.conf
+addons_path = /mnt/extra-addons,/mnt/addons
+```
+
+📖 Ver [Guía de Instalación Completa](docs/INSTALACION.md)
 
 ---
 
-## 📚 Documentation
+## ⚙️ Configuración
 
-| Document | Description |
-|----------|-------------|
-| [Installation Guide](docs/INSTALLATION.md) | Step-by-step setup |
-| [User Manual (ES)](docs/USER_MANUAL_ES.md) | Complete user guide in Spanish |
-| [Admin Guide](docs/ADMIN_GUIDE.md) | Administration and certificates |
-| [Developer Guide](docs/DEVELOPER_GUIDE.md) | API and extending modules |
-| [Regulatory Reference](docs/REGULATORY_2026.md) | Current laws and rates |
+### 1. Datos de Empresa
 
----
+**Configuración > Empresas > Su Empresa**
 
-## 📋 Regulatory Compliance
+- RUC (13 dígitos)
+- Razón Social
+- Dirección fiscal
 
-| Agency | Regulation | Status |
-|--------|------------|--------|
-| **SRI** | Electronic Invoicing 2026 | ✅ Compliant |
-| **SRI** | Resolution NAC-DGERCGC25-00000017 | ✅ Compliant |
-| **IESS** | Contribution Rates 2026 | ✅ Compliant |
-| **Min. Trabajo** | SBU $482 (Acuerdo MDT-2025-195) | ✅ Compliant |
-| **SENAE** | Import Taxes (FODINFA 0.5%) | ✅ Compliant |
+### 2. Certificado Digital
 
----
+**Contabilidad > Configuración > Ecuador SRI > Certificados**
 
-## 🤝 Contributing
+1. Subir archivo .p12
+2. Ingresar contraseña
+3. Activar certificado
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+### 3. Ambiente SRI
 
-1. Fork the repository
-2. Create a feature branch
-3. Follow OCA coding standards
-4. Submit a pull request
+**Configuración > Empresas > Ecuador SRI**
+
+- **Pruebas**: `celcer.sri.gob.ec`
+- **Producción**: `cel.sri.gob.ec`
 
 ---
 
-## 📄 License
+## 📚 Documentación
 
-This project is licensed under **LGPL-3.0** - see the [LICENSE](LICENSE) file for details.
+| Documento | Descripción |
+|-----------|-------------|
+| [📥 Instalación](docs/INSTALACION.md) | Guía paso a paso |
+| [📖 Manual de Usuario](docs/MANUAL_USUARIO.md) | Uso completo del sistema |
+| [🔧 Guía de Administración](docs/ADMINISTRACION.md) | Configuración avanzada |
+| [📋 Referencia Regulatoria](docs/REGULACIONES_2026.md) | Leyes y tasas vigentes |
 
 ---
 
-## 🏢 About
+## 🏛️ Cumplimiento Regulatorio
 
-Developed and maintained by **[Somatech.dev](https://somatech.dev)** in collaboration with the **Odoo Community Association (OCA)**.
+| Entidad | Regulación | Estado |
+|---------|------------|--------|
+| **SRI** | Facturación Electrónica 2026 | ✅ Cumple |
+| **SRI** | Resolución NAC-DGERCGC25-00000017 | ✅ Cumple |
+| **IESS** | Aportes 2026 (9.45% / 12.15%) | ✅ Cumple |
+| **Min. Trabajo** | SBU $482 (Acuerdo MDT-2025-195) | ✅ Cumple |
+| **SENAE** | FODINFA 0.5%, IVA importación 15% | ✅ Cumple |
+| **SUPERCIAS** | Estados financieros NIIF | ✅ Cumple |
 
-For support, contact: soporte@somatech.dev
+---
+
+## 🤝 Contribuir
+
+¡Las contribuciones son bienvenidas!
+
+1. Fork del repositorio
+2. Crear rama: `git checkout -b feature/mi-mejora`
+3. Commit: `git commit -m "Añade mi mejora"`
+4. Push: `git push origin feature/mi-mejora`
+5. Abrir Pull Request
+
+📖 Ver [Guía de Contribución](CONTRIBUIR.md)
+
+---
+
+## 📄 Licencia
+
+Este proyecto está licenciado bajo **LGPL-3.0** - ver archivo [LICENSE](LICENSE).
+
+```
+Copyright 2026 Somatech.dev
+License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0)
+```
+
+---
+
+## 🆘 Soporte
+
+| Canal | Contacto |
+|-------|----------|
+| 📧 Email | soporte@somatech.dev |
+| 🌐 Web | [somatech.dev](https://somatech.dev) |
+| 🐛 Issues | [GitHub Issues](https://github.com/somatechlat/odoo_saas_ecuador/issues) |
+
+---
+
+<div align="center">
+
+**Hecho con ❤️ en Ecuador 🇪🇨**
+
+[![GitHub stars](https://img.shields.io/github/stars/somatechlat/odoo_saas_ecuador?style=social)](https://github.com/somatechlat/odoo_saas_ecuador)
+
+</div>
