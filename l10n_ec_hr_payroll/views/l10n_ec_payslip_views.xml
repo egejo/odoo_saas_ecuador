@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="view_l10n_ec_payslip_form" model="ir.ui.view">
+        <field name="name">l10n_ec.payslip.form</field>
+        <field name="model">l10n_ec.payslip</field>
+        <field name="arch" type="xml">
+            <form string="Payslip">
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="contract_id"/>
+                        </group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Earnings">
+                            <group>
+                                <field name="wage"/>
+                                <field name="overtime_hours"/>
+                                <field name="supplementary_hours"/>
+                                <field name="commission"/>
+                                <field name="bonus"/>
+                            </group>
+                        </page>
+                        <page string="Deductions">
+                            <group>
+                                <field name="iess_personal"/>
+                                <field name="income_tax"/>
+                                <field name="advances"/>
+                            </group>
+                        </page>
+                        <page string="Employer Costs">
+                            <group>
+                                <field name="iess_employer"/>
+                            </group>
+                        </page>
+                        <page string="Provisions">
+                            <group>
+                                <field name="thirteenth"/>
+                                <field name="fourteenth"/>
+                                <field name="reserve_funds"/>
+                            </group>
+                        </page>
+                        <page string="Payout Details">
+                            <group>
+                                <field name="total_benefits_cash"/>
+                            </group>
+                        </page>
+                    </notebook>
+                    <group class="oe_subtotal_footer oe_right">
+                        <field name="total_income"/>
+                        <field name="net_wage" class="oe_subtotal_footer_separator"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree View -->
+    <record id="view_l10n_ec_payslip_tree" model="ir.ui.view">
+        <field name="name">l10n_ec.payslip.tree</field>
+        <field name="model">l10n_ec.payslip</field>
+        <field name="arch" type="xml">
+            <list string="Payslips">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="date_start"/>
+                <field name="state"/>
+                <field name="net_wage"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_l10n_ec_payslip" model="ir.actions.act_window">
+        <field name="name">Ecuadorian Payslips</field>
+        <field name="res_model">l10n_ec.payslip</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_l10n_ec_payroll_root" name="EC Payroll" parent="hr.menu_hr_root" sequence="90"/>
+    <menuitem id="menu_l10n_ec_payslip" name="Payslips" parent="menu_l10n_ec_payroll_root" action="action_l10n_ec_payslip"/>
+</odoo>

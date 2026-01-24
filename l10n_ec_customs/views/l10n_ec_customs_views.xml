@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tariff Heading Views -->
+    <record id="view_l10n_ec_tariff_heading_tree" model="ir.ui.view">
+        <field name="name">l10n_ec.tariff.heading.tree</field>
+        <field name="model">l10n_ec.tariff.heading</field>
+        <field name="arch" type="xml">
+            <list string="Tariff Headings">
+                <field name="name"/>
+                <field name="description"/>
+                <field name="ad_valorem"/>
+                <field name="specific_duty"/>
+                <field name="fodinfa"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_l10n_ec_tariff_heading_form" model="ir.ui.view">
+        <field name="name">l10n_ec.tariff.heading.form</field>
+        <field name="model">l10n_ec.tariff.heading</field>
+        <field name="arch" type="xml">
+            <form string="Tariff Heading">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="description"/>
+                        </group>
+                        <group>
+                            <field name="ad_valorem"/>
+                            <field name="specific_duty"/>
+                            <field name="fodinfa"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Import DAU Views -->
+    <record id="view_l10n_ec_import_dau_form" model="ir.ui.view">
+        <field name="name">l10n_ec.import.dau.form</field>
+        <field name="model">l10n_ec.import.dau</field>
+        <field name="arch" type="xml">
+            <form string="Import DAU">
+                <header>
+                    <button name="action_calculate" string="Calculate Taxes" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="date"/>
+                            <field name="partner_id"/>
+                        </group>
+                        <group>
+                            <field name="invoice_id"/>
+                            <field name="picking_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="General Values">
+                            <group>
+                                <field name="fob_value"/>
+                                <field name="freight"/>
+                                <field name="insurance"/>
+                                <field name="cif_value"/>
+                            </group>
+                        </page>
+                        <page string="Taxes &amp; Duties">
+                            <group>
+                                <field name="total_ad_valorem"/>
+                                <field name="total_fodinfa"/>
+                                <field name="total_iva"/>
+                            </group>
+                        </page>
+                        <page string="Lines">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="tariff_id"/>
+                                    <field name="valor_fob_line"/>
+                                    <field name="ad_valorem_amount"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_l10n_ec_import_dau_tree" model="ir.ui.view">
+        <field name="name">l10n_ec.import.dau.tree</field>
+        <field name="model">l10n_ec.import.dau</field>
+        <field name="arch" type="xml">
+            <list string="Import Declarations">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="cif_value"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_l10n_ec_tariff_heading" model="ir.actions.act_window">
+        <field name="name">Tariff Headings</field>
+        <field name="res_model">l10n_ec.tariff.heading</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_l10n_ec_import_dau" model="ir.actions.act_window">
+        <field name="name">Import DAU</field>
+        <field name="res_model">l10n_ec.import.dau</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menus -->
+    <menuitem id="menu_l10n_ec_customs_root" name="EC Customs" parent="stock.menu_stock_root" sequence="80"/>
+    <menuitem id="menu_l10n_ec_import_dau" name="Import DAU" parent="menu_l10n_ec_customs_root" action="action_l10n_ec_import_dau"/>
+    <menuitem id="menu_l10n_ec_tariff_heading" name="Tariffs" parent="menu_l10n_ec_customs_root" action="action_l10n_ec_tariff_heading"/>
+</odoo>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_l10n_ec" model="ir.ui.view">
+        <field name="name">res.partner.form.l10n.ec</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='vat']" position="before">
+                <field name="l10n_ec_identifier_type" invisible="country_id != %(base.ec)d" required="country_id == %(base.ec)d"/>
+            </xpath>
+            <xpath expr="//field[@name='country_id']" position="after">
+                <field name="l10n_ec_taxpayer_type" invisible="country_id != %(base.ec)d"/>
+                <field name="l10n_ec_related_party" invisible="country_id != %(base.ec)d"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

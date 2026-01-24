@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_l10n_ec_tariff_heading,l10n_ec.tariff.heading,model_l10n_ec_tariff_heading,base.group_user,1,1,1,1
+access_l10n_ec_import_dau,l10n_ec.import.dau,model_l10n_ec_import_dau,base.group_user,1,1,1,1
+access_l10n_ec_import_dau_line,l10n_ec.import.dau.line,model_l10n_ec_import_dau_line,base.group_user,1,1,1,1

@@ -1,0 +1,14 @@
+# Python dependencies for Odoo Ecuador Localization
+# Install with: pip install -r requirements.txt
+
+# SRI SOAP Integration
+zeep>=4.2.0
+
+# XAdES Digital Signature
+cryptography>=41.0.0
+
+# XML Processing
+lxml>=4.9.0
+
+# HTTP Requests
+requests>=2.31.0

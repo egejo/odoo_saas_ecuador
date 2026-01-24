@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Driver Views -->
+        <record id="view_l10n_ec_driver_tree" model="ir.ui.view">
+            <field name="name">l10n_ec.driver.tree</field>
+            <field name="model">l10n_ec.driver</field>
+            <field name="arch" type="xml">
+                <list string="Drivers">
+                    <field name="name"/>
+                    <field name="identification_type"/>
+                    <field name="identification_number"/>
+                    <field name="license_number"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_l10n_ec_driver_form" model="ir.ui.view">
+            <field name="name">l10n_ec.driver.form</field>
+            <field name="model">l10n_ec.driver</field>
+            <field name="arch" type="xml">
+                <form string="Driver">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="identification_type"/>
+                                <field name="identification_number"/>
+                            </group>
+                            <group>
+                                <field name="license_number"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_l10n_ec_driver" model="ir.actions.act_window">
+            <field name="name">Drivers</field>
+            <field name="res_model">l10n_ec.driver</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Vehicle Views -->
+        <record id="view_l10n_ec_vehicle_tree" model="ir.ui.view">
+            <field name="name">l10n_ec.vehicle.tree</field>
+            <field name="model">l10n_ec.vehicle</field>
+            <field name="arch" type="xml">
+                <list string="Vehicles">
+                    <field name="name"/>
+                    <field name="license_plate"/>
+                    <field name="brand"/>
+                    <field name="model_year"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_l10n_ec_vehicle_form" model="ir.ui.view">
+            <field name="name">l10n_ec.vehicle.form</field>
+            <field name="model">l10n_ec.vehicle</field>
+            <field name="arch" type="xml">
+                <form string="Vehicle">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="license_plate"/>
+                            </group>
+                            <group>
+                                <field name="brand"/>
+                                <field name="model_year"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_l10n_ec_vehicle" model="ir.actions.act_window">
+            <field name="name">Vehicles</field>
+            <field name="res_model">l10n_ec.vehicle</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+    </data>
+</odoo>

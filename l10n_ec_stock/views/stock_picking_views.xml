@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_picking_form_inherit_l10n_ec_stock" model="ir.ui.view">
+            <field name="name">stock.picking.form.inherit.l10n_ec_stock</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                   <button name="action_send_guia_sri" string="Send Guía SRI" type="object" class="oe_highlight" invisible="state != 'done' or l10n_ec_sri_status == 'authorized'"/>
+                </xpath>
+                <xpath expr="//page[@name='extra']" position="after">
+                    <page string="Transport Info (Guía de Remisión)" name="guia_remision" invisible="picking_type_code == 'incoming'">
+                        <group>
+                            <group string="Transport Details">
+                                <field name="l10n_ec_transport_reason"/>
+                                <field name="l10n_ec_start_date"/>
+                                <field name="l10n_ec_end_date"/>
+                            </group>
+                            <group string="Fleet">
+                                <field name="l10n_ec_driver_id"/>
+                                <field name="l10n_ec_vehicle_id"/>
+                            </group>
+                            <group string="SRI Status">
+                                <field name="l10n_ec_sri_status"/>
+                                <field name="l10n_ec_sri_access_key" readonly="1"/>
+                                <field name="l10n_ec_sri_response" readonly="1"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
