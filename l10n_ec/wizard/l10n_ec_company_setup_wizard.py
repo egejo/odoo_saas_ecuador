@@ -12,37 +12,49 @@ import re
 class L10nEcCompanySetupWizard(models.TransientModel):
     """
     Wizard para configurar la empresa ecuatoriana después de instalar la localización.
+    Auto-carga datos del SRI cuando se ingresa el RUC.
     """
     _name = 'l10n_ec.company.setup.wizard'
     _description = 'Asistente de Configuración de Empresa Ecuador'
 
-    # Company Info
-    company_name = fields.Char(
-        string='Razón Social',
-        required=True,
-        help='Nombre legal de la empresa registrado en el SRI'
+    # Search Options
+    search_type = fields.Selection([
+        ('ruc', 'Buscar por RUC'),
+        ('name', 'Buscar por Nombre'),
+    ], string='Tipo de Búsqueda', default='ruc')
+
+    search_name = fields.Char(
+        string='Buscar por Nombre',
+        help='Ingrese el nombre de la empresa para buscar en el SRI'
     )
+
+    # Company Info (auto-loaded from SRI)
     company_ruc = fields.Char(
         string='RUC',
-        required=True,
         size=13,
-        help='Registro Único de Contribuyentes (13 dígitos)'
+        help='Ingrese el RUC y los datos se cargarán automáticamente del SRI'
+    )
+    company_name = fields.Char(
+        string='Razón Social',
+        help='Se carga automáticamente del SRI'
     )
     commercial_name = fields.Char(
         string='Nombre Comercial',
-        help='Nombre comercial o marca (opcional)'
+        help='Se carga automáticamente del SRI'
     )
 
-    # Address
-    street = fields.Char(string='Dirección', required=True)
-    city = fields.Char(string='Ciudad', required=True)
-    province_id = fields.Many2one(
-        'res.country.state',
-        string='Provincia',
-        domain="[('country_id.code', '=', 'EC')]"
-    )
+    # Status from SRI
+    sri_estado = fields.Char(string='Estado SRI', readonly=True)
+    sri_tipo_contribuyente = fields.Char(string='Tipo Contribuyente', readonly=True)
+    sri_clase_contribuyente = fields.Char(string='Clase Contribuyente', readonly=True)
+    sri_actividad = fields.Char(string='Actividad Económica', readonly=True)
+
+    # Address (auto-loaded)
+    street = fields.Char(string='Dirección')
+    city = fields.Char(string='Ciudad')
+    province = fields.Char(string='Provincia')
     phone = fields.Char(string='Teléfono')
-    email = fields.Char(string='Correo Electrónico', required=True)
+    email = fields.Char(string='Correo Electrónico')
     website = fields.Char(string='Sitio Web')
 
     # SRI Settings
@@ -53,62 +65,140 @@ class L10nEcCompanySetupWizard(models.TransientModel):
 
     obligado_contabilidad = fields.Boolean(
         string='Obligado a Llevar Contabilidad',
-        default=True,
-        help='Marcar si la empresa está obligada a llevar contabilidad'
+        help='Se carga automáticamente del SRI'
     )
 
     contribuyente_especial = fields.Char(
         string='Nº Contribuyente Especial',
-        help='Dejar vacío si no es contribuyente especial'
+        help='Se carga automáticamente del SRI'
     )
 
     agente_retencion = fields.Char(
         string='Nº Agente de Retención',
-        help='Número de resolución como agente de retención'
+        help='Se carga automáticamente del SRI'
     )
 
-    @api.constrains('company_ruc')
-    def _check_ruc(self):
-        """Valida el RUC ecuatoriano usando Módulo 11."""
-        for record in self:
-            if record.company_ruc:
-                ruc = record.company_ruc.strip()
+    regimen_rimpe = fields.Char(
+        string='Régimen RIMPE',
+        readonly=True
+    )
 
-                # Debe tener 13 dígitos
-                if not re.match(r'^\d{13}$', ruc):
-                    raise ValidationError(_(
-                        "El RUC debe tener exactamente 13 dígitos numéricos.\n"
-                        "Ejemplo: 1791234567001"
-                    ))
+    # Status
+    sri_loaded = fields.Boolean(string='Datos Cargados del SRI', default=False)
+    sri_message = fields.Char(string='Mensaje SRI', readonly=True)
 
-                # Los 3 últimos dígitos deben ser 001
-                if ruc[-3:] != '001':
-                    raise ValidationError(_(
-                        "Los últimos 3 dígitos del RUC deben ser 001.\n"
-                        "RUC ingresado: %s"
-                    ) % ruc)
+    @api.onchange('company_ruc')
+    def _onchange_company_ruc(self):
+        """Auto-cargar datos del SRI cuando se ingresa un RUC válido."""
+        if not self.company_ruc:
+            return
 
-                # Validar provincia (primeros 2 dígitos: 01-24)
-                provincia = int(ruc[:2])
-                if provincia < 1 or provincia > 24:
-                    raise ValidationError(_(
-                        "Los primeros 2 dígitos del RUC deben ser un código de provincia válido (01-24).\n"
-                        "Código ingresado: %s"
-                    ) % ruc[:2])
+        ruc = self.company_ruc.strip()
 
-    @api.constrains('email')
-    def _check_email(self):
-        """Valida formato de correo electrónico."""
-        for record in self:
-            if record.email and not re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', record.email):
-                raise ValidationError(_("El correo electrónico no tiene un formato válido."))
+        # Solo consultar si tiene 13 dígitos
+        if len(ruc) != 13 or not ruc.isdigit():
+            self.sri_message = "Ingrese un RUC válido de 13 dígitos"
+            self.sri_loaded = False
+            return
+
+        # Consultar SRI
+        try:
+            service = self.env['l10n_ec.sri.ruc.service']
+            result = service.consultar_ruc(ruc)
+
+            if result['success']:
+                data = result['data']
+
+                # Auto-completar campos
+                self.company_name = data.get('razon_social', '')
+                self.commercial_name = data.get('nombre_comercial', '')
+                self.street = data.get('direccion', '')
+                self.city = data.get('canton', '')
+                self.province = data.get('provincia', '')
+                self.phone = data.get('telefono', '')
+                self.email = data.get('email', '')
+
+                # Datos del SRI
+                self.sri_estado = data.get('estado', '')
+                self.sri_tipo_contribuyente = data.get('tipo_contribuyente', '')
+                self.sri_clase_contribuyente = data.get('clase_contribuyente', '')
+                self.sri_actividad = data.get('actividad_economica', '')
+                self.obligado_contabilidad = data.get('obligado_contabilidad', False)
+                self.contribuyente_especial = data.get('contribuyente_especial', '')
+                self.agente_retencion = data.get('agente_retencion', '')
+                self.regimen_rimpe = data.get('regimen_rimpe', '')
+
+                self.sri_loaded = True
+                self.sri_message = f"✅ Datos cargados del SRI - Estado: {data.get('estado', 'N/A')}"
+
+                # Advertir si no está ACTIVO
+                if data.get('estado', '').upper() != 'ACTIVO':
+                    return {
+                        'warning': {
+                            'title': 'Contribuyente No Activo',
+                            'message': f"El contribuyente tiene estado: {data.get('estado')}. Verifique en el SRI."
+                        }
+                    }
+            else:
+                self.sri_loaded = False
+                self.sri_message = f"❌ {result.get('error', 'Error desconocido')}"
+
+        except Exception as e:
+            self.sri_loaded = False
+            self.sri_message = f"❌ Error al consultar SRI: {str(e)}"
+
+    def action_search_by_name(self):
+        """Buscar contribuyentes por nombre en el SRI."""
+        self.ensure_one()
+
+        if not self.search_name or len(self.search_name) < 3:
+            raise ValidationError(_("Ingrese al menos 3 caracteres para buscar"))
+
+        service = self.env['l10n_ec.sri.ruc.service']
+        result = service.consultar_por_nombre(self.search_name)
+
+        if not result['success']:
+            raise ValidationError(_(result.get('error', 'Error en búsqueda')))
+
+        # Crear registros temporales para selección
+        resultados = result['data']
+
+        if len(resultados) == 1:
+            # Si solo hay uno, cargar directamente
+            self.company_ruc = resultados[0].get('ruc')
+            return
+
+        # Si hay múltiples, mostrar lista para seleccionar
+        return {
+            'type': 'ir.actions.act_window',
+            'name': f'Resultados: {self.search_name}',
+            'res_model': 'l10n_ec.ruc.search.result',
+            'view_mode': 'tree',
+            'target': 'new',
+            'context': {
+                'search_results': resultados,
+                'wizard_id': self.id,
+            }
+        }
 
     def action_configure_company(self):
         """Aplica la configuración a la empresa."""
         self.ensure_one()
 
+        if not self.company_ruc or not self.company_name:
+            raise ValidationError(_("Debe ingresar el RUC y la Razón Social"))
+
         company = self.env.company
         ecuador = self.env.ref('base.ec')
+
+        # Buscar o crear provincia
+        province_id = False
+        if self.province:
+            province = self.env['res.country.state'].search([
+                ('name', 'ilike', self.province),
+                ('country_id.code', '=', 'EC')
+            ], limit=1)
+            province_id = province.id if province else False
 
         # Update company
         company.write({
@@ -117,7 +207,7 @@ class L10nEcCompanySetupWizard(models.TransientModel):
             'company_registry': self.commercial_name or self.company_name,
             'street': self.street,
             'city': self.city,
-            'state_id': self.province_id.id if self.province_id else False,
+            'state_id': province_id,
             'country_id': ecuador.id,
             'phone': self.phone,
             'email': self.email,
@@ -135,7 +225,7 @@ class L10nEcCompanySetupWizard(models.TransientModel):
         if self.agente_retencion:
             IrConfigParam.set_param('l10n_ec.agente_retencion', self.agente_retencion)
 
-        # Show success notification and redirect to Settings
+        # Success notification
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
@@ -155,13 +245,4 @@ class L10nEcCompanySetupWizard(models.TransientModel):
 
     def action_skip_wizard(self):
         """Permite saltar el wizard y configurar después."""
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': _('Configuración Pendiente'),
-                'message': _('Puede configurar su empresa en Ajustes > Empresas'),
-                'type': 'warning',
-                'sticky': False,
-            }
-        }
+        return {'type': 'ir.actions.act_window_close'}

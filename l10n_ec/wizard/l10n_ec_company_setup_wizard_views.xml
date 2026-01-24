@@ -12,47 +12,83 @@
             <form string="🇪🇨 Configurar Empresa Ecuador">
                 <div class="text-center mb-4">
                     <h2>🇪🇨 Configuración de Empresa Ecuador</h2>
-                    <p class="text-muted">Complete los datos de su empresa para cumplir con las regulaciones del SRI</p>
+                    <p class="text-muted">Ingrese el RUC y los datos se cargarán automáticamente del SRI</p>
                 </div>
 
-                <group>
-                    <group string="📋 Datos de la Empresa" name="company_info">
-                        <field name="company_name" placeholder="Ej: Mi Empresa S.A."/>
-                        <field name="company_ruc" placeholder="Ej: 1791234567001"/>
-                        <field name="commercial_name" placeholder="Nombre comercial (opcional)"/>
+                <!-- Search Section -->
+                <group string="🔍 Buscar en SRI" name="search">
+                    <group>
+                        <field name="company_ruc" placeholder="Ingrese RUC de 13 dígitos..."
+                               class="oe_inline" style="font-size: 1.2em; font-weight: bold;"/>
                     </group>
-
-                    <group string="📍 Dirección" name="address">
-                        <field name="street" placeholder="Av. Principal 123"/>
-                        <field name="city" placeholder="Quito"/>
-                        <field name="province_id" placeholder="Seleccione provincia"/>
-                        <field name="phone" placeholder="+593 2 1234567"/>
-                        <field name="email" placeholder="info@miempresa.ec"/>
-                        <field name="website" placeholder="www.miempresa.ec"/>
+                    <group>
+                        <field name="sri_message" readonly="1"
+                               class="oe_inline text-info"/>
                     </group>
                 </group>
 
-                <group string="⚙️ Configuración SRI" name="sri_settings">
+                <!-- SRI Loaded Data -->
+                <group string="📋 Datos del Contribuyente (SRI)" name="company_info"
+                       invisible="not sri_loaded">
+                    <group>
+                        <field name="company_name" readonly="0"/>
+                        <field name="commercial_name"/>
+                        <field name="sri_estado" class="text-success"/>
+                        <field name="sri_tipo_contribuyente"/>
+                    </group>
+                    <group>
+                        <field name="sri_clase_contribuyente"/>
+                        <field name="sri_actividad"/>
+                        <field name="regimen_rimpe" invisible="not regimen_rimpe"/>
+                        <field name="sri_loaded" invisible="1"/>
+                    </group>
+                </group>
+
+                <!-- Address Section -->
+                <group string="📍 Dirección" name="address" invisible="not sri_loaded">
+                    <group>
+                        <field name="street"/>
+                        <field name="city"/>
+                        <field name="province"/>
+                    </group>
+                    <group>
+                        <field name="phone"/>
+                        <field name="email"/>
+                        <field name="website"/>
+                    </group>
+                </group>
+
+                <!-- SRI Settings -->
+                <group string="⚙️ Configuración Tributaria" name="sri_settings"
+                       invisible="not sri_loaded">
                     <group>
                         <field name="sri_environment" widget="radio"/>
                         <field name="obligado_contabilidad"/>
                     </group>
                     <group>
-                        <field name="contribuyente_especial" placeholder="Nº resolución (si aplica)"/>
-                        <field name="agente_retencion" placeholder="Nº resolución (si aplica)"/>
+                        <field name="contribuyente_especial"
+                               invisible="not contribuyente_especial"/>
+                        <field name="agente_retencion"
+                               invisible="not agente_retencion"/>
                     </group>
                 </group>
 
-                <div class="alert alert-info" role="alert">
-                    <strong>💡 Nota:</strong> Puede modificar estos datos posteriormente en
-                    <strong>Ajustes → Empresas</strong>
+                <div class="alert alert-info" role="alert" invisible="not sri_loaded">
+                    <strong>💡 Datos cargados automáticamente del SRI.</strong>
+                    Puede modificar los campos si es necesario.
+                </div>
+
+                <div class="alert alert-warning" role="alert" invisible="sri_loaded">
+                    <strong>💡 Ingrese el RUC de su empresa</strong> para cargar los datos
+                    automáticamente desde el SRI.
                 </div>
 
                 <footer>
                     <button name="action_configure_company"
                             string="✅ Configurar Empresa"
                             type="object"
-                            class="btn-primary"/>
+                            class="btn-primary"
+                            invisible="not sri_loaded"/>
                     <button name="action_skip_wizard"
                             string="Configurar Después"
                             type="object"
@@ -71,9 +107,9 @@
         <field name="context">{'form_view_initial_mode': 'edit'}</field>
     </record>
 
-    <!-- Menu item (optional, in Settings) -->
+    <!-- Menu item in Settings -->
     <menuitem id="menu_l10n_ec_company_setup"
-              name="Configurar Empresa Ecuador"
+              name="🇪🇨 Configurar Empresa Ecuador"
               parent="base.menu_administration"
               action="action_l10n_ec_company_setup_wizard"
               sequence="1"/>
