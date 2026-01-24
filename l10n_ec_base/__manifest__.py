@@ -34,6 +34,7 @@ This module provides the base localization for Ecuador:
     'data': [
         'security/l10n_ec_groups.xml',
         'security/ir.model.access.csv',
+        'data/l10n_ec_sri_config.xml',
         'data/account_chart_template.xml',
         'data/l10n_latam.document.type.csv',
         'views/res_partner_views.xml',
