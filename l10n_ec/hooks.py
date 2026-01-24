@@ -11,15 +11,8 @@ _logger = logging.getLogger(__name__)
 
 def post_init_hook(env):
     """
-    Configura automáticamente Odoo para Ecuador al instalar la localización.
-
-    Configura:
-    - Idioma: Español (Ecuador)
-    - País: Ecuador
-    - Moneda: USD
-    - Zona horaria: America/Guayaquil
-    - Formato de fecha: dd/mm/yyyy
-    - Separadores: . para miles, , para decimales
+    Configura automáticamente Odoo para Ecuador al instalar la localización
+    y abre el asistente de configuración de empresa.
     """
     _logger.info("🇪🇨 Iniciando configuración automática de localización Ecuador...")
 
@@ -29,14 +22,13 @@ def post_init_hook(env):
     try:
         lang = env['res.lang']._activate_lang('es_EC')
         if not lang:
-            # Try Spanish generic if es_EC not available
             lang = env['res.lang']._activate_lang('es_ES')
         _logger.info("✅ Idioma Español activado")
     except Exception as e:
         _logger.warning(f"⚠️ No se pudo activar idioma español: {e}")
 
     # =========================================================================
-    # 2. CONFIGURAR COMPAÑÍA PRINCIPAL
+    # 2. CONFIGURAR COMPAÑÍA PRINCIPAL (PAÍS Y MONEDA)
     # =========================================================================
     try:
         company = env.company
@@ -44,13 +36,8 @@ def post_init_hook(env):
         usd = env.ref('base.USD', raise_if_not_found=False)
 
         company_vals = {}
-
-        # País Ecuador
         if ecuador:
             company_vals['country_id'] = ecuador.id
-            company_vals['account_fiscal_country_id'] = ecuador.id
-
-        # Moneda USD
         if usd:
             company_vals['currency_id'] = usd.id
 
@@ -66,17 +53,13 @@ def post_init_hook(env):
     try:
         admin_user = env.ref('base.user_admin', raise_if_not_found=False)
         if admin_user:
-            user_vals = {
-                'tz': 'America/Guayaquil',
-            }
-            # Set language if available
+            user_vals = {'tz': 'America/Guayaquil'}
             if env['res.lang'].search([('code', '=', 'es_EC')]):
                 user_vals['lang'] = 'es_EC'
             elif env['res.lang'].search([('code', '=', 'es_ES')]):
                 user_vals['lang'] = 'es_ES'
-
             admin_user.write(user_vals)
-            _logger.info("✅ Usuario admin configurado: zona horaria America/Guayaquil")
+            _logger.info("✅ Usuario admin configurado")
     except Exception as e:
         _logger.warning(f"⚠️ Error configurando usuario: {e}")
 
@@ -85,22 +68,13 @@ def post_init_hook(env):
     # =========================================================================
     try:
         IrConfigParam = env['ir.config_parameter'].sudo()
-
-        # SBU 2026
         IrConfigParam.set_param('l10n_ec.sbu', '482')
         IrConfigParam.set_param('l10n_ec.sbu_year', '2026')
-
-        # IESS rates
         IrConfigParam.set_param('l10n_ec.iess_personal', '9.45')
         IrConfigParam.set_param('l10n_ec.iess_patronal', '12.15')
-
-        # IVA rate
         IrConfigParam.set_param('l10n_ec.iva_rate', '15')
-
-        # Consumidor Final limit
         IrConfigParam.set_param('l10n_ec.consumidor_final_limit', '50')
-
-        _logger.info("✅ Parámetros del sistema configurados (SBU $482, IVA 15%, etc.)")
+        _logger.info("✅ Parámetros del sistema configurados (SBU $482, IVA 15%)")
     except Exception as e:
         _logger.warning(f"⚠️ Error configurando parámetros: {e}")
 
@@ -115,25 +89,38 @@ def post_init_hook(env):
     except Exception as e:
         _logger.warning(f"⚠️ Error activando USD: {e}")
 
-    _logger.info("🇪🇨 ¡Localización Ecuador configurada exitosamente!")
+    _logger.info("🇪🇨 ¡Localización Ecuador configurada! Abriendo asistente de empresa...")
+
+    # =========================================================================
+    # 6. ABRIR WIZARD DE CONFIGURACIÓN DE EMPRESA
+    # =========================================================================
+    # Note: We can't directly open a wizard from post_init_hook because
+    # the request context isn't available. Instead, we create a todo item
+    # that will prompt the user to configure the company.
+    try:
+        # Create a to-do action for the user
+        env['ir.actions.todo'].create({
+            'action_id': env.ref('l10n_ec.action_l10n_ec_company_setup_wizard').id,
+            'state': 'open',
+            'name': 'Configurar Empresa Ecuador',
+        })
+        _logger.info("✅ Tarea de configuración creada")
+    except Exception as e:
+        _logger.warning(f"⚠️ No se pudo crear tarea de configuración: {e}")
 
 
 def uninstall_hook(env):
-    """
-    Limpia parámetros al desinstalar.
-    """
+    """Limpia parámetros al desinstalar."""
     _logger.info("Desinstalando localización Ecuador...")
     try:
         IrConfigParam = env['ir.config_parameter'].sudo()
-        params_to_remove = [
-            'l10n_ec.sbu',
-            'l10n_ec.sbu_year',
-            'l10n_ec.iess_personal',
-            'l10n_ec.iess_patronal',
-            'l10n_ec.iva_rate',
-            'l10n_ec.consumidor_final_limit',
+        params = [
+            'l10n_ec.sbu', 'l10n_ec.sbu_year', 'l10n_ec.iess_personal',
+            'l10n_ec.iess_patronal', 'l10n_ec.iva_rate', 'l10n_ec.consumidor_final_limit',
+            'l10n_ec.sri_environment', 'l10n_ec.obligado_contabilidad',
+            'l10n_ec.contribuyente_especial', 'l10n_ec.agente_retencion',
         ]
-        for param in params_to_remove:
+        for param in params:
             IrConfigParam.set_param(param, False)
     except Exception as e:
         _logger.warning(f"Error en desinstalación: {e}")
