@@ -24,8 +24,8 @@ class L10nEcSriRetentionXml(models.AbstractModel):
         # Here we will call the helper but ensure the record has the fields.
 
         # We must generate the key HERE because the helper might depend on fields 'retention' doesn't map 1:1 with 'move'.
-        # Actually, let's use the helper but mock/adapt or extend it.
-        # Better: Implementation Plan says "Reuse".
+        # Use the shared modulo 11 helper from l10n_ec.sri.xml.
+        # Retention implements its own key generation for document type 07.
 
         # We'll assume the l10n_ec.sri.xml model is generic enough or we extend it.
         # Let's inspect l10n_ec_sri_xml.py again? I recall it used 'record.invoice_date' etc.

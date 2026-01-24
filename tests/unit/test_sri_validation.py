@@ -87,7 +87,7 @@ class TestSriValidation(TransactionCase):
             'l10n_ec.annulment_day_limit', '7'
         ))
 
-        # This is a placeholder - actual test depends on invoice state
+        # Verify annulment config is within valid range
         self.assertTrue(annulment_day >= 1)
         self.assertTrue(annulment_day <= 31)
 
