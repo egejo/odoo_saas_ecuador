@@ -118,12 +118,48 @@ class AccountMove(models.Model):
 
     # 2026 Mandate: No cancellation of Consumidor Final
     def button_cancel_sri(self):
+        """Cancel invoice with SRI 2026 validations."""
         for move in self:
             if move.l10n_ec_sri_status == 'authorized':
-                # Check for Consumidor Final Rule
-                if move.partner_id.vat == '9999999999999':
-                     raise UserError(_("SRI 2026 Rule: Cannot cancel Authorized invoices for Consumidor Final."))
-        return super(AccountMove, self).button_cancel() # Standard cancel logic needs review
+                # Check for Consumidor Final Rule - use configurable RUC
+                cf_ruc = move._get_cf_ruc()
+                if move.partner_id.vat == cf_ruc:
+                    raise UserError(_(
+                        "SRI 2026: Facturas autorizadas a Consumidor Final (%s) "
+                        "no pueden ser anuladas."
+                    ) % cf_ruc)
+
+                # Check annulment deadline
+                move._check_cancellation_allowed()
+
+        return super(AccountMove, self).button_cancel()
+
+    def _check_cancellation_allowed(self):
+        """Validate cancellation deadline (day 7 of next month)."""
+        from datetime import date
+        self.ensure_one()
+
+        if not self.invoice_date:
+            return True
+
+        annulment_day = self._get_annulment_day()
+        today = date.today()
+        emission = self.invoice_date
+
+        # Calculate deadline
+        if emission.month == 12:
+            deadline = date(emission.year + 1, 1, annulment_day)
+        else:
+            deadline = date(emission.year, emission.month + 1, annulment_day)
+
+        if today > deadline:
+            raise ValidationError(_(
+                "SRI 2026: No se puede anular.\n\n"
+                "Fecha límite: día %s del mes siguiente.\n"
+                "Emisión: %s | Límite: %s | Hoy: %s"
+            ) % (annulment_day, emission, deadline, today))
+
+        return True
 
     def _generate_access_key(self):
         for move in self:
@@ -206,7 +242,57 @@ class AccountMove(models.Model):
                 move.l10n_ec_sri_status = 'rejected'
                 msgs = "\n".join(response.get('messages', []))
                 move.l10n_ec_sri_response = f"{response.get('status')}: {msgs}"
-                # We do not block the UI with error unless critical?
-                # Better to raise UserError so user knows it failed immediately?
-                # Yes, for manual button, raise error if rejected.
-                raise UserError(_("SRI Rejected: %s") % msgs)
+                raise UserError(_("SRI Rechazado: %s") % msgs)
+
+    # =========================================================================
+    # AUTO-SEND TO SRI ON POST (2026 IMMEDIATE TRANSMISSION REQUIREMENT)
+    # =========================================================================
+
+    def action_post(self):
+        """
+        Override to auto-send to SRI when configured.
+
+        SRI 2026 (Res. NAC-DGERCGC25-00000017):
+        Transmisión INMEDIATA de comprobantes electrónicos.
+        """
+        result = super(AccountMove, self).action_post()
+
+        # Check if auto-send is enabled
+        auto_send = self.env['ir.config_parameter'].sudo().get_param(
+            'l10n_ec.auto_send_sri', 'False'
+        )
+
+        if auto_send.lower() in ('true', '1', 'yes'):
+            for move in self:
+                # Only for Ecuador sales invoices
+                if move.company_id.country_id.code != 'EC':
+                    continue
+                if move.move_type not in ('out_invoice', 'out_refund'):
+                    continue
+
+                # Check if certificate is configured
+                certificate = move.company_id.l10n_ec_certificate_id
+                if not certificate or certificate.state != 'active':
+                    # No certificate - skip auto-send, log warning
+                    import logging
+                    _logger = logging.getLogger(__name__)
+                    _logger.warning(
+                        "SRI Auto-send skipped for %s: No active certificate",
+                        move.name
+                    )
+                    continue
+
+                # Auto-send to SRI
+                try:
+                    move.action_send_sri()
+                except Exception as e:
+                    # Log error but don't block posting
+                    import logging
+                    _logger = logging.getLogger(__name__)
+                    _logger.error(
+                        "SRI Auto-send failed for %s: %s",
+                        move.name, str(e)
+                    )
+                    move.l10n_ec_sri_response = f"Auto-send error: {e}"
+
+        return result

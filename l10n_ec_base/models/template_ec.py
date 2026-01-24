@@ -170,6 +170,14 @@ class AccountChartTemplate(models.AbstractModel):
             'tax_ret_iva_70': {'name': 'Retención IVA 70% (Servicios CE)', 'amount': -70.0, 'amount_type': 'percent', 'type_tax_use': 'purchase', 'tax_group_id': 'tax_group_ret_iva', 'invoice_repartition_line_ids': [('2010403', 0.0), ('2010403', 100.0)], 'refund_repartition_line_ids': [('2010403', 0.0), ('2010403', 100.0)]},
             'tax_ret_iva_100': {'name': 'Retención IVA 100%', 'amount': -100.0, 'amount_type': 'percent', 'type_tax_use': 'purchase', 'tax_group_id': 'tax_group_ret_iva', 'invoice_repartition_line_ids': [('2010403', 0.0), ('2010403', 100.0)], 'refund_repartition_line_ids': [('2010403', 0.0), ('2010403', 100.0)]},
             'tax_ice_generic': {'name': 'ICE (Genérico)', 'amount': 0.0, 'amount_type': 'percent', 'type_tax_use': 'sale', 'tax_group_id': 'tax_group_ice'},
+
+            # =========================================================================
+            # DIVIDEND WITHHOLDING TAXES (2026 Regulation)
+            # Aplicable a distribución de dividendos
+            # =========================================================================
+            'tax_ret_div_10': {'name': 'Retención Dividendos 10% (No Residentes)', 'amount': -10.0, 'amount_type': 'percent', 'type_tax_use': 'purchase', 'tax_group_id': 'tax_group_ret_renta', 'invoice_repartition_line_ids': [('2010402', 0.0), ('2010402', 100.0)], 'refund_repartition_line_ids': [('2010402', 0.0), ('2010402', 100.0)]},
+            'tax_ret_div_12': {'name': 'Retención Dividendos 12% (Residentes)', 'amount': -12.0, 'amount_type': 'percent', 'type_tax_use': 'purchase', 'tax_group_id': 'tax_group_ret_renta', 'invoice_repartition_line_ids': [('2010402', 0.0), ('2010402', 100.0)], 'refund_repartition_line_ids': [('2010402', 0.0), ('2010402', 100.0)]},
+            'tax_ret_div_14': {'name': 'Retención Dividendos 14% (Paraísos Fiscales)', 'amount': -14.0, 'amount_type': 'percent', 'type_tax_use': 'purchase', 'tax_group_id': 'tax_group_ret_renta', 'invoice_repartition_line_ids': [('2010402', 0.0), ('2010402', 100.0)], 'refund_repartition_line_ids': [('2010402', 0.0), ('2010402', 100.0)]},
         }
 
     @template('ec', 'account.tax.group')
