@@ -4,10 +4,16 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.addons.l10n_ec_edi.models.access_key import AccessKey
 import base64
 
-# SRI 2026 Regulatory Constants
-CF_RUC = '9999999999999'
-CF_LIMIT_USD = 50.00
-MAX_ANNULMENT_DAYS = 7
+# =========================================================================
+# SRI 2026 CONFIGURACIÓN
+# Todos los valores regulatorios se leen de ir.config_parameter
+# para permitir actualizaciones sin modificar código.
+# =========================================================================
+
+# Defaults (usados si no hay configuración)
+DEFAULT_CF_RUC = '9999999999999'
+DEFAULT_CF_LIMIT = 50.00
+DEFAULT_ANNULMENT_DAY = 7
 
 
 class AccountMove(models.Model):
@@ -39,21 +45,47 @@ class AccountMove(models.Model):
     # SRI 2026 REGULATORY VALIDATIONS
     # =========================================================================
 
+    def _get_cf_ruc(self):
+        """Retorna el RUC de Consumidor Final desde configuración."""
+        return self.env['ir.config_parameter'].sudo().get_param(
+            'l10n_ec.consumidor_final_ruc', DEFAULT_CF_RUC
+        )
+
+    def _get_cf_limit(self):
+        """Retorna el límite de factura CF desde configuración."""
+        param = self.env['ir.config_parameter'].sudo().get_param(
+            'l10n_ec.consumidor_final_limit', str(DEFAULT_CF_LIMIT)
+        )
+        return float(param)
+
+    def _get_annulment_day(self):
+        """Retorna el día límite para anulación desde configuración."""
+        param = self.env['ir.config_parameter'].sudo().get_param(
+            'l10n_ec.annulment_day_limit', str(DEFAULT_ANNULMENT_DAY)
+        )
+        return int(param)
+
     @api.constrains('amount_total', 'partner_id', 'move_type')
     def _check_consumidor_final_limit(self):
         """
-        SRI 2026 Rule: Consumidor Final invoices cannot exceed $50 USD.
+        SRI 2026 Rule: Consumidor Final invoices cannot exceed configured limit.
         Resolution NAC-DGERCGC25-00000017
+        Default limit: $50 USD (configurable via l10n_ec.consumidor_final_limit)
         """
         for move in self:
             if move.move_type not in ('out_invoice', 'out_refund'):
                 continue
-            if move.partner_id and move.partner_id.vat == CF_RUC:
-                if move.amount_total > CF_LIMIT_USD:
+
+            cf_ruc = move._get_cf_ruc()
+            cf_limit = move._get_cf_limit()
+
+            if move.partner_id and move.partner_id.vat == cf_ruc:
+                if move.amount_total > cf_limit:
                     raise ValidationError(_(
-                        "SRI 2026 Regulation: Invoices to Consumidor Final (9999999999999) "
-                        "cannot exceed $%.2f USD. Current total: $%.2f"
-                    ) % (CF_LIMIT_USD, move.amount_total))
+                        "Regulación SRI 2026: Facturas a Consumidor Final (%s) "
+                        "no pueden superar $%.2f USD.\n"
+                        "Total actual: $%.2f"
+                    ) % (cf_ruc, cf_limit, move.amount_total))
 
     @api.constrains('state')
     def _check_annulment_deadline(self):
