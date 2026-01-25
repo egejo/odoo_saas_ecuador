@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright 2026 Somatech.dev
+    License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
+
+    Tienda de Barrio Business Template
+    Contains: Products, Suppliers, Categories typical for a corner store
+-->
+<odoo>
+    <data noupdate="0">
+
+        <!-- ================================================================== -->
+        <!-- TEMPLATE: TIENDA DE BARRIO -->
+        <!-- ================================================================== -->
+        <record id="business_template_tienda_barrio" model="l10n_ec.business.template">
+            <field name="name">Tienda de Barrio</field>
+            <field name="code">tienda_barrio</field>
+            <field name="icon">🏪</field>
+            <field name="description">Tienda de barrio, despensa, micromercado. Productos típicos de consumo diario.</field>
+            <field name="sequence">1</field>
+            <field name="category">retail</field>
+            <field name="available_for_simple">True</field>
+            <field name="available_for_medium">True</field>
+            <field name="available_for_enterprise">True</field>
+            <field name="enable_pos">True</field>
+            <field name="enable_inventory">False</field>
+            <field name="enable_mrp">False</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- CATEGORIES -->
+        <!-- ================================================================== -->
+        <record id="template_cat_bebidas" model="l10n_ec.business.template.category">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Bebidas</field>
+            <field name="code">bebidas</field>
+            <field name="sequence">1</field>
+        </record>
+        <record id="template_cat_snacks" model="l10n_ec.business.template.category">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Snacks y Golosinas</field>
+            <field name="code">snacks</field>
+            <field name="sequence">2</field>
+        </record>
+        <record id="template_cat_lacteos" model="l10n_ec.business.template.category">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Lácteos</field>
+            <field name="code">lacteos</field>
+            <field name="sequence">3</field>
+        </record>
+        <record id="template_cat_basicos" model="l10n_ec.business.template.category">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Productos Básicos</field>
+            <field name="code">basicos</field>
+            <field name="sequence">4</field>
+        </record>
+        <record id="template_cat_limpieza" model="l10n_ec.business.template.category">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Limpieza e Higiene</field>
+            <field name="code">limpieza</field>
+            <field name="sequence">5</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- SUPPLIERS (Real Ecuador Distributors - RUCs to be verified) -->
+        <!-- ================================================================== -->
+        <record id="template_supplier_arca" model="l10n_ec.business.template.supplier">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Arca Continental Ecuador S.A.</field>
+            <field name="ruc">1790012345001</field>
+            <field name="taxpayer_type">special</field>
+            <field name="supply_category">Bebidas (Coca-Cola, Sprite, Fanta)</field>
+            <field name="for_simple">False</field>
+            <field name="for_medium">True</field>
+            <field name="for_enterprise">True</field>
+        </record>
+        <record id="template_supplier_cerveceria" model="l10n_ec.business.template.supplier">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Cervecería Nacional CN S.A.</field>
+            <field name="ruc">1790013579001</field>
+            <field name="taxpayer_type">special</field>
+            <field name="supply_category">Cervezas y Agua</field>
+            <field name="for_simple">False</field>
+            <field name="for_medium">True</field>
+            <field name="for_enterprise">True</field>
+        </record>
+        <record id="template_supplier_nestle" model="l10n_ec.business.template.supplier">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Nestlé Ecuador S.A.</field>
+            <field name="ruc">1790014680001</field>
+            <field name="taxpayer_type">special</field>
+            <field name="supply_category">Lácteos, Chocolates, Café</field>
+            <field name="for_simple">False</field>
+            <field name="for_medium">True</field>
+            <field name="for_enterprise">True</field>
+        </record>
+        <record id="template_supplier_pronaca" model="l10n_ec.business.template.supplier">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Pronaca S.A.</field>
+            <field name="ruc">1790015791001</field>
+            <field name="taxpayer_type">special</field>
+            <field name="supply_category">Embutidos, Conservas</field>
+            <field name="for_simple">False</field>
+            <field name="for_medium">True</field>
+            <field name="for_enterprise">True</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- PRODUCTS - BEBIDAS -->
+        <!-- ================================================================== -->
+        <record id="template_prod_coca_500" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Coca-Cola 500ml</field>
+            <field name="code">BEB001</field>
+            <field name="category_code">bebidas</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.75</field>
+            <field name="cost">0.50</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">1</field>
+        </record>
+        <record id="template_prod_sprite_500" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Sprite 500ml</field>
+            <field name="code">BEB002</field>
+            <field name="category_code">bebidas</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.75</field>
+            <field name="cost">0.50</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">2</field>
+        </record>
+        <record id="template_prod_fanta_500" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Fanta 500ml</field>
+            <field name="code">BEB003</field>
+            <field name="category_code">bebidas</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.75</field>
+            <field name="cost">0.50</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">3</field>
+        </record>
+        <record id="template_prod_agua_tesalia" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Agua Tesalia 500ml</field>
+            <field name="code">BEB004</field>
+            <field name="category_code">bebidas</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.50</field>
+            <field name="cost">0.30</field>
+            <field name="tax_type">iva_0</field>
+            <field name="sequence">4</field>
+        </record>
+        <record id="template_prod_fuze_tea" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Fuze Tea 500ml</field>
+            <field name="code">BEB005</field>
+            <field name="category_code">bebidas</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.90</field>
+            <field name="cost">0.60</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">5</field>
+        </record>
+        <record id="template_prod_gatorade" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Gatorade 500ml</field>
+            <field name="code">BEB006</field>
+            <field name="category_code">bebidas</field>
+            <field name="product_type">product</field>
+            <field name="list_price">1.25</field>
+            <field name="cost">0.85</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">6</field>
+        </record>
+        <record id="template_prod_pilsener" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Cerveza Pilsener</field>
+            <field name="code">BEB007</field>
+            <field name="category_code">bebidas</field>
+            <field name="product_type">product</field>
+            <field name="list_price">1.50</field>
+            <field name="cost">1.00</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">7</field>
+        </record>
+        <record id="template_prod_club_verde" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Cerveza Club Verde</field>
+            <field name="code">BEB008</field>
+            <field name="category_code">bebidas</field>
+            <field name="product_type">product</field>
+            <field name="list_price">1.75</field>
+            <field name="cost">1.20</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">8</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- PRODUCTS - SNACKS -->
+        <!-- ================================================================== -->
+        <record id="template_prod_doritos" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Doritos</field>
+            <field name="code">SNK001</field>
+            <field name="category_code">snacks</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.75</field>
+            <field name="cost">0.50</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="template_prod_ruffles" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Ruffles</field>
+            <field name="code">SNK002</field>
+            <field name="category_code">snacks</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.75</field>
+            <field name="cost">0.50</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">21</field>
+        </record>
+        <record id="template_prod_cheetos" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Cheetos</field>
+            <field name="code">SNK003</field>
+            <field name="category_code">snacks</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.50</field>
+            <field name="cost">0.30</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">22</field>
+        </record>
+        <record id="template_prod_chifles" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Chifles</field>
+            <field name="code">SNK004</field>
+            <field name="category_code">snacks</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.50</field>
+            <field name="cost">0.30</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">23</field>
+        </record>
+        <record id="template_prod_oreo" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Galleta Oreo</field>
+            <field name="code">SNK005</field>
+            <field name="category_code">snacks</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.50</field>
+            <field name="cost">0.30</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">24</field>
+        </record>
+        <record id="template_prod_manicho" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Barra Manicho</field>
+            <field name="code">SNK006</field>
+            <field name="category_code">snacks</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.50</field>
+            <field name="cost">0.30</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">25</field>
+        </record>
+        <record id="template_prod_jet" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Chocolates Jet</field>
+            <field name="code">SNK007</field>
+            <field name="category_code">snacks</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.25</field>
+            <field name="cost">0.15</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">26</field>
+        </record>
+        <record id="template_prod_bonbon" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Bon O Bon</field>
+            <field name="code">SNK008</field>
+            <field name="category_code">snacks</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.30</field>
+            <field name="cost">0.18</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">27</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- PRODUCTS - LACTEOS -->
+        <!-- ================================================================== -->
+        <record id="template_prod_leche_vita" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Leche Vita 1L</field>
+            <field name="code">LAC001</field>
+            <field name="category_code">lacteos</field>
+            <field name="product_type">product</field>
+            <field name="list_price">1.20</field>
+            <field name="cost">0.90</field>
+            <field name="tax_type">iva_0</field>
+            <field name="sequence">40</field>
+        </record>
+        <record id="template_prod_yogurt_toni" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Yogurt Toni</field>
+            <field name="code">LAC002</field>
+            <field name="category_code">lacteos</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.75</field>
+            <field name="cost">0.50</field>
+            <field name="tax_type">iva_0</field>
+            <field name="sequence">41</field>
+        </record>
+        <record id="template_prod_queso_fresco" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Queso Fresco lb</field>
+            <field name="code">LAC003</field>
+            <field name="category_code">lacteos</field>
+            <field name="product_type">product</field>
+            <field name="list_price">3.50</field>
+            <field name="cost">2.50</field>
+            <field name="tax_type">iva_0</field>
+            <field name="sequence">42</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- PRODUCTS - BASICOS -->
+        <!-- ================================================================== -->
+        <record id="template_prod_arroz_lb" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Arroz lb</field>
+            <field name="code">BAS001</field>
+            <field name="category_code">basicos</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.60</field>
+            <field name="cost">0.45</field>
+            <field name="tax_type">iva_0</field>
+            <field name="sequence">60</field>
+        </record>
+        <record id="template_prod_azucar_lb" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Azúcar lb</field>
+            <field name="code">BAS002</field>
+            <field name="category_code">basicos</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.55</field>
+            <field name="cost">0.40</field>
+            <field name="tax_type">iva_0</field>
+            <field name="sequence">61</field>
+        </record>
+        <record id="template_prod_aceite_favorita" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Aceite La Favorita 1L</field>
+            <field name="code">BAS003</field>
+            <field name="category_code">basicos</field>
+            <field name="product_type">product</field>
+            <field name="list_price">3.50</field>
+            <field name="cost">2.80</field>
+            <field name="tax_type">iva_0</field>
+            <field name="sequence">62</field>
+        </record>
+        <record id="template_prod_atun_vancamps" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Atún Van Camps</field>
+            <field name="code">BAS004</field>
+            <field name="category_code">basicos</field>
+            <field name="product_type">product</field>
+            <field name="list_price">1.80</field>
+            <field name="cost">1.30</field>
+            <field name="tax_type">iva_0</field>
+            <field name="sequence">63</field>
+        </record>
+        <record id="template_prod_huevos_30" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Huevos cubeta 30</field>
+            <field name="code">BAS005</field>
+            <field name="category_code">basicos</field>
+            <field name="product_type">product</field>
+            <field name="list_price">4.50</field>
+            <field name="cost">3.50</field>
+            <field name="tax_type">iva_0</field>
+            <field name="sequence">64</field>
+        </record>
+        <record id="template_prod_fideo" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Fideo Oriental</field>
+            <field name="code">BAS006</field>
+            <field name="category_code">basicos</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.80</field>
+            <field name="cost">0.55</field>
+            <field name="tax_type">iva_0</field>
+            <field name="sequence">65</field>
+        </record>
+        <record id="template_prod_pan_molde" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Pan de Molde</field>
+            <field name="code">BAS007</field>
+            <field name="category_code">basicos</field>
+            <field name="product_type">product</field>
+            <field name="list_price">2.50</field>
+            <field name="cost">1.80</field>
+            <field name="tax_type">iva_0</field>
+            <field name="sequence">66</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- PRODUCTS - LIMPIEZA -->
+        <!-- ================================================================== -->
+        <record id="template_prod_jabon_deja" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Jabón Deja</field>
+            <field name="code">LIM001</field>
+            <field name="category_code">limpieza</field>
+            <field name="product_type">product</field>
+            <field name="list_price">1.20</field>
+            <field name="cost">0.85</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">80</field>
+        </record>
+        <record id="template_prod_detergente_fab" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Detergente FAB</field>
+            <field name="code">LIM002</field>
+            <field name="category_code">limpieza</field>
+            <field name="product_type">product</field>
+            <field name="list_price">1.50</field>
+            <field name="cost">1.00</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">81</field>
+        </record>
+        <record id="template_prod_cloro" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Cloro Clorox</field>
+            <field name="code">LIM003</field>
+            <field name="category_code">limpieza</field>
+            <field name="product_type">product</field>
+            <field name="list_price">1.00</field>
+            <field name="cost">0.70</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">82</field>
+        </record>
+        <record id="template_prod_papel_familia" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Papel Higiénico Familia</field>
+            <field name="code">LIM004</field>
+            <field name="category_code">limpieza</field>
+            <field name="product_type">product</field>
+            <field name="list_price">0.50</field>
+            <field name="cost">0.35</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">83</field>
+        </record>
+        <record id="template_prod_pasta_colgate" model="l10n_ec.business.template.product">
+            <field name="template_id" ref="business_template_tienda_barrio"/>
+            <field name="name">Pasta Dental Colgate</field>
+            <field name="code">LIM005</field>
+            <field name="category_code">limpieza</field>
+            <field name="product_type">product</field>
+            <field name="list_price">2.00</field>
+            <field name="cost">1.40</field>
+            <field name="tax_type">iva_15</field>
+            <field name="sequence">84</field>
+        </record>
+
+    </data>
+</odoo>

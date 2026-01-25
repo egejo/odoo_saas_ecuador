@@ -93,6 +93,7 @@ Desarrollado por Somatech.dev
         "security/ir.model.access.csv",
         "wizard/l10n_ec_company_setup_wizard_views.xml",
         "data/l10n_ec_demo_data.xml",
+        "data/templates/tienda_barrio.xml",
     ],
     "images": ["static/description/banner.png"],
     "installable": True,
