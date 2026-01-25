@@ -4,117 +4,265 @@
     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 -->
 <odoo>
-    <!-- Wizard Form View -->
+    <!-- Wizard Form View - Multi-Step -->
     <record id="l10n_ec_company_setup_wizard_form" model="ir.ui.view">
         <field name="name">l10n_ec.company.setup.wizard.form</field>
         <field name="model">l10n_ec.company.setup.wizard</field>
         <field name="arch" type="xml">
             <form string="🇪🇨 Configurar Empresa Ecuador">
-                <div class="text-center mb-4">
-                    <h2>🇪🇨 Configuración de Empresa Ecuador</h2>
-                    <p class="text-muted">Ingrese el RUC y los datos se cargarán automáticamente del SRI</p>
-                </div>
+                <!-- Hidden step control -->
+                <field name="current_step" invisible="1"/>
+                <field name="sri_loaded" invisible="1"/>
 
-                <!-- Search Section -->
-                <group string="🔍 Buscar en SRI" name="search">
-                    <group>
-                        <field name="company_ruc" placeholder="Ingrese RUC de 13 dígitos..."
-                               class="oe_inline" style="font-size: 1.2em; font-weight: bold;"/>
-                    </group>
-                    <group>
-                        <field name="sri_message" readonly="1"
-                               class="oe_inline text-info"/>
-                    </group>
-                </group>
-
-                <!-- SRI Loaded Data -->
-                <group string="📋 Datos del Contribuyente (SRI)" name="company_info"
-                       invisible="not sri_loaded">
-                    <group>
-                        <field name="company_name" readonly="0"/>
-                        <field name="commercial_name"/>
-                        <field name="sri_estado" class="text-success"/>
-                        <field name="sri_tipo_contribuyente"/>
-                    </group>
-                    <group>
-                        <field name="sri_clase_contribuyente"/>
-                        <field name="sri_actividad"/>
-                        <field name="regimen_rimpe" invisible="not regimen_rimpe"/>
-                        <field name="sri_loaded" invisible="1"/>
-                    </group>
-                </group>
-
-                <!-- Address Section -->
-                <group string="📍 Dirección" name="address" invisible="not sri_loaded">
-                    <group>
-                        <field name="street"/>
-                        <field name="city"/>
-                        <field name="province"/>
-                    </group>
-                    <group>
-                        <field name="phone"/>
-                        <field name="email"/>
-                        <field name="website"/>
-                    </group>
-                </group>
-
-                <!-- SRI Settings -->
-                <group string="⚙️ Configuración Tributaria" name="sri_settings"
-                       invisible="not sri_loaded">
-                    <group>
-                        <field name="sri_environment" widget="radio"/>
-                        <field name="obligado_contabilidad"/>
-                    </group>
-                    <group>
-                        <field name="contribuyente_especial"
-                               invisible="not contribuyente_especial"/>
-                        <field name="agente_retencion"
-                               invisible="not agente_retencion"/>
-                    </group>
-                </group>
-
-                <!-- Demo Data Options -->
-                <group string="🧪 Datos de Demostración (Opcional)" name="demo_data"
-                       invisible="not sri_loaded">
-                    <group>
-                        <field name="install_demo_data"/>
-                    </group>
-                    <group invisible="not install_demo_data">
-                        <field name="demo_customers"/>
-                        <field name="demo_suppliers"/>
-                        <field name="demo_employees"/>
-                        <field name="demo_foreign"/>
-                    </group>
-                    <div class="text-muted" invisible="not install_demo_data" colspan="2">
-                        <small>
-                            <strong>Clientes:</strong> Natural, Sociedad, RIMPE, Especial, Exportador<br/>
-                            <strong>Proveedores:</strong> Profesional (10%), Comercial (1%), Arrendamiento (1.75%)<br/>
-                            <strong>Empleados:</strong> Sierra (Ago), Costa (Mar), Galápagos<br/>
-                            <strong>Extranjeros:</strong> USA, Colombia (ISD, Exportaciones)
-                        </small>
+                <!-- Step Progress Indicator -->
+                <div class="text-center mb-3">
+                    <div class="d-flex justify-content-center gap-2">
+                        <span invisible="current_step != 1" class="badge bg-primary">1. Empresa</span>
+                        <span invisible="current_step == 1" class="badge bg-secondary">1</span>
+                        <span invisible="current_step != 2" class="badge bg-primary">2. Cuentas</span>
+                        <span invisible="current_step == 2" class="badge bg-secondary">2</span>
+                        <span invisible="current_step != 3" class="badge bg-primary">3. Facturación</span>
+                        <span invisible="current_step == 3" class="badge bg-secondary">3</span>
+                        <span invisible="current_step != 4" class="badge bg-primary">4. Nómina</span>
+                        <span invisible="current_step == 4" class="badge bg-secondary">4</span>
+                        <span invisible="current_step != 5" class="badge bg-primary">5. Demo</span>
+                        <span invisible="current_step == 5" class="badge bg-secondary">5</span>
+                        <span invisible="current_step != 6" class="badge bg-primary">6. Confirmar</span>
+                        <span invisible="current_step == 6" class="badge bg-secondary">6</span>
                     </div>
-                </group>
-
-                <div class="alert alert-info" role="alert" invisible="not sri_loaded">
-                    <strong>💡 Datos cargados automáticamente del SRI.</strong>
-                    Puede modificar los campos si es necesario.
                 </div>
 
-                <div class="alert alert-warning" role="alert" invisible="sri_loaded">
-                    <strong>💡 Ingrese el RUC de su empresa</strong> para cargar los datos
-                    automáticamente desde el SRI.
+                <!-- ============================================================= -->
+                <!-- PASO 1: DATOS EMPRESA (SRI) -->
+                <!-- ============================================================= -->
+                <div invisible="current_step != 1">
+                    <div class="text-center mb-4">
+                        <h2>🇪🇨 Paso 1: Datos de la Empresa</h2>
+                        <p class="text-muted">Ingrese el RUC y los datos se cargarán automáticamente del SRI</p>
+                    </div>
+
+                    <group string="🔍 Buscar en SRI" name="search">
+                        <group>
+                            <field name="company_ruc" placeholder="Ingrese RUC de 13 dígitos..."
+                                   class="oe_inline" style="font-size: 1.2em; font-weight: bold;"/>
+                        </group>
+                        <group>
+                            <field name="sri_message" readonly="1" class="oe_inline text-info"/>
+                        </group>
+                    </group>
+
+                    <group string="📋 Datos del Contribuyente (SRI)" name="company_info"
+                           invisible="not sri_loaded">
+                        <group>
+                            <field name="company_name" readonly="0"/>
+                            <field name="commercial_name"/>
+                            <field name="sri_estado" class="text-success"/>
+                            <field name="sri_tipo_contribuyente"/>
+                        </group>
+                        <group>
+                            <field name="sri_clase_contribuyente"/>
+                            <field name="sri_actividad"/>
+                            <field name="regimen_rimpe" invisible="not regimen_rimpe"/>
+                        </group>
+                    </group>
+
+                    <group string="📍 Dirección" name="address" invisible="not sri_loaded">
+                        <group>
+                            <field name="street"/>
+                            <field name="city"/>
+                            <field name="province"/>
+                        </group>
+                        <group>
+                            <field name="phone"/>
+                            <field name="email"/>
+                            <field name="website"/>
+                        </group>
+                    </group>
+
+                    <group string="⚙️ Configuración Tributaria" name="sri_settings"
+                           invisible="not sri_loaded">
+                        <group>
+                            <field name="sri_environment" widget="radio"/>
+                            <field name="obligado_contabilidad"/>
+                        </group>
+                        <group>
+                            <field name="contribuyente_especial" invisible="not contribuyente_especial"/>
+                            <field name="agente_retencion" invisible="not agente_retencion"/>
+                        </group>
+                    </group>
                 </div>
 
+                <!-- ============================================================= -->
+                <!-- PASO 2: PLAN DE CUENTAS -->
+                <!-- ============================================================= -->
+                <div invisible="current_step != 2">
+                    <div class="text-center mb-4">
+                        <h2>📊 Paso 2: Plan de Cuentas</h2>
+                        <p class="text-muted">Seleccione el plan de cuentas para su empresa</p>
+                    </div>
+
+                    <group string="📋 Selección de Plan">
+                        <field name="chart_template" widget="radio"/>
+                    </group>
+
+                    <div class="alert alert-info">
+                        <strong>Plan NIIF PYMES</strong>: Recomendado para la mayoría de empresas.
+                        Incluye cuentas para IVA, Retenciones, IESS, Nómina pre-configuradas.
+                    </div>
+                </div>
+
+                <!-- ============================================================= -->
+                <!-- PASO 3: FACTURACIÓN ELECTRÓNICA -->
+                <!-- ============================================================= -->
+                <div invisible="current_step != 3">
+                    <div class="text-center mb-4">
+                        <h2>📄 Paso 3: Facturación Electrónica</h2>
+                        <p class="text-muted">Configure su certificado digital y punto de emisión</p>
+                    </div>
+
+                    <group string="🔐 Certificado Digital">
+                        <group>
+                            <field name="certificate_file" filename="certificate_filename"/>
+                            <field name="certificate_filename" invisible="1"/>
+                            <field name="certificate_password" password="True"/>
+                        </group>
+                        <group>
+                            <field name="certificate_valid" widget="boolean_toggle"/>
+                            <field name="certificate_owner" invisible="not certificate_valid"/>
+                            <field name="certificate_expiry" invisible="not certificate_valid"/>
+                        </group>
+                    </group>
+
+                    <group string="📍 Punto de Emisión">
+                        <group>
+                            <field name="establecimiento"/>
+                            <field name="punto_emision"/>
+                        </group>
+                        <group>
+                            <field name="secuencia_inicio"/>
+                        </group>
+                    </group>
+
+                    <div class="alert alert-warning" invisible="certificate_valid">
+                        <strong>⚠️ Certificado pendiente.</strong>
+                        Puede continuar sin certificado y configurarlo después en Ajustes.
+                    </div>
+                </div>
+
+                <!-- ============================================================= -->
+                <!-- PASO 4: NÓMINA / IESS -->
+                <!-- ============================================================= -->
+                <div invisible="current_step != 4">
+                    <div class="text-center mb-4">
+                        <h2>👥 Paso 4: Nómina e IESS</h2>
+                        <p class="text-muted">Configure los parámetros laborales de su empresa</p>
+                    </div>
+
+                    <group string="📍 Región y Período">
+                        <group>
+                            <field name="payroll_region" widget="radio"/>
+                        </group>
+                        <group>
+                            <field name="payroll_period" widget="radio"/>
+                            <field name="fondos_reserva_mode" widget="radio"/>
+                        </group>
+                    </group>
+
+                    <div class="alert alert-info">
+                        <strong>Décimo Cuarto:</strong> Sierra/Oriente = 15 Agosto, Costa/Galápagos = 15 Marzo<br/>
+                        <strong>IESS 2026:</strong> Personal 9.45%, Patronal 12.15%<br/>
+                        <strong>SBU 2026:</strong> $482.00
+                    </div>
+                </div>
+
+                <!-- ============================================================= -->
+                <!-- PASO 5: DATOS DEMO -->
+                <!-- ============================================================= -->
+                <div invisible="current_step != 5">
+                    <div class="text-center mb-4">
+                        <h2>🧪 Paso 5: Datos de Demostración</h2>
+                        <p class="text-muted">Instale datos de prueba para explorar el sistema</p>
+                    </div>
+
+                    <group string="📦 Datos Demo (Opcional)">
+                        <group>
+                            <field name="install_demo_data"/>
+                        </group>
+                        <group invisible="not install_demo_data">
+                            <field name="demo_customers"/>
+                            <field name="demo_suppliers"/>
+                            <field name="demo_employees"/>
+                            <field name="demo_foreign"/>
+                        </group>
+                    </group>
+
+                    <div class="alert alert-secondary" invisible="not install_demo_data">
+                        <strong>Partners Demo (34 total):</strong><br/>
+                        • 18 Clientes: Natural, Tercera Edad, Discapacidad, RIMPE, Especial, Fundación, ZEDE<br/>
+                        • 11 Proveedores: Profesional 10%, Comercial 1%, Inmuebles 1.75%, Notario, Banco<br/>
+                        • 3 Empleados: Sierra (Agosto), Costa (Marzo), Galápagos<br/>
+                        • 2 Extranjeros: USA (ISD 5%), Colombia (Exportación)
+                    </div>
+                </div>
+
+                <!-- ============================================================= -->
+                <!-- PASO 6: CONFIRMAR -->
+                <!-- ============================================================= -->
+                <div invisible="current_step != 6">
+                    <div class="text-center mb-4">
+                        <h2>✅ Paso 6: Confirmar Configuración</h2>
+                        <p class="text-muted">Revise y confirme la configuración de su empresa</p>
+                    </div>
+
+                    <group string="📋 Resumen de Configuración">
+                        <group>
+                            <field name="company_ruc" readonly="1"/>
+                            <field name="company_name" readonly="1"/>
+                            <field name="sri_environment" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="chart_template" readonly="1"/>
+                            <field name="certificate_valid" readonly="1"/>
+                            <field name="payroll_region" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <div class="alert alert-success">
+                        <strong>🎉 ¡Listo para configurar!</strong><br/>
+                        Al confirmar se aplicará toda la configuración a su empresa.
+                    </div>
+                </div>
+
+                <!-- ============================================================= -->
+                <!-- FOOTER: NAVIGATION BUTTONS -->
+                <!-- ============================================================= -->
                 <footer>
+                    <!-- Previous button (steps 2-6) -->
+                    <button name="action_previous_step"
+                            string="⬅️ Anterior"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="current_step == 1"/>
+
+                    <!-- Next button (steps 1-5) -->
+                    <button name="action_next_step"
+                            string="Siguiente ➡️"
+                            type="object"
+                            class="btn-primary"
+                            invisible="current_step == 6"/>
+
+                    <!-- Confirm button (step 6 only) -->
                     <button name="action_configure_company"
                             string="✅ Configurar Empresa"
                             type="object"
-                            class="btn-primary"
-                            invisible="not sri_loaded"/>
+                            class="btn-success"
+                            invisible="current_step != 6"/>
+
+                    <!-- Skip button (always visible) -->
                     <button name="action_skip_wizard"
                             string="Configurar Después"
                             type="object"
-                            class="btn-secondary"/>
+                            class="btn-link"/>
                 </footer>
             </form>
         </field>
