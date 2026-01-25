@@ -42,9 +42,7 @@ This module provides the base localization for Ecuador:
         "views/res_partner_views.xml",
         "views/res_company_views.xml",
     ],
-    "demo": [
-        "demo/l10n_ec_demo_partners.xml",
-    ],
+    "demo": [],  # Demo data is wizard-controlled, not auto-loaded
     "images": ["static/description/banner.png"],
     "installable": True,
     "application": False,

@@ -84,6 +84,33 @@ class L10nEcCompanySetupWizard(models.TransientModel):
 
     regimen_rimpe = fields.Char(string="Régimen RIMPE", readonly=True)
 
+    # Demo Data Options - User controlled
+    install_demo_data = fields.Boolean(
+        string="Instalar Datos de Demostración",
+        default=False,
+        help="Habilita la instalación de datos de prueba",
+    )
+    demo_customers = fields.Boolean(
+        string="Clientes Demo",
+        default=True,
+        help="Clientes de prueba: Natural, Sociedad, RIMPE, Especial, Exportador",
+    )
+    demo_suppliers = fields.Boolean(
+        string="Proveedores Demo",
+        default=True,
+        help="Proveedores para probar retenciones: Profesional, Comercial, Inmuebles",
+    )
+    demo_employees = fields.Boolean(
+        string="Empleados Demo",
+        default=True,
+        help="Empleados para nómina: Sierra, Costa, Galápagos",
+    )
+    demo_foreign = fields.Boolean(
+        string="Partners Extranjeros Demo",
+        default=True,
+        help="Partners del exterior para probar ISD y exportaciones",
+    )
+
     # Status
     sri_loaded = fields.Boolean(string="Datos Cargados del SRI", default=False)
     sri_message = fields.Char(string="Mensaje SRI", readonly=True)
@@ -234,6 +261,12 @@ class L10nEcCompanySetupWizard(models.TransientModel):
         if self.agente_retencion:
             IrConfigParam.set_param("l10n_ec.agente_retencion", self.agente_retencion)
 
+        # Install demo data if selected
+        demo_message = ""
+        if self.install_demo_data:
+            demo_count = self._install_demo_data(company)
+            demo_message = f" Se instalaron {demo_count} partners de demostración."
+
         # Success notification
         return {
             "type": "ir.actions.client",
@@ -241,9 +274,9 @@ class L10nEcCompanySetupWizard(models.TransientModel):
             "params": {
                 "title": _("✅ Empresa Configurada"),
                 "message": _(
-                    "La empresa %s ha sido configurada correctamente para Ecuador."
+                    "La empresa %s ha sido configurada correctamente para Ecuador.%s"
                 )
-                % self.company_name,
+                % (self.company_name, demo_message),
                 "type": "success",
                 "sticky": False,
                 "next": {
@@ -254,6 +287,111 @@ class L10nEcCompanySetupWizard(models.TransientModel):
                 },
             },
         }
+
+    def _install_demo_data(self, company):
+        """
+        Instala datos de demostración controlados por el usuario.
+        Carga partners de prueba según categorías seleccionadas.
+        """
+        import os
+        from lxml import etree
+
+        # Path to demo data file
+        demo_file = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            'l10n_ec_base', 'demo', 'l10n_ec_demo_partners.xml'
+        )
+
+        if not os.path.exists(demo_file):
+            return 0
+
+        # Define which xml_ids belong to each category
+        customer_ids = [
+            'demo_customer_natural', 'demo_customer_natural_obligado',
+            'demo_customer_sociedad', 'demo_customer_especial',
+            'demo_customer_rimpe_e', 'demo_customer_rimpe_p',
+            'demo_customer_final', 'demo_customer_exporter',
+        ]
+        supplier_ids = [
+            'demo_supplier_profesional', 'demo_supplier_comercial',
+            'demo_supplier_especial', 'demo_supplier_informal',
+            'demo_supplier_arrendador', 'demo_supplier_transporte',
+            'demo_supplier_gobierno',
+        ]
+        employee_ids = [
+            'demo_employee_sierra', 'demo_employee_costa',
+            'demo_employee_galapagos',
+        ]
+        foreign_ids = [
+            'demo_supplier_usa', 'demo_customer_colombia',
+        ]
+
+        # Build list of allowed xml_ids based on user selection
+        allowed_ids = []
+        if self.demo_customers:
+            allowed_ids.extend(customer_ids)
+        if self.demo_suppliers:
+            allowed_ids.extend(supplier_ids)
+        if self.demo_employees:
+            allowed_ids.extend(employee_ids)
+        if self.demo_foreign:
+            allowed_ids.extend(foreign_ids)
+
+        if not allowed_ids:
+            return 0
+
+        # Load via ir.model.data
+        count = 0
+        Partner = self.env['res.partner'].with_company(company)
+
+        # Parse XML and create records
+        tree = etree.parse(demo_file)
+        root = tree.getroot()
+
+        for record in root.findall(".//record[@model='res.partner']"):
+            xml_id = record.get('id')
+
+            # Skip if not in allowed categories
+            if xml_id not in allowed_ids:
+                continue
+
+            full_xml_id = f"l10n_ec_base.{xml_id}"
+
+            # Check if already exists
+            existing = self.env.ref(full_xml_id, raise_if_not_found=False)
+            if existing:
+                continue
+
+            # Build values from XML
+            vals = {'company_id': company.id}
+            for field in record.findall('field'):
+                fname = field.get('name')
+                fref = field.get('ref')
+                feval = field.get('eval')
+
+                if fref:
+                    ref_record = self.env.ref(fref, raise_if_not_found=False)
+                    vals[fname] = ref_record.id if ref_record else False
+                elif feval:
+                    vals[fname] = eval(feval)
+                else:
+                    vals[fname] = field.text
+
+            try:
+                partner = Partner.create(vals)
+                # Register xml_id
+                self.env['ir.model.data'].create({
+                    'name': xml_id,
+                    'module': 'l10n_ec_base',
+                    'model': 'res.partner',
+                    'res_id': partner.id,
+                    'noupdate': True,
+                })
+                count += 1
+            except Exception:
+                pass  # Skip if error
+
+        return count
 
     def action_skip_wizard(self):
         """Permite saltar el wizard y configurar después."""
