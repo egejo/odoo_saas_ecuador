@@ -38,5 +38,5 @@ Complete customs management for Ecuador (SENAE):
     ],
     'images': ['static/description/banner.png'],
     'installable': True,
-    'application': True,
+    'application': False,
 }

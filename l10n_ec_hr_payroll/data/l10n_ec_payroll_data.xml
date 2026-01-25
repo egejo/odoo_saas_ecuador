@@ -1,10 +1,211 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Ecuador Payroll Data 2026
+    =========================
+
+    Official Sources:
+    - SBU 2026: Ministerio de Trabajo, Acuerdo MDT-2025-227
+    - IESS: Resolución CD 655
+    - Código de Trabajo
+
+    All values configurable via ir.config_parameter
+-->
 <odoo>
-    <data noupdate="1">
-        <!-- Default SBU 2025 -->
-        <record id="l10n_ec_sbu_param" model="ir.config_parameter">
+    <data noupdate="0">
+
+        <!-- ================================================================
+             SALARIO BÁSICO UNIFICADO (SBU) 2026
+             Fuente: Ministerio de Trabajo MDT-2025-227
+        ================================================================= -->
+
+        <record id="l10n_ec_sbu_2026" model="ir.config_parameter">
             <field name="key">l10n_ec.sbu</field>
-            <field name="value">460.0</field>
+            <field name="value">482.00</field>
         </record>
+
+        <!-- ================================================================
+             IESS CONTRIBUTION RATES 2026
+             Fuente: IESS Resolución CD 655 / iess.gob.ec
+        ================================================================= -->
+
+        <!-- Aporte Personal (Empleado) - Sector Privado: 9.45% -->
+        <record id="l10n_ec_iess_personal" model="ir.config_parameter">
+            <field name="key">l10n_ec.iess_aporte_personal</field>
+            <field name="value">9.45</field>
+        </record>
+
+        <!-- Aporte Patronal (Empleador) - Sector Privado: 11.15% -->
+        <record id="l10n_ec_iess_patronal" model="ir.config_parameter">
+            <field name="key">l10n_ec.iess_aporte_patronal</field>
+            <field name="value">11.15</field>
+        </record>
+
+        <!-- Sector Público - Personal: 11.45% -->
+        <record id="l10n_ec_iess_personal_publico" model="ir.config_parameter">
+            <field name="key">l10n_ec.iess_aporte_personal_publico</field>
+            <field name="value">11.45</field>
+        </record>
+
+        <!-- Sector Público - Patronal (Estado): 9.15% -->
+        <record id="l10n_ec_iess_patronal_publico" model="ir.config_parameter">
+            <field name="key">l10n_ec.iess_aporte_patronal_publico</field>
+            <field name="value">9.15</field>
+        </record>
+
+        <!-- Afiliación Voluntaria: 17.60% -->
+        <record id="l10n_ec_iess_voluntario" model="ir.config_parameter">
+            <field name="key">l10n_ec.iess_aporte_voluntario</field>
+            <field name="value">17.60</field>
+        </record>
+
+        <!-- ================================================================
+             FONDOS DE RESERVA
+             8.33% del salario (equivalente a 1 mes por año)
+             Art. 196 Código de Trabajo
+        ================================================================= -->
+
+        <record id="l10n_ec_fondos_reserva" model="ir.config_parameter">
+            <field name="key">l10n_ec.fondos_reserva</field>
+            <field name="value">8.33</field>
+        </record>
+
+        <!-- ================================================================
+             DÉCIMO TERCER SUELDO
+             Equivalente a 1/12 del salario mensual
+             Art. 111 Código de Trabajo
+        ================================================================= -->
+
+        <record id="l10n_ec_decimo_tercero" model="ir.config_parameter">
+            <field name="key">l10n_ec.decimo_tercero_divisor</field>
+            <field name="value">12</field>
+        </record>
+
+        <!-- Fecha límite pago: 24 de diciembre -->
+        <record id="l10n_ec_decimo_tercero_fecha" model="ir.config_parameter">
+            <field name="key">l10n_ec.decimo_tercero_deadline</field>
+            <field name="value">12-24</field>
+        </record>
+
+        <!-- ================================================================
+             DÉCIMO CUARTO SUELDO (Bono Escolar)
+             = 1 SBU anual ($482 en 2026)
+             Art. 113 Código de Trabajo
+        ================================================================= -->
+
+        <!-- Fecha límite Sierra/Oriente: 15 agosto -->
+        <record id="l10n_ec_decimo_cuarto_sierra" model="ir.config_parameter">
+            <field name="key">l10n_ec.decimo_cuarto_deadline_sierra</field>
+            <field name="value">08-15</field>
+        </record>
+
+        <!-- Fecha límite Costa/Galápagos: 15 marzo -->
+        <record id="l10n_ec_decimo_cuarto_costa" model="ir.config_parameter">
+            <field name="key">l10n_ec.decimo_cuarto_deadline_costa</field>
+            <field name="value">03-15</field>
+        </record>
+
+        <!-- ================================================================
+             UTILIDADES
+             15% de utilidades al trabajador
+             Art. 97 Código de Trabajo
+        ================================================================= -->
+
+        <!-- 10% dividido para todos los trabajadores -->
+        <record id="l10n_ec_utilidades_general" model="ir.config_parameter">
+            <field name="key">l10n_ec.utilidades_porcentaje_general</field>
+            <field name="value">10</field>
+        </record>
+
+        <!-- 5% proporcional a cargas familiares -->
+        <record id="l10n_ec_utilidades_cargas" model="ir.config_parameter">
+            <field name="key">l10n_ec.utilidades_porcentaje_cargas</field>
+            <field name="value">5</field>
+        </record>
+
+        <!-- Fecha límite: 15 de abril -->
+        <record id="l10n_ec_utilidades_deadline" model="ir.config_parameter">
+            <field name="key">l10n_ec.utilidades_deadline</field>
+            <field name="value">04-15</field>
+        </record>
+
+        <!-- ================================================================
+             VACACIONES
+             15 días laborables después de 1 año
+             +1 día adicional por cada año después de 5 años (máx 30 días)
+             Art. 69 Código de Trabajo
+        ================================================================= -->
+
+        <record id="l10n_ec_vacaciones_dias" model="ir.config_parameter">
+            <field name="key">l10n_ec.vacaciones_dias_base</field>
+            <field name="value">15</field>
+        </record>
+
+        <record id="l10n_ec_vacaciones_max" model="ir.config_parameter">
+            <field name="key">l10n_ec.vacaciones_dias_max</field>
+            <field name="value">30</field>
+        </record>
+
+        <!-- ================================================================
+             HORAS EXTRAS Y SUPLEMENTARIAS
+             Art. 55 Código de Trabajo
+        ================================================================= -->
+
+        <!-- Horas suplementarias (hasta 4h/día): 50% recargo -->
+        <record id="l10n_ec_horas_suplementarias" model="ir.config_parameter">
+            <field name="key">l10n_ec.horas_suplementarias_recargo</field>
+            <field name="value">50</field>
+        </record>
+
+        <!-- Horas extraordinarias (fines de semana/feriados): 100% recargo -->
+        <record id="l10n_ec_horas_extraordinarias" model="ir.config_parameter">
+            <field name="key">l10n_ec.horas_extraordinarias_recargo</field>
+            <field name="value">100</field>
+        </record>
+
+        <!-- Trabajo nocturno: 25% recargo (19h00-06h00) -->
+        <record id="l10n_ec_trabajo_nocturno" model="ir.config_parameter">
+            <field name="key">l10n_ec.trabajo_nocturno_recargo</field>
+            <field name="value">25</field>
+        </record>
+
+        <!-- ================================================================
+             INDEMNIZACIONES
+             Art. 188 Código de Trabajo - Despido Intempestivo
+        ================================================================= -->
+
+        <!-- Hasta 3 años: 3 meses -->
+        <record id="l10n_ec_despido_hasta_3" model="ir.config_parameter">
+            <field name="key">l10n_ec.despido_meses_hasta_3_años</field>
+            <field name="value">3</field>
+        </record>
+
+        <!-- Más de 3 años: 1 mes por año, máximo 25 meses -->
+        <record id="l10n_ec_despido_max" model="ir.config_parameter">
+            <field name="key">l10n_ec.despido_meses_max</field>
+            <field name="value">25</field>
+        </record>
+
+        <!-- Desahucio: 25% de la última remuneración por año -->
+        <record id="l10n_ec_desahucio" model="ir.config_parameter">
+            <field name="key">l10n_ec.desahucio_porcentaje</field>
+            <field name="value">25</field>
+        </record>
+
+        <!-- ================================================================
+             LICENCIAS DE MATERNIDAD/PATERNIDAD
+        ================================================================= -->
+
+        <!-- Maternidad: 12 semanas (84 días) -->
+        <record id="l10n_ec_licencia_maternidad" model="ir.config_parameter">
+            <field name="key">l10n_ec.licencia_maternidad_dias</field>
+            <field name="value">84</field>
+        </record>
+
+        <!-- Paternidad: 10 días -->
+        <record id="l10n_ec_licencia_paternidad" model="ir.config_parameter">
+            <field name="key">l10n_ec.licencia_paternidad_dias</field>
+            <field name="value">10</field>
+        </record>
+
     </data>
 </odoo>

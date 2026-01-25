@@ -8,12 +8,8 @@ import base64
 # SRI 2026 CONFIGURACIÓN
 # Todos los valores regulatorios se leen de ir.config_parameter
 # para permitir actualizaciones sin modificar código.
+# NO HARDCODED DEFAULTS - System must be properly configured.
 # =========================================================================
-
-# Defaults (usados si no hay configuración)
-DEFAULT_CF_RUC = '9999999999999'
-DEFAULT_CF_LIMIT = 50.00
-DEFAULT_ANNULMENT_DAY = 7
 
 
 class AccountMove(models.Model):
@@ -47,22 +43,32 @@ class AccountMove(models.Model):
 
     def _get_cf_ruc(self):
         """Retorna el RUC de Consumidor Final desde configuración."""
-        return self.env['ir.config_parameter'].sudo().get_param(
-            'l10n_ec.consumidor_final_ruc', DEFAULT_CF_RUC
-        )
+        param = self.env['ir.config_parameter'].sudo().get_param('l10n_ec.consumidor_final_ruc')
+        if not param:
+            raise ValidationError(_(
+                "Missing configuration: l10n_ec.consumidor_final_ruc\n"
+                "Please install l10n_ec module or configure System Parameters."
+            ))
+        return param
 
     def _get_cf_limit(self):
         """Retorna el límite de factura CF desde configuración."""
-        param = self.env['ir.config_parameter'].sudo().get_param(
-            'l10n_ec.consumidor_final_limit', str(DEFAULT_CF_LIMIT)
-        )
+        param = self.env['ir.config_parameter'].sudo().get_param('l10n_ec.consumidor_final_limit')
+        if not param:
+            raise ValidationError(_(
+                "Missing configuration: l10n_ec.consumidor_final_limit\n"
+                "Please install l10n_ec module or configure System Parameters."
+            ))
         return float(param)
 
     def _get_annulment_day(self):
         """Retorna el día límite para anulación desde configuración."""
-        param = self.env['ir.config_parameter'].sudo().get_param(
-            'l10n_ec.annulment_day_limit', str(DEFAULT_ANNULMENT_DAY)
-        )
+        param = self.env['ir.config_parameter'].sudo().get_param('l10n_ec.annulment_day_limit')
+        if not param:
+            raise ValidationError(_(
+                "Missing configuration: l10n_ec.annulment_day_limit\n"
+                "Please install l10n_ec module or configure System Parameters."
+            ))
         return int(param)
 
     @api.constrains('amount_total', 'partner_id', 'move_type')

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="report_form_107">
+            <t t-call="web.html_container">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>FORMULARIO 107 - RDEP (Draft)</h2>
+                        <p><strong>Employee:</strong> <span t-esc="o.employee_id.name"/></p>
+                        <p><strong>Year:</strong> <span t-esc="year"/></p>
+
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Concept</th>
+                                    <th>Casillero</th>
+                                    <th class="text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Sueldos y Salarios</td>
+                                    <td>301</td>
+                                    <td class="text-right"><span t-esc="o.wage * 12" t-options='{"widget": "monetary", "display_currency": o.env.company.currency_id}'/></td>
+                                </tr>
+                                <tr>
+                                    <td>Horas Extras y Suplementarias</td>
+                                    <td>303</td>
+                                    <td class="text-right"><span t-esc="(o.overtime_hours + o.supplementary_hours) * 12" t-options='{"widget": "monetary", "display_currency": o.env.company.currency_id}'/></td>
+                                </tr>
+                                <tr>
+                                    <td>Décimo Tercero</td>
+                                    <td>311</td>
+                                    <td class="text-right"><span t-esc="o.thirteenth * 12" t-options='{"widget": "monetary", "display_currency": o.env.company.currency_id}'/></td>
+                                </tr>
+                                <tr>
+                                    <td>Décimo Cuarto</td>
+                                    <td>313</td>
+                                    <td class="text-right"><span t-esc="o.fourteenth * 12" t-options='{"widget": "monetary", "display_currency": o.env.company.currency_id}'/></td>
+                                </tr>
+                                <tr>
+                                    <td>Fondos Reserva</td>
+                                    <td>315</td>
+                                    <td class="text-right"><span t-esc="o.reserve_funds * 12" t-options='{"widget": "monetary", "display_currency": o.env.company.currency_id}'/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Total Ingresos</strong></td>
+                                    <td>349</td>
+                                    <td class="text-right"><strong><span t-esc="o.total_income * 12" t-options='{"widget": "monetary", "display_currency": o.env.company.currency_id}'/></strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Aporte Personal IESS</td>
+                                    <td>351</td>
+                                    <td class="text-right"><span t-esc="o.iess_personal * 12" t-options='{"widget": "monetary", "display_currency": o.env.company.currency_id}'/></td>
+                                </tr>
+                                 <tr>
+                                    <td>Impuesto Renta Asumido</td>
+                                    <td>381</td>
+                                    <td class="text-right"><span t-esc="o.income_tax * 12" t-options='{"widget": "monetary", "display_currency": o.env.company.currency_id}'/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p class="text-muted">
+                            <em>Note: This draft assumes annualized figures based on current payslip. Final F107 must aggregate actual historical payslips.</em>
+                        </p>
+                    </div>
+                </t>
+            </t>
+        </template>
+
+        <record id="action_report_form_107" model="ir.actions.report">
+            <field name="name">Form 107 (Draft)</field>
+            <field name="model">l10n_ec.payslip</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">l10n_ec_hr_payroll.report_form_107</field>
+            <field name="report_file">l10n_ec_hr_payroll.report_form_107</field>
+            <field name="binding_model_id" ref="model_l10n_ec_payslip"/>
+            <field name="binding_type">report</field>
+        </record>
+    </data>
+</odoo>

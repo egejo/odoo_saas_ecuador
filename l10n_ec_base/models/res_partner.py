@@ -21,6 +21,65 @@ class ResPartner(models.Model):
 
     l10n_ec_related_party = fields.Boolean("Related Party (ATS)", default=False)
 
+    # =========================================================================
+    # DE 045-2025: UAF Certificate for Government Contractors
+    # =========================================================================
+    l10n_ec_uaf_certificate = fields.Binary(
+        string="Certificado UAF",
+        attachment=True,
+        help="Certificado de la Unidad de Análisis Financiero (UAF). "
+             "Requerido por DE 045-2025 para contratistas del Estado."
+    )
+    l10n_ec_uaf_certificate_filename = fields.Char(string="UAF Filename")
+    l10n_ec_uaf_certificate_date = fields.Date(
+        string="Fecha Emisión UAF",
+        help="Fecha de emisión del certificado UAF"
+    )
+    l10n_ec_uaf_certificate_expiry = fields.Date(
+        string="Fecha Vencimiento UAF",
+        help="Fecha de vencimiento del certificado UAF"
+    )
+    l10n_ec_uaf_valid = fields.Boolean(
+        string="UAF Válido",
+        compute="_compute_uaf_valid",
+        store=True,
+        help="Indica si el certificado UAF está vigente"
+    )
+    l10n_ec_government_contractor = fields.Boolean(
+        string="Contratista del Estado",
+        default=False,
+        help="Marcar si es proveedor de entidades gubernamentales"
+    )
+
+    @api.depends('l10n_ec_uaf_certificate', 'l10n_ec_uaf_certificate_expiry')
+    def _compute_uaf_valid(self):
+        """Computes if UAF certificate is valid (exists and not expired)."""
+        from datetime import date
+        today = date.today()
+        for partner in self:
+            partner.l10n_ec_uaf_valid = False
+            if partner.l10n_ec_uaf_certificate:
+                if partner.l10n_ec_uaf_certificate_expiry:
+                    partner.l10n_ec_uaf_valid = partner.l10n_ec_uaf_certificate_expiry >= today
+                else:
+                    # Has certificate but no expiry = assume valid
+                    partner.l10n_ec_uaf_valid = True
+
+    @api.constrains('l10n_ec_government_contractor', 'l10n_ec_uaf_certificate')
+    def _check_uaf_required(self):
+        """
+        DE 045-2025: Government contractors MUST have valid UAF certificate.
+        """
+        for partner in self:
+            if partner.l10n_ec_government_contractor and not partner.l10n_ec_uaf_certificate:
+                raise ValidationError(_(
+                    "DE 045-2025: Contratistas del Estado deben tener un "
+                    "Certificado UAF válido.\\n\\n"
+                    "Proveedor: %s\\n"
+                    "Por favor, adjunte el certificado UAF antes de continuar."
+                ) % partner.name)
+
+
     @api.constrains('vat', 'l10n_ec_identifier_type', 'country_id')
     def _check_l10n_ec_vat(self):
         """

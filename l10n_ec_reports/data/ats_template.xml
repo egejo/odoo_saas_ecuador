@@ -30,7 +30,7 @@
                             <baseImponible t-out="format_float(p.get('baseImponible', 0.0), 2)"/>
                             <baseImpGrav t-out="format_float(p.get('baseImpGrav', 0.0), 2)"/>
                             <baseImpExe t-out="0.00"/>
-                            <montoIce t-out="0.00"/>
+                            <montoIce t-out="format_float(p.get('montoIce', 0.0), 2)"/>
                             <montoIva t-out="format_float(p.get('montoIva', 0.0), 2)"/>
 
                             <!-- RETENCION (AIR) -->

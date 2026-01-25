@@ -20,7 +20,9 @@
                         <field name="xml_data" filename="xml_filename" string="Download ATS"/>
                     </group>
                     <footer>
-                        <button string="Generate" name="action_generate_ats" type="object" class="btn-primary"/>
+                        <button string="Generate ATS XML" name="action_generate_ats" type="object" class="btn-primary"/>
+                        <button string="Print Form 103 (Draft)" name="action_print_form103" type="object" class="btn-secondary"/>
+                        <button string="Print Form 104 (Draft)" name="action_print_form104" type="object" class="btn-secondary"/>
                         <button string="Close" class="btn-secondary" special="cancel"/>
                     </footer>
                 </form>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_l10n_ec_gastos_personales_wizard_form" model="ir.ui.view">
+        <field name="name">l10n_ec.gastos.personales.wizard.form</field>
+        <field name="model">l10n_ec.gastos.personales.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Proyección Gastos Personales (Formulario GP)">
+                <sheet>
+                    <group>
+                        <field name="employee_id"/>
+                        <field name="year"/>
+                    </group>
+                    <group string="Detalle de Gastos (Proyección Anual)">
+                        <group>
+                            <field name="housing"/>
+                            <field name="health"/>
+                            <field name="education"/>
+                        </group>
+                        <group>
+                            <field name="food"/>
+                            <field name="clothing"/>
+                            <field name="tourism"/>
+                        </group>
+                    </group>
+                    <group class="oe_subtotal_footer oe_right">
+                        <field name="total_projected" class="oe_subtotal_footer_separator"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Apply to Contract" name="action_apply_to_contract" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_l10n_ec_gastos_personales" model="ir.actions.act_window">
+        <field name="name">Proyección Gastos Personales</field>
+        <field name="res_model">l10n_ec.gastos.personales.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_l10n_ec_gastos_personales"
+              name="Formulario GP (Gastos)"
+              parent="hr.menu_hr_employee_payroll"
+              action="action_l10n_ec_gastos_personales"
+              sequence="50"/>
+</odoo>

@@ -1,0 +1,11 @@
+id,code,name,type,specific_rate,ad_valorem_rate
+ice_3011,3011,Cigarrillos Rubios,specific,0.16,0.0
+ice_3031,3031,Alcohol (Litros Puros),specific_content,10.30,0.0
+ice_3041,3041,Cerveza Industrial,specific_content,13.48,0.0
+ice_3043,3043,Cerveza Artesanal,specific_content,1.54,0.0
+ice_3680,3680,Fundas Plásticas,specific,0.08,0.0
+ice_3053,3053,Bebidas Azucaradas (g/100g),specific_content,0.18,0.0
+ice_3072,3072,Perfumes y Aguas de Tocador,ad_valorem,0.0,20.0
+ice_3092,3092,Vehículos Motorizados,ad_valorem,0.0,15.0
+ice_3650,3650,Videojuegos,ad_valorem,0.0,35.0
+ice_3610,3610,Armas de Fuego,ad_valorem,0.0,300.0

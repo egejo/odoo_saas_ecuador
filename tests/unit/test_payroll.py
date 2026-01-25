@@ -35,7 +35,7 @@ class TestPayroll(TransactionCase):
     def test_iess_employer_configurable(self):
         """[PAY-03] IESS patronal uses ir.config_parameter."""
         rate = float(self.ICP.get_param('l10n_ec.iess_aporte_patronal', '0'))
-        self.assertEqual(rate, 12.15, "IESS patronal should be 12.15%")
+        self.assertEqual(rate, 11.15, "IESS patronal should be 11.15% (base rate, total with SECAP+IECE = 12.15%)")
 
     def test_sbu_can_be_changed(self):
         """[PAY-04] SBU can be updated without code change."""

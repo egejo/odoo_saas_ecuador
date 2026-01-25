@@ -43,22 +43,26 @@ class L10nEcImportDau(models.Model):
 
     @api.depends('line_ids.ad_valorem_amount', 'cif_value')
     def _compute_taxes(self):
+        ICP = self.env['ir.config_parameter'].sudo()
+
+        # Get rates from config - NO HARDCODED FALLBACKS
+        fodinfa_param = ICP.get_param('l10n_ec.fodinfa')
+        iva_param = ICP.get_param('l10n_ec.customs_iva')
+
+        if not fodinfa_param or not iva_param:
+            raise ValueError(
+                "Missing customs configuration. "
+                "Please configure l10n_ec.fodinfa and l10n_ec.customs_iva in System Parameters."
+            )
+
+        fodinfa_rate = float(fodinfa_param)
+        iva_rate = float(iva_param)
+
         for rec in self:
-            # FODINFA and IVA from Parameters
-            fodinfa_param = self.env['ir.config_parameter'].sudo().get_param('l10n_ec.fodinfa', '0.005')
-            iva_param = self.env['ir.config_parameter'].sudo().get_param('l10n_ec.customs_iva', '0.15')
-
-            try:
-                fodinfa_rate = float(fodinfa_param)
-                iva_rate = float(iva_param)
-            except ValueError:
-                fodinfa_rate = 0.005
-                iva_rate = 0.15
-
             rec.total_ad_valorem = sum(line.ad_valorem_amount for line in rec.line_ids)
             rec.total_fodinfa = rec.cif_value * fodinfa_rate
 
-            # Simplified IVA Base = CIF + AdValorem + Fodinfa
+            # IVA Base = CIF + AdValorem + Fodinfa
             base_iva = rec.cif_value + rec.total_ad_valorem + rec.total_fodinfa
             rec.total_iva = base_iva * iva_rate
 

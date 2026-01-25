@@ -39,6 +39,17 @@ Desarrollado por Somatech.dev
     'website': 'https://github.com/somatechlat/odoo_saas_ecuador',
     'license': 'LGPL-3',
     'depends': [
+        # === Core Business Modules (auto-installed) ===
+        'sale_management',      # Sales
+        'purchase',             # Purchase
+        'stock',                # Inventory
+        'point_of_sale',        # POS
+        'pos_restaurant',       # Restaurant POS
+        'account',              # Accounting
+        'hr',                   # HR
+        'hr_contract',          # Contracts
+        'contacts',             # Contacts
+        # === Ecuador Localization Modules ===
         'l10n_ec_base',
         'l10n_ec_edi',
         'l10n_ec_sri',
@@ -50,8 +61,10 @@ Desarrollado por Somatech.dev
         'l10n_ec_customs',
     ],
     'data': [
+        'security/l10n_ec_security.xml',
         'security/ir.model.access.csv',
         'wizard/l10n_ec_company_setup_wizard_views.xml',
+        'data/l10n_ec_demo_data.xml',
     ],
     'images': ['static/description/banner.png'],
     'installable': True,

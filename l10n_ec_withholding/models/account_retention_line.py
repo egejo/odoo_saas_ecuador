@@ -15,9 +15,13 @@ class AccountRetentionLine(models.Model):
         ('6', 'ISD')
     ], string='Impuesto', required=True)
 
-    tax_code = fields.Char(string='Código Retención', help="Tabla 19 (e.g. 303) or Tabla 21 (e.g. 9)", required=True)
+    tax_id = fields.Many2one('l10n_ec.withholding.tax', string='Tax Code', required=True, domain="[('type', '=', tax_type)]")
+
+    # Related fields for ease of use/display
+    tax_code = fields.Char(related='tax_id.code', string='Código', store=True, readonly=True)
+    percentage = fields.Float(related='tax_id.percentage', string='Porcentaje %', store=True, readonly=True)
+
     base = fields.Monetary(string='Base Imponible', required=True)
-    percentage = fields.Float(string='Porcentaje %', required=True)
     amount = fields.Monetary(string='Valor Retenido', required=True, compute='_compute_amount', store=True)
 
     # Document Sustento (if multi-invoice retention allowed, usually 1-to-1 but data structure supports N)

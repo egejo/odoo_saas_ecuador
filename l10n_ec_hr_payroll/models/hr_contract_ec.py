@@ -16,3 +16,14 @@ class HrContract(models.Model):
 
     # SRI Projections
     l10n_ec_projected_expenses = fields.Float("Projected Personal Expenses (SRI Encuesta)")
+
+    # Jubilación Patronal (Employer Retirement)
+    l10n_ec_jubilacion_patronal = fields.Boolean(
+        "Apply Jubilación Patronal",
+        default=False,
+        help="Check if this employee is eligible for Employer Retirement provision (usually >10 years)."
+    )
+    l10n_ec_jubilacion_accumulated = fields.Float(
+        "Accumulated Jubilación Liability",
+        help="Total actuarial calculation of liability to date."
+    )

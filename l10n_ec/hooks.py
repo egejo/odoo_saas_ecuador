@@ -64,19 +64,20 @@ def post_init_hook(env):
         _logger.warning(f"⚠️ Error configurando usuario: {e}")
 
     # =========================================================================
-    # 4. CONFIGURAR PARÁMETROS DEL SISTEMA
+    # 4. ENSURE CRITICAL PARAMETERS EXIST (from XML data - no hardcoding)
+    # XML data files (l10n_ec_sri_config.xml, l10n_ec_payroll_data.xml) are authoritative.
+    # This only logs what was loaded, does NOT override.
     # =========================================================================
     try:
         IrConfigParam = env['ir.config_parameter'].sudo()
-        IrConfigParam.set_param('l10n_ec.sbu', '482')
-        IrConfigParam.set_param('l10n_ec.sbu_year', '2026')
-        IrConfigParam.set_param('l10n_ec.iess_personal', '9.45')
-        IrConfigParam.set_param('l10n_ec.iess_patronal', '12.15')
-        IrConfigParam.set_param('l10n_ec.iva_rate', '15')
-        IrConfigParam.set_param('l10n_ec.consumidor_final_limit', '50')
-        _logger.info("✅ Parámetros del sistema configurados (SBU $482, IVA 15%)")
+        # Log the loaded values from XML files (for verification only)
+        sbu = IrConfigParam.get_param('l10n_ec.sbu', False)
+        iva = IrConfigParam.get_param('l10n_ec.iva_rate', False)
+        iess_p = IrConfigParam.get_param('l10n_ec.iess_aporte_personal', False)
+        iess_e = IrConfigParam.get_param('l10n_ec.iess_aporte_patronal', False)
+        _logger.info(f"✅ Parámetros cargados desde XML: SBU={sbu}, IVA={iva}%, IESS Personal={iess_p}%, IESS Patronal={iess_e}%")
     except Exception as e:
-        _logger.warning(f"⚠️ Error configurando parámetros: {e}")
+        _logger.warning(f"⚠️ Error verificando parámetros: {e}")
 
     # =========================================================================
     # 5. ACTIVAR MONEDA USD

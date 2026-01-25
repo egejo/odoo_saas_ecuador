@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_product_template_form_ice" model="ir.ui.view">
+        <field name="name">product.template.form.ice</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="account.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='taxes_id']" position="after">
+                <group string="Ecuador ICE" name="l10n_ec_ice">
+                    <field name="l10n_ec_ice_category_id"/>
+                    <field name="l10n_ec_ice_unit_content" invisible="not l10n_ec_ice_category_id"/>
+                    <field name="l10n_ec_pvp" invisible="not l10n_ec_ice_category_id"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

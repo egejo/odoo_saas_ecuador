@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Portal Breadcrumb -->
+    <template id="portal_my_home_menu_payslip" name="Portal layout : Payslips" inherit_id="portal.portal_breadcrumbs" priority="20">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'payslip' or payslip" t-attf-class="breadcrumb-item #{'active' if not payslip else ''}">
+                <a t-if="payslip" t-attf-href="/my/payslips?{{ keep_query() }}">Payslips</a>
+                <t t-else="">Payslips</t>
+            </li>
+            <li t-if="payslip" class="breadcrumb-item active">
+                <span t-field="payslip.name"/>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_home_menu_loan" name="Portal layout : Loans" inherit_id="portal.portal_breadcrumbs" priority="25">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'loan'" class="breadcrumb-item active">
+                Loans
+            </li>
+        </xpath>
+    </template>
+
+    <!-- Portal Home Entry -->
+    <template id="portal_my_home_payslip" name="Show Payslips" inherit_id="portal.portal_my_home" customize_show="True" priority="20">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+             <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Payslips</t>
+                <t t-set="url" t-value="'/my/payslips'"/>
+                <t t-set="placeholder_count" t-value="'payslip_count'"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_my_home_loan" name="Show Loans" inherit_id="portal.portal_my_home" customize_show="True" priority="25">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+             <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Loans</t>
+                <t t-set="url" t-value="'/my/loans'"/>
+                <t t-set="placeholder_count" t-value="'loan_count'"/>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- List View: Payslips -->
+    <template id="portal_my_payslips">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <t t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Reference</th>
+                        <th>Period</th>
+                        <th class="text-right">Net Pay</th>
+                        <th>State</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="payslips" t-as="payslip">
+                        <tr>
+                            <td><a t-attf-href="/my/payslips/#{payslip.id}"><t t-esc="payslip.name"/></a></td>
+                            <td><span t-field="payslip.date_start"/> - <span t-field="payslip.date_end"/></td>
+                            <td class="text-right"><span t-field="payslip.net_wage" t-options='{"widget": "monetary", "display_currency": payslip.employee_id.company_id.currency_id}'/></td>
+                            <td><span t-field="payslip.state"/></td>
+                        </tr>
+                    </t>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+    <!-- Detail View: Payslip -->
+    <template id="portal_my_payslip_detail">
+        <t t-call="portal.portal_layout">
+            <t t-call="portal.portal_record_layout">
+                <t t-set="card_header">
+                    <div class="row no-gutters">
+                        <div class="col-12">
+                            <h5 class="d-flex mb-1 mb-md-0 row">
+                                <span t-field="payslip.name" class="col-9 text-truncate"/>
+                                <div class="col-3 text-right">
+                                    <small class="text-right">Status:</small>
+                                    <span t-field="payslip.state" class=" badge badge-pill badge-info"/>
+                                </div>
+                            </h5>
+                        </div>
+                    </div>
+                </t>
+                <t t-set="card_body">
+                    <div class="row mb-4">
+                        <div class="col-12 col-md-6">
+                            <strong>Period:</strong> <span t-field="payslip.date_start"/> to <span t-field="payslip.date_end"/>
+                        </div>
+                        <div class="col-12 col-md-6 text-right">
+                            <strong>Net Pay:</strong> <span t-field="payslip.net_wage" t-options='{"widget": "monetary", "display_currency": payslip.company_id.currency_id}'/>
+                        </div>
+                    </div>
+                    <!-- Detailed Breakdown -->
+                    <div class="row">
+                        <div class="col-6">
+                            <h6>Earnings</h6>
+                            <ul>
+                                <li>Wage: <span t-field="payslip.wage"/></li>
+                                <li>Overtime: <span t-field="payslip.overtime_hours"/> hours</li>
+                            </ul>
+                        </div>
+                         <div class="col-6">
+                            <h6>Deductions</h6>
+                            <ul>
+                                <li>IESS: <span t-field="payslip.iess_personal"/></li>
+                                <li>Tax: <span t-field="payslip.income_tax"/></li>
+                                <li>Loans: <span t-field="payslip.loan_deduction"/></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row mt-5">
+                       <div class="col-12 text-center">
+                           <a class="btn btn-primary" t-attf-href="/report/pdf/l10n_ec_hr_payroll.report_payslip/#{payslip.id}" download="true">
+                               <i class="fa fa-download"/> Download PDF
+                           </a>
+                       </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- List View: Loans -->
+    <template id="portal_my_loans">
+        <t t-call="portal.portal_layout">
+            <t t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Description</th>
+                        <th>Type</th>
+                        <th class="text-right">Amount</th>
+                        <th>State</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="loans" t-as="loan">
+                        <tr>
+                            <td><t t-esc="loan.name"/></td>
+                            <td><span t-field="loan.loan_type"/></td>
+                            <td class="text-right"><span t-field="loan.amount_total"/></td>
+                            <td><span t-field="loan.state"/></td>
+                        </tr>
+                    </t>
+                </tbody>
+            </t>
+        </t>
+    </template>
+</odoo>

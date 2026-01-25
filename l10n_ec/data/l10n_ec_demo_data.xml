@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    CANNACHAIN S.A.S. - Ecuador Demo Data
+    =====================================
+    RUC: 1793125212001
+    Provincia: Pichincha
+    Estado: ACTIVO
+
+    Copyright 2026 Somatech.dev
+-->
+<odoo>
+    <data noupdate="0">
+
+        <!-- ================================================================
+             COMPANY CONFIGURATION - CANNACHAIN S.A.S.
+             ================================================================ -->
+
+        <!-- Update main company -->
+        <function model="res.company" name="write">
+            <value eval="[ref('base.main_company')]"/>
+            <value eval="{
+                'name': 'CANNACHAIN S.A.S.',
+                'vat': '1793125212001',
+                'street': 'Av. República E7-197 y Almagro',
+                'city': 'Quito',
+                'zip': '170135',
+                'phone': '+593 2 290 1234',
+                'email': 'info@cannachain.ec',
+                'website': 'https://cannachain.ec',
+            }"/>
+        </function>
+
+        <!-- ================================================================
+             ECUADORIAN CUSTOMERS (Valid RUC format)
+             ================================================================ -->
+
+        <!-- Proveedor - Sociedad -->
+        <record id="partner_importadora_xyz" model="res.partner">
+            <field name="name">IMPORTADORA XYZ CIA. LTDA.</field>
+            <field name="vat">1792345678001</field>
+            <field name="company_type">company</field>
+            <field name="street">Av. Amazonas N35-123</field>
+            <field name="city">Quito</field>
+            <field name="country_id" ref="base.ec"/>
+            <field name="phone">+593 2 345 6789</field>
+            <field name="email">ventas@importadoraxyz.ec</field>
+            <field name="supplier_rank">1</field>
+            <field name="lang">es_EC</field>
+            <field name="tz">America/Guayaquil</field>
+        </record>
+
+        <!-- Cliente - Contribuyente Especial -->
+        <record id="partner_consorcio_andino" model="res.partner">
+            <field name="name">CONSORCIO ANDINO S.A.</field>
+            <field name="vat">0991234567001</field>
+            <field name="company_type">company</field>
+            <field name="street">Av. 9 de Octubre 1234</field>
+            <field name="city">Guayaquil</field>
+            <field name="country_id" ref="base.ec"/>
+            <field name="phone">+593 4 234 5678</field>
+            <field name="email">compras@consorcioandino.com.ec</field>
+            <field name="customer_rank">1</field>
+            <field name="lang">es_EC</field>
+        </record>
+
+        <!-- Cliente - RIMPE Emprendedor -->
+        <record id="partner_maria_garcia" model="res.partner">
+            <field name="name">María Fernanda García Pérez</field>
+            <field name="vat">1712345678001</field>
+            <field name="company_type">person</field>
+            <field name="street">Calle Primera N1-234</field>
+            <field name="city">Quito</field>
+            <field name="country_id" ref="base.ec"/>
+            <field name="phone">+593 9 8765 4321</field>
+            <field name="email">maria.garcia@gmail.com</field>
+            <field name="customer_rank">1</field>
+            <field name="lang">es_EC</field>
+        </record>
+
+        <!-- Consumidor Final -->
+        <record id="partner_consumidor_final" model="res.partner">
+            <field name="name">CONSUMIDOR FINAL</field>
+            <field name="vat">9999999999999</field>
+            <field name="company_type">person</field>
+            <field name="street">N/A</field>
+            <field name="city">Ecuador</field>
+            <field name="country_id" ref="base.ec"/>
+            <field name="customer_rank">1</field>
+            <field name="lang">es_EC</field>
+        </record>
+
+        <!-- Cliente Persona Natural -->
+        <record id="partner_carlos_morales" model="res.partner">
+            <field name="name">Carlos Andrés Morales López</field>
+            <field name="vat">0912345678</field>
+            <field name="company_type">person</field>
+            <field name="street">Urdesa Central, Mz. 5 Villa 12</field>
+            <field name="city">Guayaquil</field>
+            <field name="country_id" ref="base.ec"/>
+            <field name="phone">+593 9 8123 4567</field>
+            <field name="email">carlos.morales@hotmail.com</field>
+            <field name="customer_rank">1</field>
+            <field name="lang">es_EC</field>
+        </record>
+
+        <!-- Proveedor Tecnología -->
+        <record id="partner_tech_solutions" model="res.partner">
+            <field name="name">TECH SOLUTIONS ECUADOR S.A.</field>
+            <field name="vat">1793456789001</field>
+            <field name="company_type">company</field>
+            <field name="street">Av. 12 de Octubre N25-789</field>
+            <field name="city">Quito</field>
+            <field name="country_id" ref="base.ec"/>
+            <field name="phone">+593 2 456 7890</field>
+            <field name="email">info@techsolutions.ec</field>
+            <field name="supplier_rank">1</field>
+            <field name="lang">es_EC</field>
+        </record>
+
+        <!-- ================================================================
+             SAMPLE PRODUCTS WITH ECUADOR TAXES
+             ================================================================ -->
+
+        <!-- Producto con IVA 15% -->
+        <record id="product_laptop" model="product.product">
+            <field name="name">Laptop Empresarial Core i7</field>
+            <field name="default_code">PROD-LAP-001</field>
+            <field name="type">consu</field>
+            <field name="list_price">899.00</field>
+            <field name="standard_price">650.00</field>
+            <field name="categ_id" ref="product.product_category_all"/>
+        </record>
+
+        <!-- Servicio con IVA 15% -->
+        <record id="product_consultoria" model="product.product">
+            <field name="name">Consultoría Empresarial (hora)</field>
+            <field name="default_code">SRV-CONS-001</field>
+            <field name="type">service</field>
+            <field name="list_price">75.00</field>
+            <field name="categ_id" ref="product.product_category_all"/>
+        </record>
+
+        <!-- Producto Canasta Básica (IVA 0%) -->
+        <record id="product_arroz" model="product.product">
+            <field name="name">Arroz Premium 1kg (Canasta Básica)</field>
+            <field name="default_code">PROD-ALI-001</field>
+            <field name="type">consu</field>
+            <field name="list_price">1.25</field>
+            <field name="standard_price">0.80</field>
+            <field name="categ_id" ref="product.product_category_all"/>
+        </record>
+
+        <!-- Servicio de Software -->
+        <record id="product_erp_subscription" model="product.product">
+            <field name="name">Suscripción ERP Cloud (mensual)</field>
+            <field name="default_code">SRV-ERP-001</field>
+            <field name="type">service</field>
+            <field name="list_price">149.00</field>
+            <field name="categ_id" ref="product.product_category_all"/>
+        </record>
+
+        <!-- Producto con ICE -->
+        <record id="product_bebida" model="product.product">
+            <field name="name">Bebida Energética 500ml</field>
+            <field name="default_code">PROD-BEB-001</field>
+            <field name="type">consu</field>
+            <field name="list_price">2.50</field>
+            <field name="standard_price">1.00</field>
+            <field name="categ_id" ref="product.product_category_all"/>
+        </record>
+
+    </data>
+</odoo>

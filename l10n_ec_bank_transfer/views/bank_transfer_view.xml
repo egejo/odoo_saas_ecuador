@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_l10n_ec_bank_transfer_wizard_form" model="ir.ui.view">
+        <field name="name">l10n_ec.bank.transfer.wizard.form</field>
+        <field name="model">l10n_ec.bank.transfer.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generate Bank File">
+                <group>
+                    <field name="bank_id"/>
+                    <field name="payment_date"/>
+                    <field name="description"/>
+                </group>
+                <group string="Payslips to Pay">
+                    <field name="payslip_ids" widget="many2many_tags"/>
+                </group>
+                <group invisible="not file_data">
+                    <field name="filename" invisible="1"/>
+                    <field name="file_data" filename="filename" readonly="1"/>
+                </group>
+                <footer>
+                    <button string="Generate .TXT" name="action_generate" type="object" class="btn-primary" invisible="file_data"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_l10n_ec_bank_transfer" model="ir.actions.act_window">
+        <field name="name">Generate Cash Management File</field>
+        <field name="res_model">l10n_ec.bank.transfer.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="l10n_ec_hr_payroll.model_l10n_ec_payslip"/>
+        <field name="binding_view_types">list</field>
+    </record>
+</odoo>

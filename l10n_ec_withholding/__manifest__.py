@@ -35,6 +35,7 @@ Complete withholding management for Ecuador:
     'data': [
         'security/ir.model.access.csv',
         'data/l10n_ec_withholding.xml',
+        'data/retention_codes_2026.xml',
         'data/retention_template.xml',
         'views/account_retention_views.xml',
         'wizard/retention_wizard_views.xml',

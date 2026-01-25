@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_rimpe" model="ir.ui.view">
+        <field name="name">res.partner.form.rimpe</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='vat']" position="after">
+                <field name="l10n_ec_rimpe_type" groups="account.group_account_invoice"/>
+                <field name="l10n_ec_rimpe_start_date" invisible="l10n_ec_rimpe_type == 'none'"/>
+                <field name="l10n_ec_rimpe_end_date" invisible="l10n_ec_rimpe_type == 'none'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

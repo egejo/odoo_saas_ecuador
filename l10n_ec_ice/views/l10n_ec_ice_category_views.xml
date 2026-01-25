@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_l10n_ec_ice_category_tree" model="ir.ui.view">
+        <field name="name">l10n_ec.ice.category.tree</field>
+        <field name="model">l10n_ec.ice.category</field>
+        <field name="arch" type="xml">
+            <list string="ICE Categories">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="type"/>
+                <field name="specific_rate"/>
+                <field name="ad_valorem_rate"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_l10n_ec_ice_category_form" model="ir.ui.view">
+        <field name="name">l10n_ec.ice.category.form</field>
+        <field name="model">l10n_ec.ice.category</field>
+        <field name="arch" type="xml">
+            <form string="ICE Category">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                            <field name="type"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group string="Rates">
+                         <field name="specific_rate" invisible="type == 'ad_valorem'"/>
+                         <field name="ad_valorem_rate" invisible="type != 'ad_valorem'"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

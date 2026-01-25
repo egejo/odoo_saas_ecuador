@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- CANASTA BÁSICA 2026 (Estimate based on Jan 2026 SRS) -->
+        <record id="family_basket_2026" model="l10n_ec.family.basket">
+            <field name="year">2026</field>
+            <field name="basket_cost">798.25</field>
+        </record>
+
+        <!-- TAX TABLE 2026 (Resolution NAC-DGERCGC25-00000043) -->
+
+        <!-- 0% Bracket -->
+        <record id="tax_bracket_2026_00" model="l10n_ec.tax.table">
+            <field name="year">2026</field>
+            <field name="basic_fraction">0.0</field>
+            <field name="excess_until">12208.0</field>
+            <field name="basic_tax">0.0</field>
+            <field name="marginal_rate">0.0</field>
+        </record>
+
+        <!-- 5% Bracket -->
+        <record id="tax_bracket_2026_05" model="l10n_ec.tax.table">
+            <field name="year">2026</field>
+            <field name="basic_fraction">12208.01</field>
+            <field name="excess_until">15549.0</field>
+            <field name="basic_tax">0.0</field>
+            <field name="marginal_rate">5.0</field>
+        </record>
+
+        <!-- 10% Bracket -->
+        <record id="tax_bracket_2026_10" model="l10n_ec.tax.table">
+            <field name="year">2026</field>
+            <field name="basic_fraction">15549.01</field>
+            <field name="excess_until">20188.0</field>
+            <field name="basic_tax">167.0</field>
+            <field name="marginal_rate">10.0</field>
+        </record>
+
+        <!-- 12% Bracket -->
+        <record id="tax_bracket_2026_12" model="l10n_ec.tax.table">
+            <field name="year">2026</field>
+            <field name="basic_fraction">20188.01</field>
+            <field name="excess_until">26700.0</field>
+            <field name="basic_tax">631.0</field>
+            <field name="marginal_rate">12.0</field>
+        </record>
+
+        <!-- 15% Bracket -->
+        <record id="tax_bracket_2026_15" model="l10n_ec.tax.table">
+            <field name="year">2026</field>
+            <field name="basic_fraction">26700.01</field>
+            <field name="excess_until">35136.0</field>
+            <field name="basic_tax">1412.0</field>
+            <field name="marginal_rate">15.0</field>
+        </record>
+
+        <!-- 20% Bracket -->
+        <record id="tax_bracket_2026_20" model="l10n_ec.tax.table">
+            <field name="year">2026</field>
+            <field name="basic_fraction">35136.01</field>
+            <field name="excess_until">46575.0</field>
+            <field name="basic_tax">2678.0</field>
+            <field name="marginal_rate">20.0</field>
+        </record>
+
+        <!-- 25% Bracket -->
+        <record id="tax_bracket_2026_25" model="l10n_ec.tax.table">
+            <field name="year">2026</field>
+            <field name="basic_fraction">46575.01</field>
+            <field name="excess_until">62005.0</field>
+            <field name="basic_tax">4965.0</field>
+            <field name="marginal_rate">25.0</field>
+        </record>
+
+        <!-- 30% Bracket -->
+        <record id="tax_bracket_2026_30" model="l10n_ec.tax.table">
+            <field name="year">2026</field>
+            <field name="basic_fraction">62005.01</field>
+            <field name="excess_until">82679.0</field>
+            <field name="basic_tax">8823.0</field>
+            <field name="marginal_rate">30.0</field>
+        </record>
+
+        <!-- 35% Bracket -->
+        <record id="tax_bracket_2026_35" model="l10n_ec.tax.table">
+            <field name="year">2026</field>
+            <field name="basic_fraction">82679.01</field>
+            <field name="excess_until">109956.0</field>
+            <field name="basic_tax">15025.0</field>
+            <field name="marginal_rate">35.0</field>
+        </record>
+
+        <!-- 37% Bracket (Infinity) -->
+        <record id="tax_bracket_2026_37" model="l10n_ec.tax.table">
+            <field name="year">2026</field>
+            <field name="basic_fraction">109956.01</field>
+            <field name="excess_until">999999999.0</field>
+            <field name="basic_tax">24572.0</field>
+            <field name="marginal_rate">37.0</field>
+        </record>
+    </data>
+</odoo>

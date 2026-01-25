@@ -1,26 +1,15 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields
 
+
 class ResCompany(models.Model):
+    """
+    Extends res.company with additional SRI fields not in l10n_ec_edi.
+    The l10n_ec_sri_environment field is inherited from l10n_ec_edi.
+    """
     _inherit = 'res.company'
 
-    l10n_ec_sri_environment = fields.Selection(
-        [
-            ('1', 'Test (Pruebas)'),
-            ('2', 'Production (Producción)')
-        ],
-        string='SRI Environment',
-        default='1',
-        help='Environment for Electronic Invoicing'
-    )
-
-    l10n_ec_certificate_id = fields.Many2one(
-        'l10n_ec.certificate',
-        string='Electronic Signature',
-        domain="[('company_id', '=', id), ('state', '=', 'active')]",
-        help='The active digital signature for this company'
-    )
-
+    # Additional fields not in l10n_ec_edi - URLs can be overridden
     l10n_ec_sri_reception_url = fields.Char(
         string='Reception WSDL',
         default='https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline?wsdl'
