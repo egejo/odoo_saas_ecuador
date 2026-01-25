@@ -17,3 +17,6 @@ from . import invoice_manager
 from . import retention_manager
 from . import payroll_manager
 from . import demo_data_generator
+from . import gov_services_registry
+from . import open_data_sources
+
