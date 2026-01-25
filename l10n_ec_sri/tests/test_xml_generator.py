@@ -19,6 +19,7 @@ class TestXMLGenerator(unittest.TestCase):
         Verify the Modulo 11 check digit algorithm.
         This is the EXACT algorithm required by SRI for the 49-digit Access Key.
         """
+
         def get_modulo_11(base_key):
             """Calculate the check digit using Modulo 11 algorithm."""
             factors = [2, 3, 4, 5, 6, 7]
@@ -45,7 +46,9 @@ class TestXMLGenerator(unittest.TestCase):
         base_key = "210120250117900000000011001001000000001123456781"
         # This is 48 digits
 
-        self.assertEqual(len(base_key), 48, "Base key should be 48 digits before check digit")
+        self.assertEqual(
+            len(base_key), 48, "Base key should be 48 digits before check digit"
+        )
 
         check_digit = get_modulo_11(base_key)
         self.assertIn(check_digit, range(0, 10), "Check digit must be 0-9")
@@ -53,7 +56,7 @@ class TestXMLGenerator(unittest.TestCase):
         full_key = f"{base_key}{check_digit}"
         self.assertEqual(len(full_key), 49, "Full access key should be 49 digits")
 
-        print(f"\n✅ Modulo 11 Algorithm Verified")
+        print("\n✅ Modulo 11 Algorithm Verified")
         print(f"   Base Key (48): {base_key}")
         print(f"   Check Digit: {check_digit}")
         print(f"   Full Key (49): {full_key}")
@@ -64,25 +67,27 @@ class TestXMLGenerator(unittest.TestCase):
         """
         # Components
         invoice_date = date(2025, 1, 21)
-        doc_type = '01'  # Factura
-        ruc = '1790000000001'
-        environment = '1'  # Test
-        serie = '001001'
-        sequential = '000000001'
-        numeric_code = '12345678'
-        emission_type = '1'
+        doc_type = "01"  # Factura
+        ruc = "1790000000001"
+        environment = "1"  # Test
+        serie = "001001"
+        sequential = "000000001"
+        numeric_code = "12345678"
+        emission_type = "1"
 
-        date_str = invoice_date.strftime('%d%m%Y')
-        self.assertEqual(date_str, '21012025', "Date format should be DDMMAAAA")
+        date_str = invoice_date.strftime("%d%m%Y")
+        self.assertEqual(date_str, "21012025", "Date format should be DDMMAAAA")
         self.assertEqual(len(date_str), 8)
 
         base_key = f"{date_str}{doc_type}{ruc}{environment}{serie}{sequential}{numeric_code}{emission_type}"
 
         # Verify structure
         expected_length = 8 + 2 + 13 + 1 + 6 + 9 + 8 + 1  # = 48
-        self.assertEqual(len(base_key), 48, f"Base key should be 48 digits, got {len(base_key)}")
+        self.assertEqual(
+            len(base_key), 48, f"Base key should be 48 digits, got {len(base_key)}"
+        )
 
-        print(f"\n✅ Access Key Structure Verified")
+        print("\n✅ Access Key Structure Verified")
         print(f"   Date: {date_str} (8 digits)")
         print(f"   Doc Type: {doc_type} (2 digits)")
         print(f"   RUC: {ruc} (13 digits)")
@@ -97,9 +102,9 @@ class TestXMLGenerator(unittest.TestCase):
         Verify RUC validation patterns (13 digits, check digit).
         """
         valid_rucs = [
-            '1790000000001',  # Standard company RUC
-            '1791000000001',  # Another valid pattern
-            '9999999999999',  # Consumidor Final
+            "1790000000001",  # Standard company RUC
+            "1791000000001",  # Another valid pattern
+            "9999999999999",  # Consumidor Final
         ]
 
         for ruc in valid_rucs:
@@ -107,8 +112,8 @@ class TestXMLGenerator(unittest.TestCase):
             self.assertTrue(ruc.isdigit(), f"RUC {ruc} should be all digits")
 
         # Consumidor Final check
-        consumidor_final = '9999999999999'
-        self.assertEqual(consumidor_final, '9' * 13, "Consumidor Final RUC is all 9s")
+        consumidor_final = "9999999999999"
+        self.assertEqual(consumidor_final, "9" * 13, "Consumidor Final RUC is all 9s")
 
         print("\n✅ RUC Validation Patterns Verified")
 
@@ -119,7 +124,7 @@ class TestXMLGenerator(unittest.TestCase):
         from lxml import etree
 
         # Minimal valid invoice XML structure
-        xml_template = '''<?xml version="1.0" encoding="UTF-8"?>
+        xml_template = """<?xml version="1.0" encoding="UTF-8"?>
         <factura id="comprobante" version="2.1.0">
             <infoTributaria>
                 <ambiente>1</ambiente>
@@ -174,25 +179,25 @@ class TestXMLGenerator(unittest.TestCase):
                     </impuestos>
                 </detalle>
             </detalles>
-        </factura>'''
+        </factura>"""
 
         # Parse and validate structure
         root = etree.fromstring(xml_template.encode())
 
         # Check required elements
-        self.assertEqual(root.tag, 'factura')
-        self.assertEqual(root.get('id'), 'comprobante')
-        self.assertIsNotNone(root.find('.//infoTributaria'))
-        self.assertIsNotNone(root.find('.//infoFactura'))
-        self.assertIsNotNone(root.find('.//detalles'))
+        self.assertEqual(root.tag, "factura")
+        self.assertEqual(root.get("id"), "comprobante")
+        self.assertIsNotNone(root.find(".//infoTributaria"))
+        self.assertIsNotNone(root.find(".//infoFactura"))
+        self.assertIsNotNone(root.find(".//detalles"))
 
         # Check 49-digit access key
-        clave = root.find('.//claveAcceso').text
+        clave = root.find(".//claveAcceso").text
         self.assertEqual(len(clave), 49, "Access key should be 49 digits")
 
         # Check 15% IVA (codigoPorcentaje 4 = 15%)
-        impuesto = root.find('.//totalImpuesto/valor')
-        self.assertEqual(impuesto.text, '15.00', "15% of 100 = 15.00")
+        impuesto = root.find(".//totalImpuesto/valor")
+        self.assertEqual(impuesto.text, "15.00", "15% of 100 = 15.00")
 
         print("\n✅ XML Template Structure Verified")
         print(f"   Root Tag: {root.tag}")
@@ -200,5 +205,5 @@ class TestXMLGenerator(unittest.TestCase):
         print(f"   IVA Amount: {impuesto.text}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

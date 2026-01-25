@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import models, api, _
+from odoo import models, _
 from odoo.exceptions import UserError
 import base64
 import logging
@@ -16,9 +16,10 @@ except ImportError:
 
 _logger = logging.getLogger(__name__)
 
+
 class SriSigner(models.AbstractModel):
-    _name = 'l10n_ec.sri.signer'
-    _description = 'XAdES-BES Signer Service'
+    _name = "l10n_ec.sri.signer"
+    _description = "XAdES-BES Signer Service"
 
     def sign_xml(self, xml_content_bytes, p12_binary, p12_password):
         """
@@ -34,9 +35,10 @@ class SriSigner(models.AbstractModel):
             p12_binary = base64.b64decode(p12_binary)
 
         try:
-            private_key, certificate, additional_certs = pkcs12.load_key_and_certificates(
-                p12_binary,
-                p12_password.encode('utf-8')
+            private_key, certificate, additional_certs = (
+                pkcs12.load_key_and_certificates(
+                    p12_binary, p12_password.encode("utf-8")
+                )
             )
         except Exception as e:
             raise UserError(_("Invalid Certificate Password or File: %s") % str(e))
@@ -52,7 +54,9 @@ class SriSigner(models.AbstractModel):
         # Note: SRI specifically requires SHA1 for the reference digest usually
         # We assume canonicalization is C14N
 
-        xml_to_hash = etree.tostring(root, method="c14n", exclusive=False, with_comments=False)
+        xml_to_hash = etree.tostring(
+            root, method="c14n", exclusive=False, with_comments=False
+        )
         document_digest = hashlib.sha1(xml_to_hash).digest()
         document_digest_b64 = base64.b64encode(document_digest).decode()
 
@@ -65,12 +69,14 @@ class SriSigner(models.AbstractModel):
         signature = private_key.sign(
             etree.tostring(signed_info, method="c14n", exclusive=False),
             padding.PKCS1v15(),
-            hashes.SHA1()
+            hashes.SHA1(),
         )
         signature_value_b64 = base64.b64encode(signature).decode()
 
         # 3.4 Build KeyInfo
-        cert_b64 = base64.b64encode(certificate.public_bytes(serialization.Encoding.DER)).decode()
+        cert_b64 = base64.b64encode(
+            certificate.public_bytes(serialization.Encoding.DER)
+        ).decode()
         key_info = self._build_key_info(cert_b64)
 
         # 3.5 Build Object (QualifyingProperties)
@@ -78,7 +84,9 @@ class SriSigner(models.AbstractModel):
 
         # 4. Assemble Signature
         ns = "http://www.w3.org/2000/09/xmldsig#"
-        signature_node = etree.Element(f"{{{ns}}}Signature", Id=signature_id, nsmap={None: ns})
+        signature_node = etree.Element(
+            f"{{{ns}}}Signature", Id=signature_id, nsmap={None: ns}
+        )
         signature_node.append(signed_info)
 
         sig_val_node = etree.Element(f"{{{ns}}}SignatureValue")
@@ -91,7 +99,9 @@ class SriSigner(models.AbstractModel):
         # 5. Append to Root
         root.append(signature_node)
 
-        return etree.tostring(root, xml_declaration=True, encoding='UTF-8', standalone='yes')
+        return etree.tostring(
+            root, xml_declaration=True, encoding="UTF-8", standalone="yes"
+        )
 
     def _build_signed_info(self, digest_b64):
         ns = "http://www.w3.org/2000/09/xmldsig#"
@@ -104,7 +114,7 @@ class SriSigner(models.AbstractModel):
         sig_method.set("Algorithm", "http://www.w3.org/2000/09/xmldsig#rsa-sha1")
 
         reference = etree.SubElement(signed_info, f"{{{ns}}}Reference")
-        reference.set("URI", "#comprobante") # Must match root ID
+        reference.set("URI", "#comprobante")  # Must match root ID
         reference.set("Type", "http://www.w3.org/2000/09/xmldsig#Object")
 
         transforms = etree.SubElement(reference, f"{{{ns}}}Transforms")
@@ -134,13 +144,23 @@ class SriSigner(models.AbstractModel):
         ns_dsig = "http://www.w3.org/2000/09/xmldsig#"
 
         obj = etree.Element(f"{{{ns_dsig}}}Object")
-        qp = etree.SubElement(obj, f"{{{ns_xades}}}QualifyingProperties", nsmap={'xades': ns_xades}, Target="#Signature-SRI")
+        qp = etree.SubElement(
+            obj,
+            f"{{{ns_xades}}}QualifyingProperties",
+            nsmap={"xades": ns_xades},
+            Target="#Signature-SRI",
+        )
 
-        signed_props = etree.SubElement(qp, f"{{{ns_xades}}}SignedProperties", Id="SignedProperties")
-        signed_sig_props = etree.SubElement(signed_props, f"{{{ns_xades}}}SignedSignatureProperties")
+        signed_props = etree.SubElement(
+            qp, f"{{{ns_xades}}}SignedProperties", Id="SignedProperties"
+        )
+        signed_sig_props = etree.SubElement(
+            signed_props, f"{{{ns_xades}}}SignedSignatureProperties"
+        )
 
         # Signing Time
         import datetime
+
         signing_time = etree.SubElement(signed_sig_props, f"{{{ns_xades}}}SigningTime")
         signing_time.text = datetime.datetime.now().isoformat()
 

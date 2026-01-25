@@ -8,7 +8,7 @@ Todas las fechas son configurables via ir.config_parameter.
 
 Resolución SRI Calendario Tributario 2026
 """
-from odoo import models, api, fields, _
+from odoo import models, api
 from datetime import date, timedelta
 import logging
 
@@ -24,8 +24,9 @@ class L10nEcTaxCalendar(models.AbstractModel):
     - Type of declaration (IVA, IR, Retenciones, etc.)
     - Special contributor status
     """
-    _name = 'l10n_ec.tax.calendar'
-    _description = 'Ecuador Tax Calendar Calculator'
+
+    _name = "l10n_ec.tax.calendar"
+    _description = "Ecuador Tax Calendar Calculator"
 
     # =========================================================================
     # CONFIGURATION KEYS (ir.config_parameter)
@@ -38,19 +39,28 @@ class L10nEcTaxCalendar(models.AbstractModel):
         Get deadline day map for 9th RUC digit.
         Configurable via ir.config_parameter.
         """
-        ICP = self.env['ir.config_parameter'].sudo()
+        ICP = self.env["ir.config_parameter"].sudo()
 
         # Default map per SRI 2026 calendar
         default_map = {
-            '1': 10, '2': 12, '3': 14, '4': 16, '5': 18,
-            '6': 20, '7': 22, '8': 24, '9': 26, '0': 28,
+            "1": 10,
+            "2": 12,
+            "3": 14,
+            "4": 16,
+            "5": 18,
+            "6": 20,
+            "7": 22,
+            "8": 24,
+            "9": 26,
+            "0": 28,
         }
 
         # Read from config (allows override without code change)
-        param = ICP.get_param('l10n_ec.deadline_day_map')
+        param = ICP.get_param("l10n_ec.deadline_day_map")
         if param:
             try:
                 import json
+
                 return json.loads(param)
             except:
                 pass
@@ -60,9 +70,11 @@ class L10nEcTaxCalendar(models.AbstractModel):
     @api.model
     def _get_special_contributor_day(self):
         """Get deadline day for special contributors (CE)."""
-        return int(self.env['ir.config_parameter'].sudo().get_param(
-            'l10n_ec.special_contributor_day', '9'
-        ))
+        return int(
+            self.env["ir.config_parameter"]
+            .sudo()
+            .get_param("l10n_ec.special_contributor_day", "9")
+        )
 
     # =========================================================================
     # DEADLINE CALCULATION
@@ -76,7 +88,9 @@ class L10nEcTaxCalendar(models.AbstractModel):
         return ruc[8]  # 0-indexed, so position 9 is index 8
 
     @api.model
-    def calculate_deadline(self, declaration_type, period_month, period_year, company=None):
+    def calculate_deadline(
+        self, declaration_type, period_month, period_year, company=None
+    ):
         """
         Calculate filing deadline for a declaration.
 
@@ -96,7 +110,7 @@ class L10nEcTaxCalendar(models.AbstractModel):
         ninth_digit = self.get_9th_digit(ruc)
 
         # Check if special contributor
-        is_special = getattr(company, 'l10n_ec_special_contributor', False)
+        is_special = getattr(company, "l10n_ec_special_contributor", False)
 
         if is_special:
             day = self._get_special_contributor_day()
@@ -105,7 +119,7 @@ class L10nEcTaxCalendar(models.AbstractModel):
             day = deadline_map.get(ninth_digit, 28)
 
         # Calculate deadline based on declaration type
-        if declaration_type in ('iva', 'retenciones', 'ats'):
+        if declaration_type in ("iva", "retenciones", "ats"):
             # Due the following month
             deadline_month = period_month + 1
             deadline_year = period_year
@@ -113,21 +127,29 @@ class L10nEcTaxCalendar(models.AbstractModel):
                 deadline_month = 1
                 deadline_year += 1
 
-        elif declaration_type == 'ir':
+        elif declaration_type == "ir":
             # Income tax: Natural persons March, Societies April
             # Simplified: use April for societies
             deadline_month = 4
             deadline_year = period_year + 1  # For previous year's income
 
-        elif declaration_type == 'rdep':
+        elif declaration_type == "rdep":
             # RDEP: January-February of following year
             # Different schedule for RDEP
             rdep_schedule = {
-                '1': 21, '2': 23, '3': 25, '4': 27, '5': 29,
-                '6': 31, '7': 3, '8': 5, '9': 7, '0': 7,
+                "1": 21,
+                "2": 23,
+                "3": 25,
+                "4": 27,
+                "5": 29,
+                "6": 31,
+                "7": 3,
+                "8": 5,
+                "9": 7,
+                "0": 7,
             }
             day = rdep_schedule.get(ninth_digit, 7)
-            deadline_month = 1 if ninth_digit in '123456' else 2
+            deadline_month = 1 if ninth_digit in "123456" else 2
             deadline_year = period_year + 1
 
         else:
@@ -144,6 +166,7 @@ class L10nEcTaxCalendar(models.AbstractModel):
         except ValueError:
             # Day doesn't exist (e.g., Feb 30), use last day of month
             from calendar import monthrange
+
             _, last_day = monthrange(deadline_year, deadline_month)
             deadline = date(deadline_year, deadline_month, min(day, last_day))
 
@@ -196,19 +219,21 @@ class L10nEcTaxCalendar(models.AbstractModel):
         deadlines = []
 
         # Monthly declarations for previous month
-        for decl_type in ['iva', 'retenciones', 'ats']:
+        for decl_type in ["iva", "retenciones", "ats"]:
             deadline = self.calculate_deadline(
                 decl_type, prev_month, prev_year, company
             )
             if deadline and today <= deadline <= end_date:
-                deadlines.append({
-                    'type': decl_type.upper(),
-                    'period': f"{prev_month:02d}/{prev_year}",
-                    'deadline': deadline,
-                    'days_remaining': (deadline - today).days,
-                })
+                deadlines.append(
+                    {
+                        "type": decl_type.upper(),
+                        "period": f"{prev_month:02d}/{prev_year}",
+                        "deadline": deadline,
+                        "days_remaining": (deadline - today).days,
+                    }
+                )
 
-        return sorted(deadlines, key=lambda x: x['deadline'])
+        return sorted(deadlines, key=lambda x: x["deadline"])
 
     @api.model
     def get_company_deadline_info(self, company=None):
@@ -218,9 +243,9 @@ class L10nEcTaxCalendar(models.AbstractModel):
         :return: Dict with RUC info and deadline day
         """
         company = company or self.env.company
-        ruc = company.vat or ''
+        ruc = company.vat or ""
         ninth_digit = self.get_9th_digit(ruc)
-        is_special = getattr(company, 'l10n_ec_special_contributor', False)
+        is_special = getattr(company, "l10n_ec_special_contributor", False)
 
         if is_special:
             day = self._get_special_contributor_day()
@@ -231,9 +256,9 @@ class L10nEcTaxCalendar(models.AbstractModel):
             category = "Contribuyente General"
 
         return {
-            'ruc': ruc,
-            'ninth_digit': ninth_digit,
-            'category': category,
-            'deadline_day': day,
-            'is_special_contributor': is_special,
+            "ruc": ruc,
+            "ninth_digit": ninth_digit,
+            "category": category,
+            "deadline_day": day,
+            "is_special_contributor": is_special,
         }

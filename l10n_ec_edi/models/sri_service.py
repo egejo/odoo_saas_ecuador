@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-from odoo import models, api, _
+from odoo import models, _
 from odoo.exceptions import UserError
 import logging
-from datetime import datetime
 
 # Trusted External Libs
 try:
@@ -15,9 +14,10 @@ except ImportError:
 
 _logger = logging.getLogger(__name__)
 
+
 class SriService(models.AbstractModel):
-    _name = 'l10n_ec.sri.service'
-    _description = 'SRI SOAP Web Service Client'
+    _name = "l10n_ec.sri.service"
+    _description = "SRI SOAP Web Service Client"
 
     def _get_client(self, url):
         """
@@ -28,9 +28,11 @@ class SriService(models.AbstractModel):
             transport = Transport(timeout=30, operation_timeout=30)
             return Client(wsdl=url, settings=settings, transport=transport)
         except Exception as e:
-            raise UserError(_("Could not connect to SRI WSDL at %s. Error: %s") % (url, str(e)))
+            raise UserError(
+                _("Could not connect to SRI WSDL at %s. Error: %s") % (url, str(e))
+            )
 
-    def send_document(self, signed_xml_bytes, environment='1'):
+    def send_document(self, signed_xml_bytes, environment="1"):
         """
         Send signed XML to SRI 'Recepcion' service.
         :param signed_xml_bytes: The XAdES-BES signed XML (bytes)
@@ -48,27 +50,26 @@ class SriService(models.AbstractModel):
             response = client.service.validarComprobante(xml=signed_xml_bytes)
 
             # Parse Response
-            state = response.estado # 'RECIBIDA' or 'DEVUELTA'
+            state = response.estado  # 'RECIBIDA' or 'DEVUELTA'
 
-            result = {
-                'status': state,
-                'messages': []
-            }
+            result = {"status": state, "messages": []}
 
-            if state == 'DEVUELTA':
+            if state == "DEVUELTA":
                 # Extract error messages
-                if hasattr(response, 'comprobantes') and response.comprobantes:
+                if hasattr(response, "comprobantes") and response.comprobantes:
                     for comp in response.comprobantes.comprobante:
                         for msg in comp.mensajes.mensaje:
-                            result['messages'].append(f"{msg.identificador}: {msg.mensaje} - {msg.informacionAdicional or ''}")
+                            result["messages"].append(
+                                f"{msg.identificador}: {msg.mensaje} - {msg.informacionAdicional or ''}"
+                            )
 
             return result
 
         except Fault as e:
-            return {'status': 'ERROR', 'messages': [f"SOAP Fault: {str(e)}"]}
+            return {"status": "ERROR", "messages": [f"SOAP Fault: {str(e)}"]}
         except Exception as e:
             _logger.exception("SRI Connection Error")
-            return {'status': 'ERROR', 'messages': [f"Connection Fail: {str(e)}"]}
+            return {"status": "ERROR", "messages": [f"Connection Fail: {str(e)}"]}
 
     def check_authorization(self, access_key):
         """
@@ -84,27 +85,34 @@ class SriService(models.AbstractModel):
         try:
             # NOTE: Parameter is 'claveAccesoComprobante' NOT 'claveAcceso'
             # Discovered via E2E testing against real SRI WSDL
-            response = client.service.autorizacionComprobante(claveAccesoComprobante=access_key)
+            response = client.service.autorizacionComprobante(
+                claveAccesoComprobante=access_key
+            )
 
             # SRI returns a list of authorizations (usually 1)
             if not response.autorizaciones or not response.autorizaciones.autorizacion:
-                 return {'status': 'PENDING', 'messages': ["No matching authorization found yet."]}
+                return {
+                    "status": "PENDING",
+                    "messages": ["No matching authorization found yet."],
+                }
 
             auth = response.autorizaciones.autorizacion[0]
-            state = auth.estado # 'AUTORIZADO', 'NO AUTORIZADO', 'EN PROCESO'
+            state = auth.estado  # 'AUTORIZADO', 'NO AUTORIZADO', 'EN PROCESO'
 
             result = {
-                'status': state,
-                'date': auth.fechaAutorizacion, # Check if this is datetime or str
-                'xml': auth.comprobante, # The authorized XML (with authorization tag)
-                'messages': []
+                "status": state,
+                "date": auth.fechaAutorizacion,  # Check if this is datetime or str
+                "xml": auth.comprobante,  # The authorized XML (with authorization tag)
+                "messages": [],
             }
 
-            if state != 'AUTORIZADO':
-                 for msg in auth.mensajes.mensaje:
-                     result['messages'].append(f"{msg.mensaje} - {msg.informacionAdicional or ''}")
+            if state != "AUTORIZADO":
+                for msg in auth.mensajes.mensaje:
+                    result["messages"].append(
+                        f"{msg.mensaje} - {msg.informacionAdicional or ''}"
+                    )
 
             return result
 
         except Exception as e:
-             return {'status': 'ERROR', 'messages': [f"Connection Fail: {str(e)}"]}
+            return {"status": "ERROR", "messages": [f"Connection Fail: {str(e)}"]}

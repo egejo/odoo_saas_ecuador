@@ -1,24 +1,30 @@
 # -*- coding: utf-8 -*-
 import base64
-import io
-from odoo import models, fields, api, _
-from datetime import date
+from odoo import models, fields
+
 
 class L10nEcBankTransferWizard(models.TransientModel):
-    _name = 'l10n_ec.bank.transfer.wizard'
-    _description = 'Generate Bank Cash Management Files'
+    _name = "l10n_ec.bank.transfer.wizard"
+    _description = "Generate Bank Cash Management Files"
 
-    bank_id = fields.Selection([
-        ('pichincha', 'Banco Pichincha (Cash Management)'),
-        ('guayaquil', 'Banco Guayaquil (Multicash)')
-    ], string="Target Bank", required=True, default='pichincha')
+    bank_id = fields.Selection(
+        [
+            ("pichincha", "Banco Pichincha (Cash Management)"),
+            ("guayaquil", "Banco Guayaquil (Multicash)"),
+        ],
+        string="Target Bank",
+        required=True,
+        default="pichincha",
+    )
 
-    payment_date = fields.Date(string="Payment Date", default=fields.Date.context_today, required=True)
+    payment_date = fields.Date(
+        string="Payment Date", default=fields.Date.context_today, required=True
+    )
     description = fields.Char(string="Batch Description", default="NOMINA MENSUAL")
 
     # We will process Payslips marked as 'done' but not yet paid?
     # Or just select a Payslip Batch? For MVP simplicity, we select a list of payslips.
-    payslip_ids = fields.Many2many('l10n_ec.payslip', string="Payslips to Pay")
+    payslip_ids = fields.Many2many("l10n_ec.payslip", string="Payslips to Pay")
 
     # Output
     filename = fields.Char()
@@ -29,17 +35,17 @@ class L10nEcBankTransferWizard(models.TransientModel):
         Generates the TXT file based on selected Bank.
         """
         self.ensure_one()
-        if self.bank_id == 'pichincha':
+        if self.bank_id == "pichincha":
             self._generate_pichincha_txt()
-        elif self.bank_id == 'guayaquil':
+        elif self.bank_id == "guayaquil":
             self._generate_guayaquil_txt()
 
         return {
-            'type': 'ir.actions.act_window',
-            'res_model': 'l10n_ec.bank.transfer.wizard',
-            'view_mode': 'form',
-            'res_id': self.id,
-            'target': 'new',
+            "type": "ir.actions.act_window",
+            "res_model": "l10n_ec.bank.transfer.wizard",
+            "view_mode": "form",
+            "res_id": self.id,
+            "target": "new",
         }
 
     def _generate_pichincha_txt(self):
@@ -69,8 +75,8 @@ class L10nEcBankTransferWizard(models.TransientModel):
             # Using placeholders for bank fields if not yet in model, but typically res.partner.bank
 
             bank_acc = emp.bank_account_id
-            acc_type = 'AHO' # Savings default
-            acc_num = bank_acc.acc_number if bank_acc else '0000000000'
+            acc_type = "AHO"  # Savings default
+            acc_num = bank_acc.acc_number if bank_acc else "0000000000"
 
             # Format: REF \t BENEFICIARY \t ID \t AMOUNT \t ACC_TYPE \t ACC_NUM
             # Amount in cents? Usually floats in Pichincha Cash Mgmt are 2 decimals.
@@ -87,7 +93,7 @@ class L10nEcBankTransferWizard(models.TransientModel):
         content = "\n".join(lines)
 
         self.filename = f"PICHINCHA_NOMINA_{self.payment_date}.txt"
-        self.file_data = base64.b64encode(content.encode('utf-8'))
+        self.file_data = base64.b64encode(content.encode("utf-8"))
 
     def _generate_guayaquil_txt(self):
         # Similar logic, different separator/layout
@@ -96,4 +102,4 @@ class L10nEcBankTransferWizard(models.TransientModel):
             content += f"{slip.employee_id.name},{slip.net_wage}\n"
 
         self.filename = f"GUAYAQUIL_NOMINA_{self.payment_date}.txt"
-        self.file_data = base64.b64encode(content.encode('utf-8'))
+        self.file_data = base64.b64encode(content.encode("utf-8"))

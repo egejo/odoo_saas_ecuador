@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Asset Views -->
+    <record id="view_asset_list" model="ir.ui.view">
+        <field name="name">l10n_ec.asset.list</field>
+        <field name="model">l10n_ec.asset</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state=='close'">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="category_id"/>
+                <field name="acquisition_value"/>
+                <field name="depreciated_value"/>
+                <field name="book_value"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_asset_form" model="ir.ui.view">
+        <field name="name">l10n_ec.asset.form</field>
+        <field name="model">l10n_ec.asset</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" string="Confirmar" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_close" string="Cerrar" type="object" invisible="state != 'open'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Nombre del activo"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="category_id"/>
+                            <field name="partner_id"/>
+                            <field name="invoice_id"/>
+                        </group>
+                        <group>
+                            <field name="acquisition_date"/>
+                            <field name="start_depreciation_date"/>
+                            <field name="annual_rate" readonly="1"/>
+                            <field name="useful_life_years" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Valores">
+                        <group>
+                            <field name="acquisition_value"/>
+                            <field name="residual_value"/>
+                        </group>
+                        <group>
+                            <field name="depreciated_value"/>
+                            <field name="book_value"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Depreciación">
+                            <field name="depreciation_line_ids" readonly="state != 'open'">
+                                <list editable="bottom" create="0" delete="0">
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="amount"/>
+                                    <field name="depreciated_value"/>
+                                    <field name="remaining_value"/>
+                                    <field name="move_posted" widget="boolean"/>
+                                    <button name="action_create_move" string="Contabilizar" type="object" icon="fa-book" invisible="move_posted"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Contabilidad">
+                            <group>
+                                <field name="analytic_account_id"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Category Views -->
+    <record id="view_asset_category_list" model="ir.ui.view">
+        <field name="name">l10n_ec.asset.category.list</field>
+        <field name="model">l10n_ec.asset.category</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="annual_rate"/>
+                <field name="useful_life_years"/>
+                <field name="depreciation_method"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_asset_category_form" model="ir.ui.view">
+        <field name="name">l10n_ec.asset.category.form</field>
+        <field name="model">l10n_ec.asset.category</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="depreciation_method"/>
+                            <field name="annual_rate"/>
+                            <field name="useful_life_years"/>
+                        </group>
+                        <group>
+                            <field name="journal_id"/>
+                            <field name="asset_account_id"/>
+                            <field name="depreciation_account_id"/>
+                            <field name="expense_account_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_asset" model="ir.actions.act_window">
+        <field name="name">Activos Fijos</field>
+        <field name="res_model">l10n_ec.asset</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_asset_category" model="ir.actions.act_window">
+        <field name="name">Categorías de Activos</field>
+        <field name="res_model">l10n_ec.asset.category</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_asset_root" name="Activos Fijos" parent="account.menu_finance" sequence="40"/>
+    <menuitem id="menu_asset_assets" name="Activos" parent="menu_asset_root" action="action_asset"/>
+    <menuitem id="menu_asset_categories" name="Categorías" parent="menu_asset_root" action="action_asset_category"/>
+
+</odoo>

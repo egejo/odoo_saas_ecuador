@@ -5,11 +5,11 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 
 {
-    'name': 'Ecuador - Reports (ATS, Form 104)',
-    'version': '18.0.1.0.0',
-    'category': 'Accounting/Localizations/Reporting',
-    'summary': 'ATS (Anexo Transaccional Simplificado) XML Generation',
-    'description': """
+    "name": "Ecuador - Reports (ATS, Form 104)",
+    "version": "18.0.1.0.0",
+    "category": "Accounting/Localizations/Reporting",
+    "summary": "ATS (Anexo Transaccional Simplificado) XML Generation",
+    "description": """
 Ecuador Tax Reports Module
 ==========================
 
@@ -27,23 +27,23 @@ SRI Tax reporting for Ecuador:
 
 **Regulatory Compliance**: SRI 2026
     """,
-    'author': 'Somatech.dev, Odoo Community Association (OCA)',
-    'website': 'https://github.com/somatechlat/odoo_saas_ecuador',
-    'license': 'LGPL-3',
-    'depends': [
-        'l10n_ec_base',
-        'l10n_ec_edi',
-        'l10n_ec_withholding',
+    "author": "Somatech.dev, Odoo Community Association (OCA)",
+    "website": "https://github.com/somatechlat/odoo_saas_ecuador",
+    "license": "LGPL-3",
+    "depends": [
+        "l10n_ec_base",
+        "l10n_ec_edi",
+        "l10n_ec_withholding",
     ],
-    'data': [
-        'security/ir.model.access.csv',
-        'data/ats_template.xml',
-        'report/form_templates.xml',
-        'report/reports.xml',
-        'wizard/l10n_ec_ats_wizard_views.xml',
+    "data": [
+        "security/ir.model.access.csv",
+        "data/ats_template.xml",
+        "report/form_templates.xml",
+        "report/reports.xml",
+        "wizard/l10n_ec_ats_wizard_views.xml",
     ],
-    'images': ['static/description/banner.png'],
-    'installable': True,
-    'application': False,
-    'auto_install': False,
+    "images": ["static/description/banner.png"],
+    "installable": True,
+    "application": False,
+    "auto_install": False,
 }

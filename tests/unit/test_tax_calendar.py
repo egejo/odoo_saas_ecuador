@@ -7,18 +7,17 @@ Tests deadline calculations based on 9th RUC digit.
 All dates from ir.config_parameter.
 """
 from odoo.tests import tagged, TransactionCase
-from datetime import date
 
 
-@tagged('post_install', '-at_install', 'l10n_ec', 'calendar')
+@tagged("post_install", "-at_install", "l10n_ec", "calendar")
 class TestTaxCalendar(TransactionCase):
     """Tests for Ecuador Tax Calendar."""
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.ICP = cls.env['ir.config_parameter'].sudo()
-        cls.Calendar = cls.env['l10n_ec.tax.calendar']
+        cls.ICP = cls.env["ir.config_parameter"].sudo()
+        cls.Calendar = cls.env["l10n_ec.tax.calendar"]
 
     # =========================================================================
     # 9TH DIGIT EXTRACTION
@@ -26,19 +25,21 @@ class TestTaxCalendar(TransactionCase):
 
     def test_extract_9th_digit_ruc(self):
         """[CAL-01] Extract 9th digit from RUC."""
-        digit = self.Calendar.get_9th_digit('1792001234001')
-        self.assertEqual(digit, '1', "9th digit of 1792001234001 should be 1")
+        digit = self.Calendar.get_9th_digit("1792001234001")
+        self.assertEqual(digit, "1", "9th digit of 1792001234001 should be 1")
 
     def test_extract_9th_digit_various(self):
         """[CAL-02] Various 9th digit extractions."""
         test_cases = [
-            ('0992345678001', '6'),  # 9th position = 6
-            ('1791234567001', '5'),  # 9th position = 5
-            ('0190123456001', '3'),  # 9th position = 3
+            ("0992345678001", "6"),  # 9th position = 6
+            ("1791234567001", "5"),  # 9th position = 5
+            ("0190123456001", "3"),  # 9th position = 3
         ]
         for ruc, expected in test_cases:
             result = self.Calendar.get_9th_digit(ruc)
-            self.assertEqual(result, expected, f"9th digit of {ruc} should be {expected}")
+            self.assertEqual(
+                result, expected, f"9th digit of {ruc} should be {expected}"
+            )
 
     # =========================================================================
     # DEADLINE MAP CONFIGURATION
@@ -46,15 +47,23 @@ class TestTaxCalendar(TransactionCase):
 
     def test_deadline_map_configurable(self):
         """[CAL-03] Deadline map from ir.config_parameter."""
-        param = self.ICP.get_param('l10n_ec.deadline_day_map')
+        param = self.ICP.get_param("l10n_ec.deadline_day_map")
         self.assertIsNotNone(param, "Deadline map should be configured")
 
     def test_deadline_map_default_values(self):
         """[CAL-04] Default deadline days per digit."""
         deadline_map = self.Calendar._get_deadline_map()
         expected = {
-            '1': 10, '2': 12, '3': 14, '4': 16, '5': 18,
-            '6': 20, '7': 22, '8': 24, '9': 26, '0': 28,
+            "1": 10,
+            "2": 12,
+            "3": 14,
+            "4": 16,
+            "5": 18,
+            "6": 20,
+            "7": 22,
+            "8": 24,
+            "9": 26,
+            "0": 28,
         }
         self.assertEqual(deadline_map, expected)
 
@@ -72,12 +81,12 @@ class TestTaxCalendar(TransactionCase):
         # Create mock company with RUC ending in 1
         # For unit test, we'll verify the map
         deadline_map = self.Calendar._get_deadline_map()
-        self.assertEqual(deadline_map['1'], 10)
+        self.assertEqual(deadline_map["1"], 10)
 
     def test_iva_deadline_digit_0(self):
         """[CAL-07] IVA deadline for digit 0 = 28th."""
         deadline_map = self.Calendar._get_deadline_map()
-        self.assertEqual(deadline_map['0'], 28)
+        self.assertEqual(deadline_map["0"], 28)
 
     # =========================================================================
     # PERIOD MONTH HANDLING
@@ -92,10 +101,10 @@ class TestTaxCalendar(TransactionCase):
 
     def test_ir_declaration_month(self):
         """[CAL-09] IR sociedades month = April (4)."""
-        month = int(self.ICP.get_param('l10n_ec.ir_sociedades_month', '4'))
+        month = int(self.ICP.get_param("l10n_ec.ir_sociedades_month", "4"))
         self.assertEqual(month, 4, "IR sociedades should be April")
 
     def test_ir_natural_month(self):
         """[CAL-10] IR natural persons month = March (3)."""
-        month = int(self.ICP.get_param('l10n_ec.ir_natural_month', '3'))
+        month = int(self.ICP.get_param("l10n_ec.ir_natural_month", "3"))
         self.assertEqual(month, 3, "IR natural should be March")

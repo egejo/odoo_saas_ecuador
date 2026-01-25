@@ -2,4 +2,3 @@
 from . import test_sri_signer
 from . import test_sri_service
 from . import test_xml_generator
-

@@ -13,11 +13,10 @@ Tests all regulations from Res. NAC-DGERCGC25-00000017:
 All values read from ir.config_parameter, NO HARDCODED VALUES.
 """
 from odoo.tests import tagged, TransactionCase
-from odoo.exceptions import ValidationError, UserError
 from datetime import date
 
 
-@tagged('post_install', '-at_install', 'l10n_ec', 'regulatory', 'sri_2026')
+@tagged("post_install", "-at_install", "l10n_ec", "regulatory", "sri_2026")
 class TestSri2026Rules(TransactionCase):
     """
     Comprehensive SRI 2026 regulatory compliance tests.
@@ -28,18 +27,21 @@ class TestSri2026Rules(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
 
-        cls.ecuador = cls.env.ref('base.ec')
-        cls.company = cls.env['res.company'].search([
-            ('country_id', '=', cls.ecuador.id)
-        ], limit=1) or cls.env.user.company_id
+        cls.ecuador = cls.env.ref("base.ec")
+        cls.company = (
+            cls.env["res.company"].search(
+                [("country_id", "=", cls.ecuador.id)], limit=1
+            )
+            or cls.env.user.company_id
+        )
 
         # Get all config from ir.config_parameter
-        ICP = cls.env['ir.config_parameter'].sudo()
-        cls.cf_ruc = ICP.get_param('l10n_ec.consumidor_final_ruc', '9999999999999')
-        cls.cf_limit = float(ICP.get_param('l10n_ec.consumidor_final_limit', '50'))
-        cls.annulment_day = int(ICP.get_param('l10n_ec.annulment_day_limit', '7'))
-        cls.iva_rate = float(ICP.get_param('l10n_ec.iva_rate', '15'))
-        cls.sbu = float(ICP.get_param('l10n_ec.sbu', '482'))
+        ICP = cls.env["ir.config_parameter"].sudo()
+        cls.cf_ruc = ICP.get_param("l10n_ec.consumidor_final_ruc", "9999999999999")
+        cls.cf_limit = float(ICP.get_param("l10n_ec.consumidor_final_limit", "50"))
+        cls.annulment_day = int(ICP.get_param("l10n_ec.annulment_day_limit", "7"))
+        cls.iva_rate = float(ICP.get_param("l10n_ec.iva_rate", "15"))
+        cls.sbu = float(ICP.get_param("l10n_ec.sbu", "482"))
 
     # =========================================================================
     # RULE 1: Consumidor Final Limit
@@ -53,7 +55,7 @@ class TestSri2026Rules(TransactionCase):
     def test_rule_cf_ruc_format(self):
         """[SRI-2026-R01] CF RUC debe ser 13 nueves."""
         self.assertEqual(len(self.cf_ruc), 13, "CF RUC must be 13 digits")
-        self.assertEqual(self.cf_ruc, '9999999999999', "Default CF RUC")
+        self.assertEqual(self.cf_ruc, "9999999999999", "Default CF RUC")
 
     # =========================================================================
     # RULE 2: Cancellation Deadline
@@ -109,31 +111,31 @@ class TestSri2026Rules(TransactionCase):
     def test_rule_no_hardcoded_cf_limit(self):
         """[VIBE-RULE] CF limit no debe estar hardcodeado."""
         # Can change the value
-        ICP = self.env['ir.config_parameter'].sudo()
-        original = ICP.get_param('l10n_ec.consumidor_final_limit')
+        ICP = self.env["ir.config_parameter"].sudo()
+        original = ICP.get_param("l10n_ec.consumidor_final_limit")
 
         # Set new value
-        ICP.set_param('l10n_ec.consumidor_final_limit', '100')
-        new_value = float(ICP.get_param('l10n_ec.consumidor_final_limit'))
+        ICP.set_param("l10n_ec.consumidor_final_limit", "100")
+        new_value = float(ICP.get_param("l10n_ec.consumidor_final_limit"))
 
         self.assertEqual(new_value, 100.0, "Limit should be changeable")
 
         # Restore
         if original:
-            ICP.set_param('l10n_ec.consumidor_final_limit', original)
+            ICP.set_param("l10n_ec.consumidor_final_limit", original)
         else:
-            ICP.set_param('l10n_ec.consumidor_final_limit', '50')
+            ICP.set_param("l10n_ec.consumidor_final_limit", "50")
 
     def test_rule_all_config_params_exist(self):
         """[VIBE-RULE] Todos los parámetros deben ser configurables."""
         required_params = [
-            'l10n_ec.consumidor_final_ruc',
-            'l10n_ec.consumidor_final_limit',
-            'l10n_ec.iva_rate',
-            'l10n_ec.sbu',
+            "l10n_ec.consumidor_final_ruc",
+            "l10n_ec.consumidor_final_limit",
+            "l10n_ec.iva_rate",
+            "l10n_ec.sbu",
         ]
 
-        ICP = self.env['ir.config_parameter'].sudo()
+        ICP = self.env["ir.config_parameter"].sudo()
 
         for param in required_params:
             # Should be readable (may be None if not set, but should not error)

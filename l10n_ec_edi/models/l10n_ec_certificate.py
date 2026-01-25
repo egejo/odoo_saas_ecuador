@@ -14,12 +14,12 @@ from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 import base64
 import logging
-from datetime import datetime
 
 # External cryptography library (verified in manifest)
 try:
     from cryptography.hazmat.primitives.serialization import pkcs12
     from cryptography import x509
+
     CRYPTO_AVAILABLE = True
 except ImportError:
     CRYPTO_AVAILABLE = False
@@ -34,74 +34,63 @@ class L10nEcCertificate(models.Model):
     Stores P12/PFX certificates for XAdES-BES signing of electronic documents.
     Validates certificate authenticity, expiration, and password correctness.
     """
-    _name = 'l10n_ec.certificate'
-    _description = 'Ecuadorian Digital Signature (SRI)'
+
+    _name = "l10n_ec.certificate"
+    _description = "Ecuadorian Digital Signature (SRI)"
     _check_company_auto = True
-    _order = 'state desc, expiration_date'
+    _order = "state desc, expiration_date"
 
     name = fields.Char(
-        string='Name',
-        required=True,
-        help='Friendly name, e.g. "Firma 2026"'
+        string="Name", required=True, help='Friendly name, e.g. "Firma 2026"'
     )
     company_id = fields.Many2one(
-        'res.company',
-        required=True,
-        default=lambda self: self.env.company
+        "res.company", required=True, default=lambda self: self.env.company
     )
 
     # P12 Certificate Storage
     content = fields.Binary(
-        string='Certificate File (.p12)',
+        string="Certificate File (.p12)",
         required=True,
         attachment=True,
-        help='Upload the .p12 or .pfx file from your authorized provider'
+        help="Upload the .p12 or .pfx file from your authorized provider",
     )
     password = fields.Char(
-        string='Password',
+        string="Password",
         required=True,
-        groups='base.group_system',
-        help='Password for the .p12 file. Stored securely.'
+        groups="base.group_system",
+        help="Password for the .p12 file. Stored securely.",
     )
 
     # Certificate Metadata (extracted on validation)
     subject_cn = fields.Char(
-        string='Subject (CN)',
-        readonly=True,
-        help='Common Name from certificate'
+        string="Subject (CN)", readonly=True, help="Common Name from certificate"
     )
     issuer_cn = fields.Char(
-        string='Issuer',
+        string="Issuer",
         readonly=True,
-        help='Certificate Authority that issued this certificate'
+        help="Certificate Authority that issued this certificate",
     )
-    serial_number = fields.Char(
-        string='Serial Number',
-        readonly=True
-    )
-    expiration_date = fields.Date(
-        string='Expiration Date',
-        readonly=True
-    )
-    issue_date = fields.Date(
-        string='Issue Date',
-        readonly=True
-    )
+    serial_number = fields.Char(string="Serial Number", readonly=True)
+    expiration_date = fields.Date(string="Expiration Date", readonly=True)
+    issue_date = fields.Date(string="Issue Date", readonly=True)
 
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('active', 'Active'),
-        ('expired', 'Expired'),
-        ('invalid', 'Invalid Password'),
-    ], default='draft', string='Status', readonly=True)
+    state = fields.Selection(
+        [
+            ("draft", "Draft"),
+            ("active", "Active"),
+            ("expired", "Expired"),
+            ("invalid", "Invalid Password"),
+        ],
+        default="draft",
+        string="Status",
+        readonly=True,
+    )
 
     days_until_expiry = fields.Integer(
-        string='Days Until Expiry',
-        compute='_compute_days_until_expiry',
-        store=False
+        string="Days Until Expiry", compute="_compute_days_until_expiry", store=False
     )
 
-    @api.depends('expiration_date')
+    @api.depends("expiration_date")
     def _compute_days_until_expiry(self):
         """Compute days remaining until certificate expires."""
         today = fields.Date.today()
@@ -126,10 +115,12 @@ class L10nEcCertificate(models.Model):
             ValidationError: If password is incorrect or certificate is invalid
         """
         if not CRYPTO_AVAILABLE:
-            raise ValidationError(_(
-                "The 'cryptography' Python library is not installed. "
-                "Please run: pip install cryptography"
-            ))
+            raise ValidationError(
+                _(
+                    "The 'cryptography' Python library is not installed. "
+                    "Please run: pip install cryptography"
+                )
+            )
 
         for record in self:
             if not record.content:
@@ -143,17 +134,20 @@ class L10nEcCertificate(models.Model):
 
             # Load P12 with password
             try:
-                private_key, certificate, additional_certs = pkcs12.load_key_and_certificates(
-                    p12_data,
-                    record.password.encode('utf-8')
+                private_key, certificate, additional_certs = (
+                    pkcs12.load_key_and_certificates(
+                        p12_data, record.password.encode("utf-8")
+                    )
                 )
             except ValueError as e:
-                if 'password' in str(e).lower() or 'mac' in str(e).lower():
-                    record.state = 'invalid'
-                    raise ValidationError(_(
-                        "Invalid password for P12 certificate. "
-                        "Please verify the password is correct."
-                    ))
+                if "password" in str(e).lower() or "mac" in str(e).lower():
+                    record.state = "invalid"
+                    raise ValidationError(
+                        _(
+                            "Invalid password for P12 certificate. "
+                            "Please verify the password is correct."
+                        )
+                    )
                 raise ValidationError(_("Invalid P12 file: %s") % str(e))
             except Exception as e:
                 raise ValidationError(_("Could not load P12 file: %s") % str(e))
@@ -167,13 +161,13 @@ class L10nEcCertificate(models.Model):
                 subject_cn = certificate.subject.get_attributes_for_oid(
                     x509.oid.NameOID.COMMON_NAME
                 )
-                record.subject_cn = subject_cn[0].value if subject_cn else 'Unknown'
+                record.subject_cn = subject_cn[0].value if subject_cn else "Unknown"
 
                 # Issuer Common Name
                 issuer_cn = certificate.issuer.get_attributes_for_oid(
                     x509.oid.NameOID.COMMON_NAME
                 )
-                record.issuer_cn = issuer_cn[0].value if issuer_cn else 'Unknown'
+                record.issuer_cn = issuer_cn[0].value if issuer_cn else "Unknown"
 
                 # Serial Number
                 record.serial_number = str(certificate.serial_number)
@@ -188,17 +182,18 @@ class L10nEcCertificate(models.Model):
             # Check expiration
             today = fields.Date.today()
             if record.expiration_date and record.expiration_date < today:
-                record.state = 'expired'
-                raise ValidationError(_(
-                    "Certificate expired on %s. Please upload a valid certificate."
-                ) % record.expiration_date)
+                record.state = "expired"
+                raise ValidationError(
+                    _("Certificate expired on %s. Please upload a valid certificate.")
+                    % record.expiration_date
+                )
 
             # All checks passed
-            record.state = 'active'
+            record.state = "active"
             _logger.info(
                 "Certificate '%s' validated successfully. Expires: %s",
                 record.name,
-                record.expiration_date
+                record.expiration_date,
             )
 
     def action_check_expiry(self):
@@ -209,28 +204,32 @@ class L10nEcCertificate(models.Model):
         today = fields.Date.today()
 
         # Find certificates expiring soon or already expired
-        expiring_soon = self.search([
-            ('state', '=', 'active'),
-            ('expiration_date', '!=', False),
-        ])
+        expiring_soon = self.search(
+            [
+                ("state", "=", "active"),
+                ("expiration_date", "!=", False),
+            ]
+        )
 
         for cert in expiring_soon:
             if cert.expiration_date < today:
-                cert.state = 'expired'
+                cert.state = "expired"
                 _logger.warning(
                     "Certificate '%s' for company '%s' has EXPIRED.",
                     cert.name,
-                    cert.company_id.name
+                    cert.company_id.name,
                 )
             elif cert.days_until_expiry <= 30:
                 _logger.warning(
                     "Certificate '%s' expires in %d days.",
                     cert.name,
-                    cert.days_until_expiry
+                    cert.days_until_expiry,
                 )
 
     _sql_constraints = [
-        ('uniq_name_company', 'unique(name, company_id)',
-         'Certificate name must be unique per company'),
+        (
+            "uniq_name_company",
+            "unique(name, company_id)",
+            "Certificate name must be unique per company",
+        ),
     ]
-

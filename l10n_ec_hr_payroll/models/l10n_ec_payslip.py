@@ -1,14 +1,14 @@
 from odoo import models, fields, api
-from datetime import date
+
 
 class L10nEcPayslip(models.Model):
-    _name = 'l10n_ec.payslip'
-    _description = 'Ecuadorian Payslip'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _name = "l10n_ec.payslip"
+    _description = "Ecuadorian Payslip"
+    _inherit = ["mail.thread", "mail.activity.mixin"]
 
-    name = fields.Char(readonly=True) # e.g. "Cedula - Month/Year"
-    employee_id = fields.Many2one('hr.employee', required=True)
-    contract_id = fields.Many2one('hr.contract', required=True)
+    name = fields.Char(readonly=True)  # e.g. "Cedula - Month/Year"
+    employee_id = fields.Many2one("hr.employee", required=True)
+    contract_id = fields.Many2one("hr.contract", required=True)
 
     date_start = fields.Date(required=True)
     date_end = fields.Date(required=True)
@@ -16,44 +16,58 @@ class L10nEcPayslip(models.Model):
     days_worked = fields.Float(default=30.0)
 
     # Earnings
-    wage = fields.Float("Base Wage", compute='_compute_wage', store=True, readonly=False)
+    wage = fields.Float(
+        "Base Wage", compute="_compute_wage", store=True, readonly=False
+    )
     overtime_hours = fields.Float("Overtime (50%) Hours")
     supplementary_hours = fields.Float("Supplementary (100%) Hours")
     commission = fields.Float("Commissions")
     bonus = fields.Float("Bonuses")
 
     # Computations
-    total_income = fields.Float("Total Income", compute='_compute_totals', store=True)
+    total_income = fields.Float("Total Income", compute="_compute_totals", store=True)
 
     # Deductions
-    iess_personal = fields.Float("IESS Personal (9.45%)", compute='_compute_iess', store=True)
+    iess_personal = fields.Float(
+        "IESS Personal (9.45%)", compute="_compute_iess", store=True
+    )
     income_tax = fields.Float("Impuesto Renta", default=0.0)
     advances = fields.Float("Salary Advances")
 
     # Employer Costs
-    iess_employer = fields.Float("IESS Patronal (11.15%)", compute='_compute_iess', store=True)
+    iess_employer = fields.Float(
+        "IESS Patronal (11.15%)", compute="_compute_iess", store=True
+    )
 
     # Benefits (Provisions)
-    thirteenth = fields.Float("13th Salary", compute='_compute_benefits', store=True)
-    fourteenth = fields.Float("14th Salary", compute='_compute_benefits', store=True)
-    reserve_funds = fields.Float("Reserve Funds", compute='_compute_benefits', store=True)
+    thirteenth = fields.Float("13th Salary", compute="_compute_benefits", store=True)
+    fourteenth = fields.Float("14th Salary", compute="_compute_benefits", store=True)
+    reserve_funds = fields.Float(
+        "Reserve Funds", compute="_compute_benefits", store=True
+    )
 
-    net_wage = fields.Float("Net Wage", compute='_compute_totals', store=True)
-    total_benefits_cash = fields.Float("Benefits (Cash)", compute='_compute_benefits', store=True)
+    net_wage = fields.Float("Net Wage", compute="_compute_totals", store=True)
+    total_benefits_cash = fields.Float(
+        "Benefits (Cash)", compute="_compute_benefits", store=True
+    )
 
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('verify', 'Verification'),
-        ('done', 'Done'),
-        ('cancel', 'Cancelled')
-    ], default='draft', tracking=True)
+    state = fields.Selection(
+        [
+            ("draft", "Draft"),
+            ("verify", "Verification"),
+            ("done", "Done"),
+            ("cancel", "Cancelled"),
+        ],
+        default="draft",
+        tracking=True,
+    )
 
-    @api.depends('contract_id')
+    @api.depends("contract_id")
     def _compute_wage(self):
         for rec in self:
             rec.wage = rec.contract_id.wage if rec.contract_id else 0.0
 
-    @api.depends('wage', 'overtime_hours', 'supplementary_hours', 'commission', 'bonus')
+    @api.depends("wage", "overtime_hours", "supplementary_hours", "commission", "bonus")
     def _compute_totals(self):
         for rec in self:
             # Superiority Feature: Auto-calculate Overtime from Attendance
@@ -68,9 +82,16 @@ class L10nEcPayslip(models.Model):
 
             rec.total_income = rec.wage + ot_pay + supp_pay + rec.commission + rec.bonus
             # Income Tax Calculation (SRI 2026 Progressive)
-            rec.income_tax = rec._compute_income_tax_2026(rec.total_income, rec.iess_personal)
+            rec.income_tax = rec._compute_income_tax_2026(
+                rec.total_income, rec.iess_personal
+            )
 
-            rec.net_wage = (rec.total_income + rec.total_benefits_cash) - rec.iess_personal - rec.income_tax - rec.advances
+            rec.net_wage = (
+                (rec.total_income + rec.total_benefits_cash)
+                - rec.iess_personal
+                - rec.income_tax
+                - rec.advances
+            )
 
     def _compute_overtime_from_attendance(self):
         """
@@ -84,11 +105,13 @@ class L10nEcPayslip(models.Model):
            - Weekends -> 100% (Extraordinary)
         """
         for rec in self:
-            attendances = self.env['hr.attendance'].search([
-                ('employee_id', '=', rec.employee_id.id),
-                ('check_in', '>=', rec.date_start),
-                ('check_out', '<=', rec.date_end)
-            ])
+            attendances = self.env["hr.attendance"].search(
+                [
+                    ("employee_id", "=", rec.employee_id.id),
+                    ("check_in", ">=", rec.date_start),
+                    ("check_out", "<=", rec.date_end),
+                ]
+            )
 
             total_supp_50 = 0.0
             total_extra_100 = 0.0
@@ -119,7 +142,7 @@ class L10nEcPayslip(models.Model):
 
             # Update Fields if they are zero (Manual override allowed)
             if rec.overtime_hours == 0 and total_extra_100 > 0:
-                rec.overtime_hours = total_extra_100 # In our model overtime_hours is mapped to 100% or 50%?
+                rec.overtime_hours = total_extra_100  # In our model overtime_hours is mapped to 100% or 50%?
                 # Check model:
                 # overtime_hours = 50% (Wait, typically 50 is supplementary)
                 # supplementary_hours = 100%
@@ -135,7 +158,7 @@ class L10nEcPayslip(models.Model):
 
             # Write to fields strictly
             rec.overtime_hours = total_supp_50  # 50%
-            rec.supplementary_hours = total_extra_100 # 100%
+            rec.supplementary_hours = total_extra_100  # 100%
 
     def _compute_income_tax_2026(self, monthly_income, monthly_iess):
         """
@@ -156,7 +179,7 @@ class L10nEcPayslip(models.Model):
 
         # B. Impuesto Causado
         # Get tax from l10n_ec.tax.table
-        tax_table = self.env['l10n_ec.tax.table']
+        tax_table = self.env["l10n_ec.tax.table"]
         annual_caused_tax = tax_table.get_tax_for_base(taxable_base, year=2026)
 
         # If no tax caused, return 0 early
@@ -165,7 +188,7 @@ class L10nEcPayslip(models.Model):
 
         # C. Rebaja Tributaria (Tax Credit)
         # Needs Employee Family Loads and Contract Projected Expenses
-        basket_model = self.env['l10n_ec.family.basket']
+        basket_model = self.env["l10n_ec.family.basket"]
 
         # Get Projected Expenses from Contract
         projected_expenses = 0.0
@@ -179,24 +202,26 @@ class L10nEcPayslip(models.Model):
             loads = self.employee_id.l10n_ec_family_loads
             catastrophic_disease = self.employee_id.l10n_ec_catastrophic_disease
 
-        rebate = basket_model.calculate_rebate(projected_expenses, loads, catastrophic_disease, year=2026)
+        rebate = basket_model.calculate_rebate(
+            projected_expenses, loads, catastrophic_disease, year=2026
+        )
 
         # D. Final Tax
         final_annual_tax = max(0.0, annual_caused_tax - rebate)
 
         return final_annual_tax / 12.0
 
-    @api.depends('total_income')
+    @api.depends("total_income")
     def _compute_iess(self):
         """
         Calculate IESS contributions using configurable rates.
         Rates from ir.config_parameter - NO HARDCODED FALLBACKS.
         """
-        ICP = self.env['ir.config_parameter'].sudo()
+        ICP = self.env["ir.config_parameter"].sudo()
 
         # Get IESS rates from config - NO HARDCODED DEFAULTS
-        iess_personal_param = ICP.get_param('l10n_ec.iess_aporte_personal')
-        iess_employer_param = ICP.get_param('l10n_ec.iess_aporte_patronal')
+        iess_personal_param = ICP.get_param("l10n_ec.iess_aporte_personal")
+        iess_employer_param = ICP.get_param("l10n_ec.iess_aporte_patronal")
 
         if not iess_personal_param or not iess_employer_param:
             raise ValueError(
@@ -214,10 +239,15 @@ class L10nEcPayslip(models.Model):
             # IESS Employer contribution
             rec.iess_employer = rec.total_income * iess_employer_rate
 
-    @api.depends('total_income', 'contract_id.l10n_ec_accumulate_13', 'contract_id.l10n_ec_accumulate_14', 'contract_id.l10n_ec_accumulate_reserve')
+    @api.depends(
+        "total_income",
+        "contract_id.l10n_ec_accumulate_13",
+        "contract_id.l10n_ec_accumulate_14",
+        "contract_id.l10n_ec_accumulate_reserve",
+    )
     def _compute_benefits(self):
         # Fetch SBU from Config Parameter - NO HARDCODED FALLBACK
-        sbu_param = self.env['ir.config_parameter'].sudo().get_param('l10n_ec.sbu')
+        sbu_param = self.env["ir.config_parameter"].sudo().get_param("l10n_ec.sbu")
         if not sbu_param:
             raise ValueError(
                 "Missing SBU configuration. "
@@ -253,7 +283,7 @@ class L10nEcPayslip(models.Model):
 
             rec.total_benefits_cash = cash_total
 
-    @api.constrains('overtime_hours', 'supplementary_hours')
+    @api.constrains("overtime_hours", "supplementary_hours")
     def _check_overtime_limits(self):
         """
         Enforce Código de Trabajo Art. 55:
@@ -271,18 +301,19 @@ class L10nEcPayslip(models.Model):
             # 12 hours * 4 weeks = 48 hours max per month.
             # This is a safe upper bound to prevent illegal exploitation.
             if total_ot > 48.0:
-                 from odoo.exceptions import ValidationError
-                 raise ValidationError(
-                     "Legal Overtime Limit Exceeded (Art. 55 Código de Trabajo).\n\n"
-                     "The maximum overtime allowed is 12 hours per week.\n"
-                     "Accumulated Monthly Limit (approx): 48 hours.\n"
-                     f"Current Total: {total_ot} hours.\n\n"
-                     "Please reduce the overtime hours."
-                 )
+                from odoo.exceptions import ValidationError
+
+                raise ValidationError(
+                    "Legal Overtime Limit Exceeded (Art. 55 Código de Trabajo).\n\n"
+                    "The maximum overtime allowed is 12 hours per week.\n"
+                    "Accumulated Monthly Limit (approx): 48 hours.\n"
+                    f"Current Total: {total_ot} hours.\n\n"
+                    "Please reduce the overtime hours."
+                )
 
     def action_confirm(self):
         self._check_overtime_limits()
-        self.write({'state': 'done'})
+        self.write({"state": "done"})
 
     @api.model
     def create(self, vals):

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- LORTI Art. 28 num. 6 - Tasas de Depreciación Ecuador -->
+
+    <record id="category_building" model="l10n_ec.asset.category">
+        <field name="name">Inmuebles (excepto terrenos)</field>
+        <field name="annual_rate">5.0</field>
+        <field name="depreciation_method">linear</field>
+    </record>
+
+    <record id="category_machinery" model="l10n_ec.asset.category">
+        <field name="name">Instalaciones, maquinarias, equipos y muebles</field>
+        <field name="annual_rate">10.0</field>
+        <field name="depreciation_method">linear</field>
+    </record>
+
+    <record id="category_vehicle" model="l10n_ec.asset.category">
+        <field name="name">Vehículos, equipos de transporte y equipo caminero móvil</field>
+        <field name="annual_rate">20.0</field>
+        <field name="depreciation_method">linear</field>
+    </record>
+
+    <record id="category_computer" model="l10n_ec.asset.category">
+        <field name="name">Equipos de cómputo y software</field>
+        <field name="annual_rate">33.0</field>
+        <field name="depreciation_method">linear</field>
+    </record>
+
+</odoo>

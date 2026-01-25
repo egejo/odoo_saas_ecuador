@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Ecuador - Income Tax Engine 2026 (Impuesto Renta)',
-    'version': '18.0.1.0.0',
-    'category': 'Accounting/Localizations',
-    'summary': 'Progressive Tax Table & Family Loads Rebate (Resolution 00000043)',
-    'description': """
+    "name": "Ecuador - Income Tax Engine 2026 (Impuesto Renta)",
+    "version": "18.0.1.0.0",
+    "category": "Accounting/Localizations",
+    "summary": "Progressive Tax Table & Family Loads Rebate (Resolution 00000043)",
+    "description": """
 Ecuador Income Tax Engine 2026
 ==============================
 
@@ -22,14 +22,14 @@ Implements the official 2026 logic for **Impuesto a la Renta Personas Naturales*
 
 This module provides the calculation engine used by `l10n_ec_hr_payroll`.
     """,
-    'author': 'Somatech.dev',
-    'depends': ['base', 'l10n_ec_base'],
-    'data': [
-        'security/ir.model.access.csv',
-        'data/tax_table_2026_data.xml',
-        'wizard/gastos_personales_wizard_view.xml',
+    "author": "Somatech.dev",
+    "depends": ["base", "l10n_ec_base"],
+    "data": [
+        "security/ir.model.access.csv",
+        "data/tax_table_2026_data.xml",
+        "wizard/gastos_personales_wizard_view.xml",
     ],
-    'installable': True,
-    'application': False,
-    'license': 'LGPL-3',
+    "installable": True,
+    "application": False,
+    "license": "LGPL-3",
 }

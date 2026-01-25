@@ -4,34 +4,45 @@
         <field name="name">l10n_ec.sut.report.wizard.form</field>
         <field name="model">l10n_ec.sut.report.wizard</field>
         <field name="arch" type="xml">
-            <form string="SUT Report Generator">
+            <form string="SUT Report Generator - MDT">
                 <group>
                     <field name="report_type"/>
                     <field name="date_start"/>
                     <field name="date_end"/>
+                </group>
+                <group string="Utilidades (Art. 97-104)" invisible="report_type != 'utilidades'">
+                    <field name="fiscal_year_profit" readonly="1" widget="monetary"/>
+                    <field name="company_profit" readonly="1" widget="monetary"/>
                 </group>
                 <group invisible="not file_data">
                     <field name="filename" invisible="1"/>
                     <field name="file_data" filename="filename" readonly="1"/>
                 </group>
                 <footer>
-                    <button string="Generate" name="action_generate" type="object" class="btn-primary" invisible="file_data"/>
-                    <button string="Close" class="btn-secondary" special="cancel"/>
+                    <button string="Generar Reporte" name="action_generate" type="object" class="btn-primary" invisible="file_data"/>
+                    <button string="Cerrar" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
         </field>
     </record>
 
     <record id="action_l10n_ec_sut_report" model="ir.actions.act_window">
-        <field name="name">MDT SUT Reports</field>
+        <field name="name">Reportes SUT (MDT)</field>
         <field name="res_model">l10n_ec.sut.report.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
 
+    <!-- Menu under Employees root -->
+    <menuitem id="menu_l10n_ec_sut_root"
+              name="SUT (Ministerio Trabajo)"
+              parent="hr.menu_hr_root"
+              sequence="90"/>
+
     <menuitem id="menu_l10n_ec_sut_report"
-              name="SUT Reports (MDT)"
-              parent="l10n_ec_hr_payroll.menu_l10n_ec_hr_payroll_root"
+              name="Generar Reportes SUT"
+              parent="menu_l10n_ec_sut_root"
               action="action_l10n_ec_sut_report"
-              sequence="40"/>
+              sequence="10"/>
 </odoo>
+

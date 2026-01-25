@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Quality Check Views -->
+    <record id="view_quality_check_list" model="ir.ui.view">
+        <field name="name">l10n_ec.quality.check.list</field>
+        <field name="model">l10n_ec.quality.check</field>
+        <field name="arch" type="xml">
+            <list decoration-success="quality_state=='pass'" decoration-danger="quality_state=='fail'">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="check_type"/>
+                <field name="check_date"/>
+                <field name="user_id"/>
+                <field name="quality_state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_quality_check_form" model="ir.ui.view">
+        <field name="name">l10n_ec.quality.check.form</field>
+        <field name="model">l10n_ec.quality.check</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_pass" string="Aprobar" type="object" class="btn-success" invisible="quality_state != 'none'"/>
+                    <button name="action_fail" string="Rechazar" type="object" class="btn-danger" invisible="quality_state != 'none'"/>
+                    <field name="quality_state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id"/>
+                            <field name="point_id"/>
+                            <field name="check_type"/>
+                            <field name="inen_norm"/>
+                        </group>
+                        <group>
+                            <field name="production_id"/>
+                            <field name="picking_id"/>
+                            <field name="user_id"/>
+                            <field name="check_date"/>
+                        </group>
+                    </group>
+                    <group string="Medición" invisible="check_type != 'measure'">
+                        <field name="measure_value"/>
+                        <field name="measure_min"/>
+                        <field name="measure_max"/>
+                    </group>
+                    <group string="BPM" invisible="check_type != 'bpm'">
+                        <field name="bpm_compliant"/>
+                    </group>
+                    <group>
+                        <field name="notes"/>
+                        <field name="failure_reason" invisible="quality_state != 'fail'"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Quality Point Views -->
+    <record id="view_quality_point_list" model="ir.ui.view">
+        <field name="name">l10n_ec.quality.point.list</field>
+        <field name="model">l10n_ec.quality.point</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="trigger"/>
+                <field name="check_type"/>
+                <field name="inen_norm"/>
+                <field name="check_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_quality_point_form" model="ir.ui.view">
+        <field name="name">l10n_ec.quality.point.form</field>
+        <field name="model">l10n_ec.quality.point</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="trigger"/>
+                            <field name="check_type"/>
+                            <field name="inen_norm"/>
+                            <field name="arcsa_requirement"/>
+                        </group>
+                        <group>
+                            <field name="measure_min" invisible="check_type != 'measure'"/>
+                            <field name="measure_max" invisible="check_type != 'measure'"/>
+                            <field name="measure_unit" invisible="check_type != 'measure'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Productos">
+                            <field name="product_ids"/>
+                            <field name="product_category_ids"/>
+                        </page>
+                        <page string="Operaciones">
+                            <field name="picking_type_ids"/>
+                        </page>
+                        <page string="Instrucciones">
+                            <field name="instructions"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_quality_check" model="ir.actions.act_window">
+        <field name="name">Controles de Calidad</field>
+        <field name="res_model">l10n_ec.quality.check</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_quality_point" model="ir.actions.act_window">
+        <field name="name">Puntos de Control</field>
+        <field name="res_model">l10n_ec.quality.point</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_quality_root" name="Calidad" web_icon="l10n_ec_quality,static/description/icon.png" sequence="45"/>
+    <menuitem id="menu_quality_checks" name="Controles de Calidad" parent="menu_quality_root" action="action_quality_check"/>
+    <menuitem id="menu_quality_points" name="Puntos de Control" parent="menu_quality_root" action="action_quality_point"/>
+    <menuitem id="menu_quality_config" name="Configuración" parent="menu_quality_root"/>
+
+</odoo>

@@ -12,7 +12,6 @@ Test Certificate:
 """
 import unittest
 import base64
-import os
 from pathlib import Path
 
 # These imports work outside Odoo context for unit testing
@@ -32,16 +31,15 @@ class TestXAdESSigner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Load the test certificate once for all tests."""
-        cert_path = Path(__file__).parent / 'certificates' / 'test_certificate.p12'
-        cls.p12_password = 'test1234'
+        cert_path = Path(__file__).parent / "certificates" / "test_certificate.p12"
+        cls.p12_password = "test1234"
 
-        with open(cert_path, 'rb') as f:
+        with open(cert_path, "rb") as f:
             cls.p12_binary = f.read()
 
         # Load certificate and key
         cls.private_key, cls.certificate, _ = pkcs12.load_key_and_certificates(
-            cls.p12_binary,
-            cls.p12_password.encode('utf-8')
+            cls.p12_binary, cls.p12_password.encode("utf-8")
         )
 
     def test_01_certificate_loading(self):
@@ -51,24 +49,27 @@ class TestXAdESSigner(unittest.TestCase):
 
         # Verify it's RSA
         from cryptography.hazmat.primitives.asymmetric import rsa
+
         self.assertIsInstance(self.private_key, rsa.RSAPrivateKey, "Key should be RSA")
 
     def test_02_xml_canonicalization(self):
         """Verify C14N canonicalization works on sample XML."""
-        sample_xml = b'''<?xml version="1.0" encoding="UTF-8"?>
+        sample_xml = b"""<?xml version="1.0" encoding="UTF-8"?>
         <factura id="comprobante" version="2.1.0">
             <infoTributaria>
                 <ambiente>1</ambiente>
                 <razonSocial>Test Company</razonSocial>
             </infoTributaria>
-        </factura>'''
+        </factura>"""
 
         root = etree.fromstring(sample_xml)
-        canonical = etree.tostring(root, method="c14n", exclusive=False, with_comments=False)
+        canonical = etree.tostring(
+            root, method="c14n", exclusive=False, with_comments=False
+        )
 
         # C14N should produce consistent output
         self.assertIsInstance(canonical, bytes)
-        self.assertIn(b'<factura', canonical)
+        self.assertIn(b"<factura", canonical)
 
     def test_03_sha1_digest(self):
         """Verify SHA1 digest generation matches expected."""
@@ -84,11 +85,7 @@ class TestXAdESSigner(unittest.TestCase):
         """Verify RSA-SHA1 signature generation."""
         test_data = b"<SignedInfo>test data to sign</SignedInfo>"
 
-        signature = self.private_key.sign(
-            test_data,
-            padding.PKCS1v15(),
-            hashes.SHA1()
-        )
+        signature = self.private_key.sign(test_data, padding.PKCS1v15(), hashes.SHA1())
 
         signature_b64 = base64.b64encode(signature).decode()
 
@@ -102,7 +99,7 @@ class TestXAdESSigner(unittest.TestCase):
         This replicates the exact logic from sri_signer.py
         """
         # 1. Sample Invoice XML (minimal valid structure)
-        invoice_xml = b'''<?xml version="1.0" encoding="UTF-8"?>
+        invoice_xml = b"""<?xml version="1.0" encoding="UTF-8"?>
         <factura id="comprobante" version="2.1.0">
             <infoTributaria>
                 <ambiente>1</ambiente>
@@ -126,13 +123,15 @@ class TestXAdESSigner(unittest.TestCase):
                 <importeTotal>115.00</importeTotal>
                 <moneda>DOLAR</moneda>
             </infoFactura>
-        </factura>'''
+        </factura>"""
 
         # 2. Parse and Canonicalize
         parser = etree.XMLParser(remove_blank_text=True)
         root = etree.fromstring(invoice_xml, parser)
 
-        xml_to_hash = etree.tostring(root, method="c14n", exclusive=False, with_comments=False)
+        xml_to_hash = etree.tostring(
+            root, method="c14n", exclusive=False, with_comments=False
+        )
 
         # 3. Calculate Document Digest (SHA1)
         document_digest = hashlib.sha1(xml_to_hash).digest()
@@ -163,9 +162,7 @@ class TestXAdESSigner(unittest.TestCase):
         signed_info_c14n = etree.tostring(signed_info, method="c14n", exclusive=False)
 
         signature = self.private_key.sign(
-            signed_info_c14n,
-            padding.PKCS1v15(),
-            hashes.SHA1()
+            signed_info_c14n, padding.PKCS1v15(), hashes.SHA1()
         )
         signature_b64 = base64.b64encode(signature).decode()
 
@@ -181,7 +178,9 @@ class TestXAdESSigner(unittest.TestCase):
         x509_cert.text = cert_b64
 
         # 7. Assemble Signature Node
-        signature_node = etree.Element(f"{{{ns}}}Signature", Id="Signature-SRI", nsmap={None: ns})
+        signature_node = etree.Element(
+            f"{{{ns}}}Signature", Id="Signature-SRI", nsmap={None: ns}
+        )
         signature_node.append(signed_info)
 
         sig_val_node = etree.Element(f"{{{ns}}}SignatureValue")
@@ -193,12 +192,15 @@ class TestXAdESSigner(unittest.TestCase):
         root.append(signature_node)
 
         # 9. Output Final Signed XML
-        signed_xml = etree.tostring(root, xml_declaration=True, encoding='UTF-8')
+        signed_xml = etree.tostring(root, xml_declaration=True, encoding="UTF-8")
 
         # ASSERTIONS
-        self.assertIn(b'<ds:Signature', signed_xml.replace(b'Signature', b'ds:Signature') or signed_xml)
-        self.assertIn(b'SignatureValue', signed_xml)
-        self.assertIn(b'X509Certificate', signed_xml)
+        self.assertIn(
+            b"<ds:Signature",
+            signed_xml.replace(b"Signature", b"ds:Signature") or signed_xml,
+        )
+        self.assertIn(b"SignatureValue", signed_xml)
+        self.assertIn(b"X509Certificate", signed_xml)
         self.assertIn(document_digest_b64.encode(), signed_xml)
 
         print("\n✅ FULL SIGNING FLOW PASSED")
@@ -207,5 +209,5 @@ class TestXAdESSigner(unittest.TestCase):
         print(f"   Signature: {signature_b64[:30]}...")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

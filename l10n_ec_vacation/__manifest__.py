@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Ecuador - Vacation Ledger (Art. 69)',
-    'version': '18.0.1.0.0',
-    'category': 'Human Resources',
-    'summary': 'Statutory Vacation Accrual (15 days + Seniority Bonus)',
-    'description': """
+    "name": "Ecuador - Vacation Ledger (Art. 69)",
+    "version": "18.0.1.0.0",
+    "category": "Human Resources",
+    "summary": "Statutory Vacation Accrual (15 days + Seniority Bonus)",
+    "description": """
 Ecuador Vacation Ledger
 =======================
 
@@ -15,13 +15,13 @@ Implements **Código del Trabajo Art. 69**:
 
 This module is distinct from standard Odoo Time Off to ensure strict compliance with the "1.25 rule" regardless of work schedule quirks.
     """,
-    'author': 'Somatech.dev',
-    'depends': ['l10n_ec_hr_payroll'],
-    'data': [
-        'security/ir.model.access.csv',
-        'views/vacation_ledger_views.xml',
+    "author": "Somatech.dev",
+    "depends": ["l10n_ec_hr_payroll"],
+    "data": [
+        "security/ir.model.access.csv",
+        "views/vacation_ledger_views.xml",
     ],
-    'installable': True,
-    'application': False,
-    'license': 'LGPL-3',
+    "installable": True,
+    "application": False,
+    "license": "LGPL-3",
 }

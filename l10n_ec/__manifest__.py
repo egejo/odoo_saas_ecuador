@@ -5,11 +5,11 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 
 {
-    'name': '🇪🇨 Ecuador - Localización Completa',
-    'version': '18.0.1.0.0',
-    'category': 'Accounting/Localizations',
-    'summary': 'Instala TODA la localización Ecuador con un solo clic - SRI 2026, IESS, Aduanas',
-    'description': """
+    "name": "🇪🇨 Ecuador - Localización Completa",
+    "version": "18.0.1.0.0",
+    "category": "Accounting/Localizations",
+    "summary": "Instala TODA la localización Ecuador con un solo clic - SRI 2026, IESS, Aduanas",
+    "description": """
 🇪🇨 Localización Ecuador Completa para Odoo 18
 ==============================================
 
@@ -35,42 +35,70 @@ Este módulo instala **TODA** la localización ecuatoriana con **UN SOLO CLIC**:
 
 Desarrollado por Somatech.dev
     """,
-    'author': 'Somatech.dev, Odoo Community Association (OCA)',
-    'website': 'https://github.com/somatechlat/odoo_saas_ecuador',
-    'license': 'LGPL-3',
-    'depends': [
-        # === Core Business Modules (auto-installed) ===
-        'sale_management',      # Sales
-        'purchase',             # Purchase
-        'stock',                # Inventory
-        'point_of_sale',        # POS
-        'pos_restaurant',       # Restaurant POS
-        'account',              # Accounting
-        'hr',                   # HR
-        'hr_contract',          # Contracts
-        'contacts',             # Contacts
-        # === Ecuador Localization Modules ===
-        'l10n_ec_base',
-        'l10n_ec_edi',
-        'l10n_ec_sri',
-        'l10n_ec_withholding',
-        'l10n_ec_stock',
-        'l10n_ec_pos',
-        'l10n_ec_reports',
-        'l10n_ec_hr_payroll',
-        'l10n_ec_customs',
+    "author": "Somatech.dev, Odoo Community Association (OCA)",
+    "website": "https://github.com/somatechlat/odoo_saas_ecuador",
+    "license": "LGPL-3",
+    "depends": [
+        # ================================================================
+        # CORE BUSINESS MODULES
+        # ================================================================
+        "sale_management",  # LORTI Art. 64 - Facturación ventas
+        "purchase",  # COPCI Art. 108 - Importaciones
+        "stock",  # COPCI Art. 142 - Guía remisión
+        "point_of_sale",  # NAC-DGERCGC25-17 - POS electrónico
+        "pos_restaurant",  # NAC-DGERCGC25-17 - POS restaurantes
+        "account",  # LORTI Art. 19-20 - Contabilidad obligatoria
+        "crm",  # Gestión clientes
+        "project",  # Gestión proyectos
+        "contacts",  # Gestión contactos
+        # ================================================================
+        # HR COMPLETE - Código Trabajo + IESS + DE 255
+        # ================================================================
+        "hr",  # Código Trabajo Art. 42 - Registro empleados
+        "hr_contract",  # Código Trabajo Art. 12-17 - Contratos escritos
+        "hr_attendance",  # Código Trabajo Art. 47-55, DE 255 - Control jornada
+        "hr_holidays",  # Código Trabajo Art. 69-78 - Vacaciones 15 días
+        "hr_timesheet",  # Código Trabajo Art. 55 - Registro horas
+        "hr_expense",  # LORTI Art. 10 num. 9 - Gastos deducibles
+        # ================================================================
+        # MANUFACTURING - INEN + ARCSA
+        # ================================================================
+        "mrp",  # RTE INEN 142 - Manufactura regulada
+        "maintenance",  # DE 255 + MDT-2024-196 - Mantenimiento equipos
+        # NOTE: 'quality' is Enterprise-only, will create l10n_ec_quality
+        # ================================================================
+        # LOGISTICS - LOTTTSV + COPCI
+        # ================================================================
+        "fleet",  # LOTTTSV Art. 45-52 - Vehículos transporte
+        # ================================================================
+        # ASSETS - LORTI (Community alternative)
+        # ================================================================
+        "l10n_ec_asset",  # LORTI Art. 28 num. 6 - Depreciación
+        # ================================================================
+        # ECUADOR LOCALIZATION MODULES
+        # ================================================================
+        "l10n_ec_base",  # Plan cuentas NEC, RUC validation
+        "l10n_ec_edi",  # NAC-DGERCGC25-17 - Factura electrónica
+        "l10n_ec_sri",  # SRI XML, Access Key
+        "l10n_ec_withholding",  # LORTI Art. 43-50 - Retenciones
+        "l10n_ec_stock",  # COPCI Art. 142 - Guía remisión
+        "l10n_ec_pos",  # POS Ecuador
+        "l10n_ec_reports",  # LORTI Art. 107 - ATS
+        "l10n_ec_hr_payroll",  # Código Trabajo + IESS - Nómina
+        "l10n_ec_customs",  # COPCI Art. 108-216 - Aduanas
+        "l10n_ec_quality",  # Ley Calidad Art. 31-40, ARCSA Res. 067
     ],
-    'data': [
-        'security/l10n_ec_security.xml',
-        'security/ir.model.access.csv',
-        'wizard/l10n_ec_company_setup_wizard_views.xml',
-        'data/l10n_ec_demo_data.xml',
+    "data": [
+        "security/l10n_ec_security.xml",
+        "security/ir.model.access.csv",
+        "wizard/l10n_ec_company_setup_wizard_views.xml",
+        "data/l10n_ec_demo_data.xml",
     ],
-    'images': ['static/description/banner.png'],
-    'installable': True,
-    'application': True,
-    'auto_install': False,
-    'sequence': 1,
-    'post_init_hook': 'post_init_hook',
-    'uninstall_hook': 'uninstall_hook',
+    "images": ["static/description/banner.png"],
+    "installable": True,
+    "application": True,
+    "auto_install": False,
+    "sequence": 1,
+    "post_init_hook": "post_init_hook",
+    "uninstall_hook": "uninstall_hook",
 }

@@ -5,11 +5,11 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 
 {
-    'name': 'Ecuador - Payroll (IESS, Décimos, Utilidades)',
-    'version': '18.0.1.0.0',
-    'category': 'Human Resources/Payroll',
-    'summary': 'Complete Ecuadorian payroll with IESS, Décimos, and Utilidades',
-    'description': """
+    "name": "Ecuador - Payroll (IESS, Décimos, Utilidades)",
+    "version": "18.0.1.0.0",
+    "category": "Human Resources/Payroll",
+    "summary": "Complete Ecuadorian payroll with IESS, Décimos, and Utilidades",
+    "description": """
 Ecuadorian Payroll Localization
 ===============================
 
@@ -29,19 +29,19 @@ Complete payroll management for Ecuador (SBU 2026: $482):
 
 **Regulatory Compliance**: Ministerio del Trabajo 2026, IESS 2026
     """,
-    'author': 'Somatech.dev, Odoo Community Association (OCA)',
-    'website': 'https://github.com/somatechlat/odoo_saas_ecuador',
-    'license': 'LGPL-3',
-    'depends': ['hr', 'hr_contract'],
-    'data': [
-        'security/ir.model.access.csv',
-        'data/l10n_ec_salary_rule_data.xml',
-        'data/l10n_ec_payroll_data.xml',
-        'report/form_107_template.xml',
-        'views/hr_contract_views.xml',
-        'views/l10n_ec_payslip_views.xml',
+    "author": "Somatech.dev, Odoo Community Association (OCA)",
+    "website": "https://github.com/somatechlat/odoo_saas_ecuador",
+    "license": "LGPL-3",
+    "depends": ["hr", "hr_contract"],
+    "data": [
+        "security/ir.model.access.csv",
+        "data/l10n_ec_salary_rule_data.xml",
+        "data/l10n_ec_payroll_data.xml",
+        "report/form_107_template.xml",
+        "views/hr_contract_views.xml",
+        "views/l10n_ec_payslip_views.xml",
     ],
-    'images': ['static/description/banner.png'],
-    'installable': True,
-    'application': False,
+    "images": ["static/description/banner.png"],
+    "installable": True,
+    "application": False,
 }

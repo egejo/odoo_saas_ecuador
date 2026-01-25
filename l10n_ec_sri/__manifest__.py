@@ -5,11 +5,11 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 
 {
-    'name': 'Ecuador SRI Electronic Invoicing',
-    'version': '18.0.1.0.0',
-    'category': 'Accounting/Localizations/SRI',
-    'summary': 'Full SRI Electronic Invoicing Compliance (2025-2026)',
-    'description': """
+    "name": "Ecuador SRI Electronic Invoicing",
+    "version": "18.0.1.0.0",
+    "category": "Accounting/Localizations/SRI",
+    "summary": "Full SRI Electronic Invoicing Compliance (2025-2026)",
+    "description": """
 Ecuador SRI Integration Module
 ==============================
 
@@ -28,34 +28,34 @@ Complete SRI (Servicio de Rentas Internas) integration:
 
 **Regulatory Compliance**: SRI 2026
     """,
-    'author': 'Somatech.dev, Odoo Community Association (OCA)',
-    'website': 'https://github.com/somatechlat/odoo_saas_ecuador',
-    'license': 'LGPL-3',
-    'depends': [
-        'base',
-        'account',
-        'l10n_ec_base',
-        'l10n_ec_edi',  # Base EDI module with field definitions
+    "author": "Somatech.dev, Odoo Community Association (OCA)",
+    "website": "https://github.com/somatechlat/odoo_saas_ecuador",
+    "license": "LGPL-3",
+    "depends": [
+        "base",
+        "account",
+        "l10n_ec_base",
+        "l10n_ec_edi",  # Base EDI module with field definitions
     ],
-    'data': [
-        'security/ir.model.access.csv',
-        'data/ir_sequence_data.xml',
-        'views/account_move_views.xml',
-        'views/account_move_purchase_views.xml',
-        'views/l10n_ec_retention_views.xml',
-        'views/l10n_ec_retention_xml_template.xml',
+    "data": [
+        "security/ir.model.access.csv",
+        "data/ir_sequence_data.xml",
+        "views/account_move_views.xml",
+        "views/account_move_purchase_views.xml",
+        "views/l10n_ec_retention_views.xml",
+        "views/l10n_ec_retention_xml_template.xml",
     ],
-    'assets': {
-        'web.assets_backend': [
-             # Future: Add status badges styling if needed
+    "assets": {
+        "web.assets_backend": [
+            # Future: Add status badges styling if needed
         ],
     },
-    'external_dependencies': {
-        'python': ['zeep', 'cryptography', 'lxml'],
+    "external_dependencies": {
+        "python": ["zeep", "cryptography", "lxml"],
     },
-    'installable': True,
-    'application': False,
-    'auto_install': False,
-    'post_init_hook': 'post_init_hook',
-    'uninstall_hook': 'uninstall_hook',
+    "installable": True,
+    "application": False,
+    "auto_install": False,
+    "post_init_hook": "post_init_hook",
+    "uninstall_hook": "uninstall_hook",
 }

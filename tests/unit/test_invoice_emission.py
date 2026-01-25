@@ -16,10 +16,10 @@ Test Cases:
 """
 from odoo.tests import tagged, TransactionCase
 from odoo.exceptions import ValidationError, UserError
-from datetime import date, timedelta
+from datetime import date
 
 
-@tagged('post_install', '-at_install', 'l10n_ec')
+@tagged("post_install", "-at_install", "l10n_ec")
 class TestInvoiceEmission(TransactionCase):
     """Test the complete invoice emission flow for Ecuador."""
 
@@ -28,70 +28,99 @@ class TestInvoiceEmission(TransactionCase):
         super().setUpClass()
 
         # Get Ecuador
-        cls.ecuador = cls.env.ref('base.ec')
+        cls.ecuador = cls.env.ref("base.ec")
 
         # Get or create test company for Ecuador
-        cls.company = cls.env['res.company'].search([
-            ('country_id', '=', cls.ecuador.id)
-        ], limit=1)
+        cls.company = cls.env["res.company"].search(
+            [("country_id", "=", cls.ecuador.id)], limit=1
+        )
 
         if not cls.company:
-            cls.company = cls.env['res.company'].create({
-                'name': 'Test Company Ecuador',
-                'country_id': cls.ecuador.id,
-                'currency_id': cls.env.ref('base.USD').id,
-                'vat': '1792146739001',
-            })
+            cls.company = cls.env["res.company"].create(
+                {
+                    "name": "Test Company Ecuador",
+                    "country_id": cls.ecuador.id,
+                    "currency_id": cls.env.ref("base.USD").id,
+                    "vat": "1792146739001",
+                }
+            )
 
         # Set SRI environment from config (not hardcoded)
-        cls.env['ir.config_parameter'].sudo().set_param(
-            'l10n_ec.sri_environment', 'test'
+        cls.env["ir.config_parameter"].sudo().set_param(
+            "l10n_ec.sri_environment", "test"
         )
 
         # Create test partner (client)
-        cls.partner = cls.env['res.partner'].create({
-            'name': 'Cliente Prueba Ecuador',
-            'vat': '1712345678001',
-            'country_id': cls.ecuador.id,
-            'l10n_ec_identifier_type': 'ruc',
-        })
+        cls.partner = cls.env["res.partner"].create(
+            {
+                "name": "Cliente Prueba Ecuador",
+                "vat": "1712345678001",
+                "country_id": cls.ecuador.id,
+                "l10n_ec_identifier_type": "ruc",
+            }
+        )
 
         # Get taxes from chart template (not hardcoded)
-        cls.tax_iva_15 = cls.env['account.tax'].search([
-            ('company_id', '=', cls.company.id),
-            ('type_tax_use', '=', 'sale'),
-            ('amount', '=', 15.0),
-        ], limit=1)
+        cls.tax_iva_15 = cls.env["account.tax"].search(
+            [
+                ("company_id", "=", cls.company.id),
+                ("type_tax_use", "=", "sale"),
+                ("amount", "=", 15.0),
+            ],
+            limit=1,
+        )
 
-        cls.tax_iva_0 = cls.env['account.tax'].search([
-            ('company_id', '=', cls.company.id),
-            ('type_tax_use', '=', 'sale'),
-            ('amount', '=', 0.0),
-        ], limit=1)
+        cls.tax_iva_0 = cls.env["account.tax"].search(
+            [
+                ("company_id", "=", cls.company.id),
+                ("type_tax_use", "=", "sale"),
+                ("amount", "=", 0.0),
+            ],
+            limit=1,
+        )
 
         # Get income account
-        cls.account_income = cls.env['account.account'].search([
-            ('company_id', '=', cls.company.id),
-            ('account_type', '=', 'income'),
-        ], limit=1)
+        cls.account_income = cls.env["account.account"].search(
+            [
+                ("company_id", "=", cls.company.id),
+                ("account_type", "=", "income"),
+            ],
+            limit=1,
+        )
 
     def _create_invoice(self, partner=None, amount=100.0, tax=None):
         """Helper to create a test invoice."""
         partner = partner or self.partner
         tax = tax or self.tax_iva_15
 
-        invoice = self.env['account.move'].with_company(self.company).create({
-            'move_type': 'out_invoice',
-            'partner_id': partner.id,
-            'invoice_date': date.today(),
-            'invoice_line_ids': [(0, 0, {
-                'name': 'Producto de Prueba',
-                'quantity': 1,
-                'price_unit': amount,
-                'account_id': self.account_income.id if self.account_income else False,
-                'tax_ids': [(6, 0, [tax.id])] if tax else [],
-            })],
-        })
+        invoice = (
+            self.env["account.move"]
+            .with_company(self.company)
+            .create(
+                {
+                    "move_type": "out_invoice",
+                    "partner_id": partner.id,
+                    "invoice_date": date.today(),
+                    "invoice_line_ids": [
+                        (
+                            0,
+                            0,
+                            {
+                                "name": "Producto de Prueba",
+                                "quantity": 1,
+                                "price_unit": amount,
+                                "account_id": (
+                                    self.account_income.id
+                                    if self.account_income
+                                    else False
+                                ),
+                                "tax_ids": [(6, 0, [tax.id])] if tax else [],
+                            },
+                        )
+                    ],
+                }
+            )
+        )
         return invoice
 
     # =========================================================================
@@ -102,7 +131,7 @@ class TestInvoiceEmission(TransactionCase):
         """Test crear factura con IVA 15%."""
         invoice = self._create_invoice(amount=100.0)
 
-        self.assertEqual(invoice.state, 'draft')
+        self.assertEqual(invoice.state, "draft")
         self.assertTrue(invoice.amount_total > 0)
 
         # Verify IVA calculation: $100 + 15% = $115
@@ -125,8 +154,8 @@ class TestInvoiceEmission(TransactionCase):
         # Post the invoice
         invoice.action_post()
 
-        self.assertEqual(invoice.state, 'posted')
-        self.assertTrue(invoice.name != '/')
+        self.assertEqual(invoice.state, "posted")
+        self.assertTrue(invoice.name != "/")
 
     # =========================================================================
     # TEST CASES: SRI Integration
@@ -138,7 +167,7 @@ class TestInvoiceEmission(TransactionCase):
         invoice.action_post()
 
         # Generate access key
-        if hasattr(invoice, '_generate_access_key'):
+        if hasattr(invoice, "_generate_access_key"):
             invoice._generate_access_key()
 
             # Access key should be 49 digits
@@ -149,7 +178,7 @@ class TestInvoiceEmission(TransactionCase):
         """Test estado inicial SRI es 'draft'."""
         invoice = self._create_invoice()
 
-        self.assertEqual(invoice.l10n_ec_sri_status, 'draft')
+        self.assertEqual(invoice.l10n_ec_sri_status, "draft")
 
     # =========================================================================
     # TEST CASES: Validation Rules
@@ -158,15 +187,23 @@ class TestInvoiceEmission(TransactionCase):
     def test_06_invoice_requires_partner(self):
         """Test factura requiere cliente."""
         with self.assertRaises((ValidationError, UserError)):
-            self.env['account.move'].with_company(self.company).create({
-                'move_type': 'out_invoice',
-                'invoice_date': date.today(),
-                'invoice_line_ids': [(0, 0, {
-                    'name': 'Test',
-                    'quantity': 1,
-                    'price_unit': 100.0,
-                })],
-            })
+            self.env["account.move"].with_company(self.company).create(
+                {
+                    "move_type": "out_invoice",
+                    "invoice_date": date.today(),
+                    "invoice_line_ids": [
+                        (
+                            0,
+                            0,
+                            {
+                                "name": "Test",
+                                "quantity": 1,
+                                "price_unit": 100.0,
+                            },
+                        )
+                    ],
+                }
+            )
 
     def test_07_invoice_date_required(self):
         """Test factura requiere fecha."""
