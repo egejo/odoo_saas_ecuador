@@ -68,26 +68,47 @@
 
 ---
 
-## 📦 Módulos
+## 📦 Módulos (19 Total)
 
 ### Módulos Base (Obligatorios)
 
 | Módulo | Descripción | Dependencias |
 |--------|-------------|--------------|
-| `l10n_ec_base` | Plan de cuentas NEC, validación RUC/Cédula, impuestos | base, account |
+| `l10n_ec` | Configuración empresa, wizard setup, datos Ecuador | base, account |
+| `l10n_ec_base` | Plan de cuentas NEC, validación RUC/Cédula, SRI service | l10n_ec |
 | `l10n_ec_edi` | Generación XML, firma XAdES-BES, clave de acceso | l10n_ec_base |
 | `l10n_ec_sri` | Integración SOAP con SRI (pruebas/producción) | l10n_ec_edi |
 
-### Módulos Adicionales
+### Módulos Contables
 
-| Módulo | Descripción | Área |
-|--------|-------------|------|
-| `l10n_ec_withholding` | Retenciones IR + IVA, regla 5 días | Contabilidad |
-| `l10n_ec_stock` | Guía de Remisión electrónica | Inventario |
-| `l10n_ec_pos` | Facturación electrónica en POS | Punto de Venta |
-| `l10n_ec_reports` | ATS, Formulario 104 | Reportes |
-| `l10n_ec_hr_payroll` | IESS, Décimos, Utilidades | Recursos Humanos |
-| `l10n_ec_customs` | DAU, partidas arancelarias, FODINFA | Aduanas |
+| Módulo | Descripción |
+|--------|-------------|
+| `l10n_ec_withholding` | Retenciones IR + IVA, regla 5 días |
+| `l10n_ec_income_tax` | Impuesto a la renta, gastos personales |
+| `l10n_ec_rimpe` | Régimen RIMPE emprendedores/populares |
+| `l10n_ec_ice` | Impuesto Consumos Especiales |
+| `l10n_ec_reports` | ATS, Formulario 104, reportes tributarios |
+
+### Módulos HR/Nómina
+
+| Módulo | Descripción |
+|--------|-------------|
+| `l10n_ec_hr_payroll` | IESS 9.45%/12.15%, Décimos, SBU $482 |
+| `l10n_ec_vacation` | Libro de vacaciones, control días |
+| `l10n_ec_sut` | Reportes MDT (Décimos, Utilidades) |
+| `l10n_ec_loans` | Préstamos quirografarios/hipotecarios |
+
+### Módulos Operativos
+
+| Módulo | Descripción |
+|--------|-------------|
+| `l10n_ec_stock` | Guía de Remisión electrónica |
+| `l10n_ec_pos` | Facturación electrónica en POS |
+| `l10n_ec_customs` | DAU, partidas arancelarias, FODINFA, ISD |
+| `l10n_ec_quality` | Control calidad productos Ecuador |
+| `l10n_ec_asset` | Activos fijos depreciación Ecuador |
+| `l10n_ec_bank_transfer` | Transferencias bancarias Ecuador |
+| `l10n_ec_portal` | Portal cliente/proveedor Ecuador |
 
 ---
 
