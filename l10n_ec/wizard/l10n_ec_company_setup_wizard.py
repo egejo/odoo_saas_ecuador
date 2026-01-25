@@ -84,6 +84,105 @@ class L10nEcCompanySetupWizard(models.TransientModel):
 
     regimen_rimpe = fields.Char(string="Régimen RIMPE", readonly=True)
 
+    # =========================================================================
+    # MULTI-STEP WIZARD CONTROL
+    # =========================================================================
+    current_step = fields.Integer(
+        string="Paso Actual",
+        default=1,
+        help="Control de navegación del wizard: 1=Empresa, 2=Cuentas, 3=Facturación, "
+             "4=Nómina, 5=Demo, 6=Confirmar",
+    )
+
+    # =========================================================================
+    # PASO 2: PLAN DE CUENTAS
+    # =========================================================================
+    chart_template = fields.Selection(
+        [
+            ("ecuador_niif", "Plan Ecuador NIIF PYMES (Recomendado)"),
+            ("ecuador_nif", "Plan Ecuador NIF"),
+        ],
+        string="Plan de Cuentas",
+        default="ecuador_niif",
+        help="Seleccione el plan de cuentas a instalar",
+    )
+
+    # =========================================================================
+    # PASO 3: FACTURACIÓN ELECTRÓNICA
+    # =========================================================================
+    certificate_file = fields.Binary(
+        string="Certificado Digital (.p12)",
+        help="Archivo .p12 del certificado de firma electrónica (BCE, Security Data, etc.)",
+    )
+    certificate_filename = fields.Char(string="Nombre Certificado")
+    certificate_password = fields.Char(
+        string="Contraseña Certificado",
+        help="Contraseña del certificado .p12",
+    )
+    certificate_valid = fields.Boolean(
+        string="Certificado Válido",
+        readonly=True,
+        help="Se valida automáticamente al subir el archivo",
+    )
+    certificate_owner = fields.Char(
+        string="Titular Certificado",
+        readonly=True,
+        help="Nombre del titular detectado del certificado",
+    )
+    certificate_expiry = fields.Date(
+        string="Vencimiento Certificado",
+        readonly=True,
+    )
+
+    # Punto de emisión
+    establecimiento = fields.Char(
+        string="Establecimiento",
+        default="001",
+        size=3,
+        help="Código de establecimiento SRI (3 dígitos)",
+    )
+    punto_emision = fields.Char(
+        string="Punto de Emisión",
+        default="001",
+        size=3,
+        help="Código de punto de emisión SRI (3 dígitos)",
+    )
+    secuencia_inicio = fields.Integer(
+        string="Secuencia Inicial",
+        default=1,
+        help="Número inicial para la secuencia de documentos",
+    )
+
+    # =========================================================================
+    # PASO 4: NÓMINA / IESS
+    # =========================================================================
+    payroll_region = fields.Selection(
+        [
+            ("sierra", "Sierra / Oriente"),
+            ("costa", "Costa / Galápagos"),
+        ],
+        string="Región Laboral",
+        default="sierra",
+        help="Define la fecha del Décimo Cuarto: Sierra=Agosto, Costa=Marzo",
+    )
+    payroll_period = fields.Selection(
+        [
+            ("monthly", "Mensual"),
+            ("biweekly", "Quincenal"),
+        ],
+        string="Período de Pago",
+        default="monthly",
+    )
+    fondos_reserva_mode = fields.Selection(
+        [
+            ("monthly", "Pago Mensual (vía IESS)"),
+            ("accumulated", "Acumulado (pago directo)"),
+        ],
+        string="Fondos de Reserva",
+        default="monthly",
+        help="Forma de pago de fondos de reserva después del primer año",
+    )
+
     # Demo Data Options - User controlled
     install_demo_data = fields.Boolean(
         string="Instalar Datos de Demostración",
@@ -404,6 +503,94 @@ class L10nEcCompanySetupWizard(models.TransientModel):
                 pass  # Skip if error
 
         return count
+
+    # =========================================================================
+    # MULTI-STEP NAVIGATION
+    # =========================================================================
+    def action_next_step(self):
+        """Avanza al siguiente paso del wizard."""
+        self.ensure_one()
+
+        # Validar paso actual antes de avanzar
+        if self.current_step == 1:
+            if not self.company_ruc or not self.company_name:
+                raise ValidationError(_("Complete los datos de la empresa antes de continuar"))
+
+        elif self.current_step == 3:
+            # Validar certificado si fue subido
+            if self.certificate_file and not self.certificate_valid:
+                raise ValidationError(_("El certificado no es válido"))
+
+        if self.current_step < 6:
+            self.current_step += 1
+
+        return self._get_wizard_action()
+
+    def action_previous_step(self):
+        """Retrocede al paso anterior del wizard."""
+        self.ensure_one()
+        if self.current_step > 1:
+            self.current_step -= 1
+        return self._get_wizard_action()
+
+    def action_go_to_step(self, step):
+        """Ir a un paso específico."""
+        self.ensure_one()
+        if 1 <= step <= 6:
+            self.current_step = step
+        return self._get_wizard_action()
+
+    def _get_wizard_action(self):
+        """Devuelve la acción del wizard para recargar la vista."""
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": self._name,
+            "res_id": self.id,
+            "view_mode": "form",
+            "target": "new",
+            "context": self.env.context,
+        }
+
+    @api.onchange("certificate_file", "certificate_password")
+    def _onchange_certificate(self):
+        """Valida el certificado cuando se sube o cambia la contraseña."""
+        if not self.certificate_file or not self.certificate_password:
+            self.certificate_valid = False
+            self.certificate_owner = ""
+            self.certificate_expiry = False
+            return
+
+        # Validate certificate using cryptography library
+        import base64
+        try:
+            from cryptography.hazmat.primitives.serialization import pkcs12
+            from cryptography import x509
+
+            cert_data = base64.b64decode(self.certificate_file)
+            private_key, certificate, additional = pkcs12.load_key_and_certificates(
+                cert_data, self.certificate_password.encode()
+            )
+
+            if certificate:
+                # Extract owner name
+                subject = certificate.subject
+                for attr in subject:
+                    if attr.oid == x509.oid.NameOID.COMMON_NAME:
+                        self.certificate_owner = attr.value
+                        break
+
+                # Extract expiry date
+                self.certificate_expiry = certificate.not_valid_after_utc.date()
+                self.certificate_valid = True
+            else:
+                self.certificate_valid = False
+                self.sri_message = "Certificado no contiene información válida"
+
+        except Exception as e:
+            self.certificate_valid = False
+            self.certificate_owner = ""
+            self.certificate_expiry = False
+            self.sri_message = f"Error al validar certificado: {str(e)}"
 
     def action_skip_wizard(self):
         """Permite saltar el wizard y configurar después."""
