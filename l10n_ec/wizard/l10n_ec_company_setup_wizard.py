@@ -307,16 +307,20 @@ class L10nEcCompanySetupWizard(models.TransientModel):
 
         # Define which xml_ids belong to each category
         customer_ids = [
-            'demo_customer_natural', 'demo_customer_natural_obligado',
+            'demo_customer_natural', 'demo_customer_tercera_edad',
+            'demo_customer_discapacidad', 'demo_customer_natural_obligado',
             'demo_customer_sociedad', 'demo_customer_especial',
             'demo_customer_rimpe_e', 'demo_customer_rimpe_p',
             'demo_customer_final', 'demo_customer_exporter',
+            'demo_customer_gobierno', 'demo_customer_empresa_publica',
         ]
         supplier_ids = [
             'demo_supplier_profesional', 'demo_supplier_comercial',
             'demo_supplier_especial', 'demo_supplier_informal',
             'demo_supplier_arrendador', 'demo_supplier_transporte',
-            'demo_supplier_gobierno',
+            'demo_supplier_gobierno', 'demo_supplier_seguros',
+            'demo_supplier_banco', 'demo_supplier_publicidad',
+            'demo_supplier_notario',
         ]
         employee_ids = [
             'demo_employee_sierra', 'demo_employee_costa',

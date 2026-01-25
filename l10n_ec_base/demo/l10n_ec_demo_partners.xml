@@ -50,6 +50,41 @@
         <field name="company_type">person</field>
     </record>
 
+    <!-- Customer: Tercera Edad (65+ años - IVA Refund) -->
+    <record id="demo_customer_tercera_edad" model="res.partner">
+        <field name="name">LUIS ALBERTO GARCÍA MORENO</field>
+        <field name="vat">1701234567</field>
+        <field name="l10n_ec_identifier_type">cedula</field>
+        <field name="l10n_ec_taxpayer_type">general</field>
+        <field name="l10n_ec_tercera_edad" eval="True"/>
+        <field name="street">Av. El Inca N45-123</field>
+        <field name="city">Quito</field>
+        <field name="country_id" ref="base.ec"/>
+        <field name="phone">0998765432</field>
+        <field name="email">tercera.edad@demo.ec</field>
+        <field name="customer_rank">1</field>
+        <field name="supplier_rank">0</field>
+        <field name="company_type">person</field>
+    </record>
+
+    <!-- Customer: Persona con Discapacidad (IVA Refund up to 3 SBU) -->
+    <record id="demo_customer_discapacidad" model="res.partner">
+        <field name="name">ROSA MARÍA ANDRADE SILVA</field>
+        <field name="vat">1712345670</field>
+        <field name="l10n_ec_identifier_type">cedula</field>
+        <field name="l10n_ec_taxpayer_type">general</field>
+        <field name="l10n_ec_discapacidad" eval="True"/>
+        <field name="l10n_ec_discapacidad_porcentaje">45</field>
+        <field name="street">Sector El Batán</field>
+        <field name="city">Quito</field>
+        <field name="country_id" ref="base.ec"/>
+        <field name="phone">0987654321</field>
+        <field name="email">discapacidad@demo.ec</field>
+        <field name="customer_rank">1</field>
+        <field name="supplier_rank">0</field>
+        <field name="company_type">person</field>
+    </record>
+
     <!-- Customer: Persona Natural Obligado Contabilidad -->
     <record id="demo_customer_natural_obligado" model="res.partner">
         <field name="name">MARÍA FERNANDA LÓPEZ GARCÍA</field>
@@ -155,6 +190,38 @@
         <field name="country_id" ref="base.ec"/>
         <field name="phone">072934567</field>
         <field name="email">exportaciones@bananera.demo.ec</field>
+        <field name="customer_rank">1</field>
+        <field name="supplier_rank">0</field>
+        <field name="company_type">company</field>
+    </record>
+
+    <!-- Customer: Institución Pública (Sector Público - They retain FROM you) -->
+    <record id="demo_customer_gobierno" model="res.partner">
+        <field name="name">MUNICIPIO DE QUITO</field>
+        <field name="vat">1760001550001</field>
+        <field name="l10n_ec_identifier_type">ruc</field>
+        <field name="l10n_ec_taxpayer_type">special</field>
+        <field name="street">Av. Venezuela y Chile, Centro Histórico</field>
+        <field name="city">Quito</field>
+        <field name="country_id" ref="base.ec"/>
+        <field name="phone">023952300</field>
+        <field name="email">compras@quito.gob.ec</field>
+        <field name="customer_rank">1</field>
+        <field name="supplier_rank">0</field>
+        <field name="company_type">company</field>
+    </record>
+
+    <!-- Customer: Empresa Pública (RUC 3er dígito = 6) -->
+    <record id="demo_customer_empresa_publica" model="res.partner">
+        <field name="name">CORPORACIÓN NACIONAL DE TELECOMUNICACIONES EP</field>
+        <field name="vat">1768152130001</field>
+        <field name="l10n_ec_identifier_type">ruc</field>
+        <field name="l10n_ec_taxpayer_type">special</field>
+        <field name="street">Av. Amazonas N32-12</field>
+        <field name="city">Quito</field>
+        <field name="country_id" ref="base.ec"/>
+        <field name="phone">1800268268</field>
+        <field name="email">compras@cnt.gob.ec</field>
         <field name="customer_rank">1</field>
         <field name="supplier_rank">0</field>
         <field name="company_type">company</field>
@@ -274,6 +341,70 @@
         <field name="customer_rank">0</field>
         <field name="supplier_rank">1</field>
         <field name="company_type">company</field>
+    </record>
+
+    <!-- Supplier: Seguros y Reaseguros (322 - 1% IR) -->
+    <record id="demo_supplier_seguros" model="res.partner">
+        <field name="name">SEGUROS EQUINOCCIAL S.A.</field>
+        <field name="vat">1790011461001</field>
+        <field name="l10n_ec_identifier_type">ruc</field>
+        <field name="l10n_ec_taxpayer_type">general</field>
+        <field name="street">Av. Los Shyris N35-174</field>
+        <field name="city">Quito</field>
+        <field name="country_id" ref="base.ec"/>
+        <field name="phone">023970100</field>
+        <field name="email">polizas@seguros.demo.ec</field>
+        <field name="customer_rank">0</field>
+        <field name="supplier_rank">1</field>
+        <field name="company_type">company</field>
+    </record>
+
+    <!-- Supplier: Banco / Institución Financiera (323 - 2% IR) -->
+    <record id="demo_supplier_banco" model="res.partner">
+        <field name="name">BANCO PICHINCHA C.A.</field>
+        <field name="vat">1790010014001</field>
+        <field name="l10n_ec_identifier_type">ruc</field>
+        <field name="l10n_ec_taxpayer_type">special</field>
+        <field name="street">Av. Amazonas N36-152</field>
+        <field name="city">Quito</field>
+        <field name="country_id" ref="base.ec"/>
+        <field name="phone">023999999</field>
+        <field name="email">empresas@pichincha.demo.ec</field>
+        <field name="customer_rank">0</field>
+        <field name="supplier_rank">1</field>
+        <field name="company_type">company</field>
+    </record>
+
+    <!-- Supplier: Publicidad y Comunicación (309 - 1% IR) -->
+    <record id="demo_supplier_publicidad" model="res.partner">
+        <field name="name">AGENCIA DE PUBLICIDAD CREATIVA S.A.</field>
+        <field name="vat">1792345678001</field>
+        <field name="l10n_ec_identifier_type">ruc</field>
+        <field name="l10n_ec_taxpayer_type">general</field>
+        <field name="street">La Floresta, Calle Lisboa 234</field>
+        <field name="city">Quito</field>
+        <field name="country_id" ref="base.ec"/>
+        <field name="phone">022234567</field>
+        <field name="email">contacto@publicidad.demo.ec</field>
+        <field name="customer_rank">0</field>
+        <field name="supplier_rank">1</field>
+        <field name="company_type">company</field>
+    </record>
+
+    <!-- Supplier: Notario (303 - 10% IR - Profesional) -->
+    <record id="demo_supplier_notario" model="res.partner">
+        <field name="name">DR. NOTARIO VIGÉSIMO PRIMERO DEL CANTÓN QUITO</field>
+        <field name="vat">1701234567001</field>
+        <field name="l10n_ec_identifier_type">ruc</field>
+        <field name="l10n_ec_taxpayer_type">general</field>
+        <field name="street">Av. 10 de Agosto N45-67</field>
+        <field name="city">Quito</field>
+        <field name="country_id" ref="base.ec"/>
+        <field name="phone">022987654</field>
+        <field name="email">notaria21@demo.ec</field>
+        <field name="customer_rank">0</field>
+        <field name="supplier_rank">1</field>
+        <field name="company_type">person</field>
     </record>
 
     <!-- ================================================================= -->

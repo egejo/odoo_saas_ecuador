@@ -30,6 +30,34 @@ class ResPartner(models.Model):
     l10n_ec_related_party = fields.Boolean("Related Party (ATS)", default=False)
 
     # =========================================================================
+    # LORTI Art. 74: Tercera Edad (65+ years - IVA Refund)
+    # =========================================================================
+    l10n_ec_tercera_edad = fields.Boolean(
+        string="Tercera Edad",
+        default=False,
+        help="Persona de 65 años o más. LORTI Art. 74: Derecho a devolución "
+             "de IVA en bienes de primera necesidad hasta 5 canastas básicas/mes.",
+    )
+
+    # =========================================================================
+    # Ley Orgánica de Discapacidades Art. 78: IVA Refund
+    # =========================================================================
+    l10n_ec_discapacidad = fields.Boolean(
+        string="Persona con Discapacidad",
+        default=False,
+        help="Persona con discapacidad calificada por CONADIS. "
+             "Derecho a devolución de IVA según Ley de Discapacidades Art. 78.",
+    )
+    l10n_ec_discapacidad_porcentaje = fields.Integer(
+        string="Porcentaje Discapacidad",
+        help="Porcentaje de discapacidad según carnet CONADIS (30% mínimo para beneficios)",
+    )
+    l10n_ec_discapacidad_carnet = fields.Char(
+        string="Nº Carnet CONADIS",
+        help="Número de carnet del CONADIS",
+    )
+
+    # =========================================================================
     # DE 045-2025: UAF Certificate for Government Contractors
     # =========================================================================
     l10n_ec_uaf_certificate = fields.Binary(
