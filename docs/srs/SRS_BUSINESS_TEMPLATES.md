@@ -54,6 +54,24 @@ SELECT:
 | Accounting | Auto | Basic | Full |
 | HR/Payroll | ❌ | ❌ | ✅ |
 
+### 1.3.1 Size Metrics (What Defines Implementation)
+
+| Metric | Simple | Medium | Enterprise |
+|:-------|:-------|:-------|:-----------|
+| **Employees** | 1-3 | 4-15 | 16+ |
+| **Annual Revenue** | <$50K | $50K-$500K | >$500K |
+| **Locations** | 1 | 1-3 | Multiple |
+| **Users** | 1 | 2-5 | 6+ |
+| **Obligado Contab.** | No | Maybe | Yes |
+| **Contrib. Especial** | No | No | Maybe |
+
+### 1.3.2 System Auto-Detection
+
+System can suggest size based on:
+- RUC type (natural vs juridica)
+- SRI data (obligado contabilidad)
+- User answers (¿cuántos empleados?)
+
 ### 1.4 Same Products, Different Complexity
 
 | Business | Simple | Medium | Enterprise |
