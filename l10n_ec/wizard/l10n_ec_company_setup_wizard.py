@@ -1,4 +1,4 @@
- minutes # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 #
 # Copyright 2026 Somatech.dev
@@ -90,8 +90,57 @@ class L10nEcCompanySetupWizard(models.TransientModel):
     current_step = fields.Integer(
         string="Paso Actual",
         default=1,
-        help="Control de navegación del wizard: 1=Empresa, 2=Cuentas, 3=Facturación, "
-             "4=Nómina, 5=Demo, 6=Confirmar",
+        help="Control de navegación del wizard: 1=Negocio, 2=Tamaño, 3=Empresa, "
+             "4=Datos, 5=Confirmar",
+    )
+
+    # =========================================================================
+    # PASO 1: TIPO DE NEGOCIO (Business Template)
+    # =========================================================================
+    business_template_id = fields.Many2one(
+        "l10n_ec.business.template",
+        string="Tipo de Negocio",
+        help="Seleccione el tipo de negocio para cargar productos y proveedores",
+    )
+
+    # =========================================================================
+    # PASO 2: TAMAÑO DEL NEGOCIO
+    # =========================================================================
+    business_size = fields.Selection(
+        [
+            ("simple", "Pequeño (1-3 empleados, solo vender)"),
+            ("medium", "Mediano (4-15 empleados, con inventario)"),
+            ("enterprise", "Grande (16+ empleados, ERP completo)"),
+        ],
+        string="Tamaño del Negocio",
+        default="simple",
+        help="Define qué módulos y funcionalidades se activarán",
+    )
+    employee_count = fields.Selection(
+        [
+            ("1-3", "1-3 empleados"),
+            ("4-10", "4-10 empleados"),
+            ("11-15", "11-15 empleados"),
+            ("16+", "Más de 15 empleados"),
+        ],
+        string="Número de Empleados",
+    )
+    location_count = fields.Selection(
+        [
+            ("1", "1 local"),
+            ("2-3", "2-3 locales"),
+            ("4+", "Más de 3 locales"),
+        ],
+        string="Número de Locales",
+        default="1",
+    )
+    needs_inventory = fields.Boolean(
+        string="Necesito Control de Inventario",
+        default=False,
+    )
+    needs_purchases = fields.Boolean(
+        string="Compro a Proveedores con Factura",
+        default=False,
     )
 
     # =========================================================================

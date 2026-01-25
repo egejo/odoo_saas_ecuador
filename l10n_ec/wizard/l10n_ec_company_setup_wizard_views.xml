@@ -4,44 +4,109 @@
     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 -->
 <odoo>
-    <!-- Wizard Form View - Multi-Step -->
+    <!-- Wizard Form View - Multi-Step with Business Template -->
     <record id="l10n_ec_company_setup_wizard_form" model="ir.ui.view">
         <field name="name">l10n_ec.company.setup.wizard.form</field>
         <field name="model">l10n_ec.company.setup.wizard</field>
         <field name="arch" type="xml">
-            <form string="🇪🇨 Configurar Empresa Ecuador">
-                <!-- Hidden step control -->
+            <form string="🇪🇨 Configurar Mi Negocio">
+                <!-- Hidden fields -->
                 <field name="current_step" invisible="1"/>
                 <field name="sri_loaded" invisible="1"/>
 
                 <!-- Step Progress Indicator -->
                 <div class="text-center mb-3">
                     <div class="d-flex justify-content-center gap-2">
-                        <span invisible="current_step != 1" class="badge bg-primary">1. Empresa</span>
+                        <span invisible="current_step != 1" class="badge bg-primary">1. Negocio</span>
                         <span invisible="current_step == 1" class="badge bg-secondary">1</span>
-                        <span invisible="current_step != 2" class="badge bg-primary">2. Cuentas</span>
+                        <span invisible="current_step != 2" class="badge bg-primary">2. Tamaño</span>
                         <span invisible="current_step == 2" class="badge bg-secondary">2</span>
-                        <span invisible="current_step != 3" class="badge bg-primary">3. Facturación</span>
+                        <span invisible="current_step != 3" class="badge bg-primary">3. Empresa</span>
                         <span invisible="current_step == 3" class="badge bg-secondary">3</span>
-                        <span invisible="current_step != 4" class="badge bg-primary">4. Nómina</span>
+                        <span invisible="current_step != 4" class="badge bg-primary">4. Datos</span>
                         <span invisible="current_step == 4" class="badge bg-secondary">4</span>
-                        <span invisible="current_step != 5" class="badge bg-primary">5. Demo</span>
+                        <span invisible="current_step != 5" class="badge bg-primary">5. Confirmar</span>
                         <span invisible="current_step == 5" class="badge bg-secondary">5</span>
-                        <span invisible="current_step != 6" class="badge bg-primary">6. Confirmar</span>
-                        <span invisible="current_step == 6" class="badge bg-secondary">6</span>
                     </div>
                 </div>
 
                 <!-- ============================================================= -->
-                <!-- PASO 1: DATOS EMPRESA (SRI) -->
+                <!-- PASO 1: TIPO DE NEGOCIO -->
                 <!-- ============================================================= -->
                 <div invisible="current_step != 1">
                     <div class="text-center mb-4">
-                        <h2>🇪🇨 Paso 1: Datos de la Empresa</h2>
-                        <p class="text-muted">Ingrese el RUC y los datos se cargarán automáticamente del SRI</p>
+                        <h2>🏪 Paso 1: ¿Qué tipo de negocio tienes?</h2>
+                        <p class="text-muted">Selecciona tu tipo de negocio para cargar productos y proveedores</p>
                     </div>
 
-                    <group string="🔍 Buscar en SRI" name="search">
+                    <group>
+                        <field name="business_template_id"
+                               widget="selection"
+                               options="{'no_create': True, 'no_open': True}"
+                               class="oe_inline"/>
+                    </group>
+
+                    <div class="alert alert-info mt-3">
+                        <strong>💡 Según tu selección cargaremos:</strong>
+                        <ul class="mb-0">
+                            <li>Productos típicos de tu negocio con precios</li>
+                            <li>Proveedores comunes de tu industria</li>
+                            <li>Categorías organizadas</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- ============================================================= -->
+                <!-- PASO 2: TAMAÑO DEL NEGOCIO -->
+                <!-- ============================================================= -->
+                <div invisible="current_step != 2">
+                    <div class="text-center mb-4">
+                        <h2>📊 Paso 2: ¿Qué tamaño tiene tu negocio?</h2>
+                        <p class="text-muted">Esto define qué funcionalidades activaremos</p>
+                    </div>
+
+                    <group>
+                        <field name="business_size" widget="radio" class="oe_inline"/>
+                    </group>
+
+                    <separator string="Cuéntanos más"/>
+
+                    <group>
+                        <group>
+                            <field name="employee_count"/>
+                            <field name="location_count"/>
+                        </group>
+                        <group>
+                            <field name="needs_inventory"/>
+                            <field name="needs_purchases"/>
+                        </group>
+                    </group>
+
+                    <!-- Size explanation -->
+                    <div class="alert alert-secondary" invisible="business_size != 'simple'">
+                        <strong>PEQUEÑO:</strong> Solo POS + Factura electrónica.<br/>
+                        Ideal para: Tiendas de barrio, pequeños negocios familiares.
+                    </div>
+                    <div class="alert alert-secondary" invisible="business_size != 'medium'">
+                        <strong>MEDIANO:</strong> POS + Inventario + Compras + Retenciones.<br/>
+                        Ideal para: Cadenas pequeñas, negocios con stock.
+                    </div>
+                    <div class="alert alert-secondary" invisible="business_size != 'enterprise'">
+                        <strong>GRANDE:</strong> ERP completo con Contabilidad, Nómina, MRP.<br/>
+                        Ideal para: Empresas formales, manufactura, distribuidoras.
+                    </div>
+                </div>
+
+                <!-- ============================================================= -->
+                <!-- PASO 3: DATOS EMPRESA (SRI) -->
+                <!-- ============================================================= -->
+                <div invisible="current_step != 3">
+                    <div class="text-center mb-4">
+                        <h2>🏢 Paso 3: Datos de tu Empresa</h2>
+                        <p class="text-muted">Ingresa tu RUC para cargar datos del SRI automáticamente</p>
+                    </div>
+
+                    <group string="🔍 Buscar en SRI">
                         <group>
                             <field name="company_ruc" placeholder="Ingrese RUC de 13 dígitos..."
                                    class="oe_inline" style="font-size: 1.2em; font-weight: bold;"/>
@@ -51,22 +116,20 @@
                         </group>
                     </group>
 
-                    <group string="📋 Datos del Contribuyente (SRI)" name="company_info"
-                           invisible="not sri_loaded">
+                    <group string="📋 Datos del Contribuyente" invisible="not sri_loaded">
                         <group>
-                            <field name="company_name" readonly="0"/>
+                            <field name="company_name"/>
                             <field name="commercial_name"/>
-                            <field name="sri_estado" class="text-success"/>
-                            <field name="sri_tipo_contribuyente"/>
+                            <field name="sri_estado"/>
                         </group>
                         <group>
-                            <field name="sri_clase_contribuyente"/>
-                            <field name="sri_actividad"/>
+                            <field name="sri_tipo_contribuyente"/>
+                            <field name="obligado_contabilidad"/>
                             <field name="regimen_rimpe" invisible="not regimen_rimpe"/>
                         </group>
                     </group>
 
-                    <group string="📍 Dirección" name="address" invisible="not sri_loaded">
+                    <group string="📍 Dirección" invisible="not sri_loaded">
                         <group>
                             <field name="street"/>
                             <field name="city"/>
@@ -75,49 +138,17 @@
                         <group>
                             <field name="phone"/>
                             <field name="email"/>
-                            <field name="website"/>
-                        </group>
-                    </group>
-
-                    <group string="⚙️ Configuración Tributaria" name="sri_settings"
-                           invisible="not sri_loaded">
-                        <group>
-                            <field name="sri_environment" widget="radio"/>
-                            <field name="obligado_contabilidad"/>
-                        </group>
-                        <group>
-                            <field name="contribuyente_especial" invisible="not contribuyente_especial"/>
-                            <field name="agente_retencion" invisible="not agente_retencion"/>
                         </group>
                     </group>
                 </div>
 
                 <!-- ============================================================= -->
-                <!-- PASO 2: PLAN DE CUENTAS -->
+                <!-- PASO 4: DATOS ADICIONALES (Certificado, Imports) -->
                 <!-- ============================================================= -->
-                <div invisible="current_step != 2">
+                <div invisible="current_step != 4">
                     <div class="text-center mb-4">
-                        <h2>📊 Paso 2: Plan de Cuentas</h2>
-                        <p class="text-muted">Seleccione el plan de cuentas para su empresa</p>
-                    </div>
-
-                    <group string="📋 Selección de Plan">
-                        <field name="chart_template" widget="radio"/>
-                    </group>
-
-                    <div class="alert alert-info">
-                        <strong>Plan NIIF PYMES</strong>: Recomendado para la mayoría de empresas.
-                        Incluye cuentas para IVA, Retenciones, IESS, Nómina pre-configuradas.
-                    </div>
-                </div>
-
-                <!-- ============================================================= -->
-                <!-- PASO 3: FACTURACIÓN ELECTRÓNICA -->
-                <!-- ============================================================= -->
-                <div invisible="current_step != 3">
-                    <div class="text-center mb-4">
-                        <h2>📄 Paso 3: Facturación Electrónica</h2>
-                        <p class="text-muted">Configure su certificado digital y punto de emisión</p>
+                        <h2>📄 Paso 4: Configuración Adicional</h2>
+                        <p class="text-muted">Certificado digital y datos opcionales</p>
                     </div>
 
                     <group string="🔐 Certificado Digital">
@@ -139,97 +170,55 @@
                             <field name="punto_emision"/>
                         </group>
                         <group>
-                            <field name="secuencia_inicio"/>
+                            <field name="sri_environment" widget="radio"/>
                         </group>
                     </group>
 
-                    <div class="alert alert-warning" invisible="certificate_valid">
-                        <strong>⚠️ Certificado pendiente.</strong>
-                        Puede continuar sin certificado y configurarlo después en Ajustes.
-                    </div>
-                </div>
-
-                <!-- ============================================================= -->
-                <!-- PASO 4: NÓMINA / IESS -->
-                <!-- ============================================================= -->
-                <div invisible="current_step != 4">
-                    <div class="text-center mb-4">
-                        <h2>👥 Paso 4: Nómina e IESS</h2>
-                        <p class="text-muted">Configure los parámetros laborales de su empresa</p>
-                    </div>
-
-                    <group string="📍 Región y Período">
-                        <group>
-                            <field name="payroll_region" widget="radio"/>
-                        </group>
-                        <group>
-                            <field name="payroll_period" widget="radio"/>
-                            <field name="fondos_reserva_mode" widget="radio"/>
-                        </group>
-                    </group>
-
-                    <div class="alert alert-info">
-                        <strong>Décimo Cuarto:</strong> Sierra/Oriente = 15 Agosto, Costa/Galápagos = 15 Marzo<br/>
-                        <strong>IESS 2026:</strong> Personal 9.45%, Patronal 12.15%<br/>
-                        <strong>SBU 2026:</strong> $482.00
-                    </div>
-                </div>
-
-                <!-- ============================================================= -->
-                <!-- PASO 5: DATOS DEMO -->
-                <!-- ============================================================= -->
-                <div invisible="current_step != 5">
-                    <div class="text-center mb-4">
-                        <h2>🧪 Paso 5: Datos de Demostración</h2>
-                        <p class="text-muted">Instale datos de prueba para explorar el sistema</p>
-                    </div>
-
-                    <group string="📦 Datos Demo (Opcional)">
+                    <group string="🧪 Datos Demo (Opcional)">
                         <group>
                             <field name="install_demo_data"/>
                         </group>
                         <group invisible="not install_demo_data">
                             <field name="demo_customers"/>
                             <field name="demo_suppliers"/>
-                            <field name="demo_employees"/>
-                            <field name="demo_foreign"/>
                         </group>
                     </group>
 
-                    <div class="alert alert-secondary" invisible="not install_demo_data">
-                        <strong>Partners Demo (34 total):</strong><br/>
-                        • 18 Clientes: Natural, Tercera Edad, Discapacidad, RIMPE, Especial, Fundación, ZEDE<br/>
-                        • 11 Proveedores: Profesional 10%, Comercial 1%, Inmuebles 1.75%, Notario, Banco<br/>
-                        • 3 Empleados: Sierra (Agosto), Costa (Marzo), Galápagos<br/>
-                        • 2 Extranjeros: USA (ISD 5%), Colombia (Exportación)
+                    <div class="alert alert-warning" invisible="certificate_valid">
+                        <strong>⚠️ Sin certificado.</strong>
+                        Puedes configurarlo después en Ajustes → Facturación Electrónica.
                     </div>
                 </div>
 
                 <!-- ============================================================= -->
-                <!-- PASO 6: CONFIRMAR -->
+                <!-- PASO 5: CONFIRMAR -->
                 <!-- ============================================================= -->
-                <div invisible="current_step != 6">
+                <div invisible="current_step != 5">
                     <div class="text-center mb-4">
-                        <h2>✅ Paso 6: Confirmar Configuración</h2>
-                        <p class="text-muted">Revise y confirme la configuración de su empresa</p>
+                        <h2>✅ Paso 5: Confirmar Configuración</h2>
+                        <p class="text-muted">Revisa y confirma para crear tu negocio</p>
                     </div>
 
-                    <group string="📋 Resumen de Configuración">
+                    <group string="📋 Resumen">
+                        <group>
+                            <field name="business_template_id" readonly="1"/>
+                            <field name="business_size" readonly="1"/>
+                        </group>
                         <group>
                             <field name="company_ruc" readonly="1"/>
                             <field name="company_name" readonly="1"/>
-                            <field name="sri_environment" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="chart_template" readonly="1"/>
-                            <field name="certificate_valid" readonly="1"/>
-                            <field name="payroll_region" readonly="1"/>
                         </group>
                     </group>
 
                     <div class="alert alert-success">
                         <strong>🎉 ¡Listo para configurar!</strong><br/>
-                        Al confirmar se aplicará toda la configuración a su empresa.
+                        Al confirmar crearemos:
+                        <ul class="mb-0">
+                            <li>Productos pre-cargados de tu tipo de negocio</li>
+                            <li>Proveedores comunes de tu industria</li>
+                            <li>POS configurado para vender</li>
+                            <li>Facturación electrónica lista</li>
+                        </ul>
                     </div>
                 </div>
 
@@ -237,28 +226,28 @@
                 <!-- FOOTER: NAVIGATION BUTTONS -->
                 <!-- ============================================================= -->
                 <footer>
-                    <!-- Previous button (steps 2-6) -->
+                    <!-- Previous button -->
                     <button name="action_previous_step"
                             string="⬅️ Anterior"
                             type="object"
                             class="btn-secondary"
                             invisible="current_step == 1"/>
 
-                    <!-- Next button (steps 1-5) -->
+                    <!-- Next button -->
                     <button name="action_next_step"
                             string="Siguiente ➡️"
                             type="object"
                             class="btn-primary"
-                            invisible="current_step == 6"/>
+                            invisible="current_step == 5"/>
 
-                    <!-- Confirm button (step 6 only) -->
+                    <!-- Confirm button (final step) -->
                     <button name="action_configure_company"
-                            string="✅ Configurar Empresa"
+                            string="🚀 Configurar Mi Negocio"
                             type="object"
                             class="btn-success"
-                            invisible="current_step != 6"/>
+                            invisible="current_step != 5"/>
 
-                    <!-- Skip button (always visible) -->
+                    <!-- Skip button -->
                     <button name="action_skip_wizard"
                             string="Configurar Después"
                             type="object"
@@ -270,7 +259,7 @@
 
     <!-- Action to open wizard -->
     <record id="action_l10n_ec_company_setup_wizard" model="ir.actions.act_window">
-        <field name="name">Configurar Empresa Ecuador</field>
+        <field name="name">Configurar Mi Negocio Ecuador</field>
         <field name="res_model">l10n_ec.company.setup.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
@@ -279,7 +268,7 @@
 
     <!-- Menu item in Settings -->
     <menuitem id="menu_l10n_ec_company_setup"
-              name="🇪🇨 Configurar Empresa Ecuador"
+              name="🇪🇨 Configurar Mi Negocio"
               parent="base.menu_administration"
               action="action_l10n_ec_company_setup_wizard"
               sequence="1"/>

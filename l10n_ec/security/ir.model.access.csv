@@ -4,3 +4,8 @@ access_account_move_auditor,account.move.auditor,account.model_account_move,l10n
 access_account_move_line_auditor,account.move.line.auditor,account.model_account_move_line,l10n_ec.group_auditor_transparencia,1,0,0,0
 access_ir_attachment_auditor,ir.attachment.auditor,base.model_ir_attachment,l10n_ec.group_auditor_transparencia,1,0,0,0
 access_mail_message_auditor,mail.message.auditor,mail.model_mail_message,l10n_ec.group_auditor_transparencia,1,0,0,0
+access_l10n_ec_business_template,l10n_ec.business.template,model_l10n_ec_business_template,base.group_system,1,1,1,1
+access_l10n_ec_business_template_product,l10n_ec.business.template.product,model_l10n_ec_business_template_product,base.group_system,1,1,1,1
+access_l10n_ec_business_template_supplier,l10n_ec.business.template.supplier,model_l10n_ec_business_template_supplier,base.group_system,1,1,1,1
+access_l10n_ec_business_template_category,l10n_ec.business.template.category,model_l10n_ec_business_template_category,base.group_system,1,1,1,1
+access_l10n_ec_business_template_user,l10n_ec.business.template.user,model_l10n_ec_business_template,base.group_user,1,0,0,0
