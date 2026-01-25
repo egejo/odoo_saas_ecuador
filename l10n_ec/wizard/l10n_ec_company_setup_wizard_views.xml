@@ -73,6 +73,28 @@
                     </group>
                 </group>
 
+                <!-- Demo Data Options -->
+                <group string="🧪 Datos de Demostración (Opcional)" name="demo_data"
+                       invisible="not sri_loaded">
+                    <group>
+                        <field name="install_demo_data"/>
+                    </group>
+                    <group invisible="not install_demo_data">
+                        <field name="demo_customers"/>
+                        <field name="demo_suppliers"/>
+                        <field name="demo_employees"/>
+                        <field name="demo_foreign"/>
+                    </group>
+                    <div class="text-muted" invisible="not install_demo_data" colspan="2">
+                        <small>
+                            <strong>Clientes:</strong> Natural, Sociedad, RIMPE, Especial, Exportador<br/>
+                            <strong>Proveedores:</strong> Profesional (10%), Comercial (1%), Arrendamiento (1.75%)<br/>
+                            <strong>Empleados:</strong> Sierra (Ago), Costa (Mar), Galápagos<br/>
+                            <strong>Extranjeros:</strong> USA, Colombia (ISD, Exportaciones)
+                        </small>
+                    </div>
+                </group>
+
                 <div class="alert alert-info" role="alert" invisible="not sri_loaded">
                     <strong>💡 Datos cargados automáticamente del SRI.</strong>
                     Puede modificar los campos si es necesario.
