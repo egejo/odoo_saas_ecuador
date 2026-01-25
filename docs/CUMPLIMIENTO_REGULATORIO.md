@@ -221,6 +221,42 @@ l10n_ec_sri/models/sri_signer.py           # Firma XAdES-BES
 
 **Implementación**: `l10n_ec_withholding/models/account_retention.py` - método `_check_5_day_rule()`
 
+### 4.5 Tipos de Contribuyentes
+
+| Tipo | Campo | Tratamiento Fiscal |
+|------|-------|-------------------|
+| Persona Natural | `company_type='person'` | RUC Natural o Cédula |
+| Persona Jurídica | `company_type='company'` | RUC Sociedad |
+| Contribuyente Especial | `l10n_ec_taxpayer_type='special'` | Retiene 30%/70% IVA |
+| RIMPE Emprendedor | `l10n_ec_taxpayer_type='rimpe_e'` | IR 1-2% |
+| RIMPE Negocio Popular | `l10n_ec_taxpayer_type='rimpe_p'` | Sin IR ni IVA |
+| Sector Público | RUC 3er dígito = 6 | Retiene 100% |
+| Sin fines de lucro | `l10n_ec_taxpayer_type='nonprofit'` | Exento IR |
+| ZEDE | `l10n_ec_taxpayer_type='zede'` | Beneficios especiales |
+
+### 4.6 Beneficios Especiales (IVA Refund)
+
+| Beneficiario | Campo | Límite Mensual | Base Legal |
+|--------------|-------|----------------|------------|
+| **Tercera Edad (65+)** | `l10n_ec_tercera_edad` (auto) | 5 canastas ($4,044) | LORTI Art. 74 |
+| **Discapacidad** | `l10n_ec_discapacidad` | 3 SBU ($1,446) | Ley Discap. Art. 78 |
+| **Artesano Calificado** | `l10n_ec_artesano_calificado` | IVA 0% ventas | LORTI Art. 56 |
+
+> **AUTOMÁTICO**: `l10n_ec_tercera_edad` se calcula desde `l10n_ec_fecha_nacimiento` si edad ≥ 65 y `company_type='person'`
+
+### 4.7 Tipos de Entidad
+
+| Tipo | Campo `l10n_ec_entity_type` | RUC |
+|------|---------------------------|-----|
+| Sociedad Anónima | `sa` | 9 |
+| Compañía Limitada | `cia_ltda` | 9 |
+| S.A.S. | `sas` | 9 |
+| Empresa Pública | `ep` | 6 |
+| Fundación | `fundacion` | 9 |
+| ONG | `ong` | 6 o 9 |
+| Cooperativa | `cooperativa` | 9 |
+| ZEDE | `zede` | 9 |
+
 ---
 
 ## 5. Nómina y Seguridad Social
