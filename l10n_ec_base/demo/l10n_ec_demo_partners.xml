@@ -228,6 +228,114 @@
     </record>
 
     <!-- ================================================================= -->
+    <!-- SPECIAL ENTITY TYPES - Tax Benefits                               -->
+    <!-- ================================================================= -->
+
+    <!-- Customer: Fundación sin fines de lucro (IR Exento - LORTI Art. 9 num. 5) -->
+    <record id="demo_customer_fundacion" model="res.partner">
+        <field name="name">FUNDACIÓN NIÑOS DEL ECUADOR</field>
+        <field name="vat">1791000001001</field>
+        <field name="l10n_ec_identifier_type">ruc</field>
+        <field name="l10n_ec_taxpayer_type">nonprofit</field>
+        <field name="l10n_ec_entity_type">fundacion</field>
+        <field name="street">Av. Colón E4-105</field>
+        <field name="city">Quito</field>
+        <field name="country_id" ref="base.ec"/>
+        <field name="phone">022567890</field>
+        <field name="email">info@fundacion.demo.ec</field>
+        <field name="customer_rank">1</field>
+        <field name="supplier_rank">0</field>
+        <field name="company_type">company</field>
+    </record>
+
+    <!-- Customer: ONG Internacional (IR Exento - LORTI Art. 9 num. 3) -->
+    <record id="demo_customer_ong" model="res.partner">
+        <field name="name">UNICEF ECUADOR</field>
+        <field name="vat">1768000001001</field>
+        <field name="l10n_ec_identifier_type">ruc</field>
+        <field name="l10n_ec_taxpayer_type">nonprofit</field>
+        <field name="l10n_ec_entity_type">ong</field>
+        <field name="street">Av. Amazonas N34-311</field>
+        <field name="city">Quito</field>
+        <field name="country_id" ref="base.ec"/>
+        <field name="phone">022460330</field>
+        <field name="email">quito@unicef.demo.org</field>
+        <field name="customer_rank">1</field>
+        <field name="supplier_rank">0</field>
+        <field name="company_type">company</field>
+    </record>
+
+    <!-- Customer: Cooperativa de Ahorro y Crédito (LOEPS - Régimen especial) -->
+    <record id="demo_customer_cooperativa" model="res.partner">
+        <field name="name">COOPERATIVA DE AHORRO Y CRÉDITO ANDALUCÍA</field>
+        <field name="vat">1790123456001</field>
+        <field name="l10n_ec_identifier_type">ruc</field>
+        <field name="l10n_ec_taxpayer_type">general</field>
+        <field name="l10n_ec_entity_type">cooperativa</field>
+        <field name="street">Av. 10 de Agosto N23-145</field>
+        <field name="city">Quito</field>
+        <field name="country_id" ref="base.ec"/>
+        <field name="phone">022234567</field>
+        <field name="email">info@cooperativa.demo.ec</field>
+        <field name="customer_rank">1</field>
+        <field name="supplier_rank">0</field>
+        <field name="company_type">company</field>
+    </record>
+
+    <!-- Customer: ZEDE - Zona Especial Desarrollo (IVA 0% - COPCI Art. 34-47) -->
+    <record id="demo_customer_zede" model="res.partner">
+        <field name="name">INDUSTRIA ZEDE YACHAY S.A.</field>
+        <field name="vat">1792500001001</field>
+        <field name="l10n_ec_identifier_type">ruc</field>
+        <field name="l10n_ec_taxpayer_type">zede</field>
+        <field name="l10n_ec_entity_type">zede</field>
+        <field name="street">Ciudad del Conocimiento Yachay</field>
+        <field name="city">Urcuquí</field>
+        <field name="country_id" ref="base.ec"/>
+        <field name="phone">062999000</field>
+        <field name="email">industria@zede.demo.ec</field>
+        <field name="customer_rank">1</field>
+        <field name="supplier_rank">0</field>
+        <field name="company_type">company</field>
+    </record>
+
+    <!-- Customer: Nueva Empresa (Exoneración 3 años - LORTI Art. 9.1 bis) -->
+    <record id="demo_customer_nueva_empresa" model="res.partner">
+        <field name="name">STARTUP TECH INNOVACIÓN S.A.S.</field>
+        <field name="vat">1793000001001</field>
+        <field name="l10n_ec_identifier_type">ruc</field>
+        <field name="l10n_ec_taxpayer_type">general</field>
+        <field name="l10n_ec_entity_type">sas</field>
+        <field name="l10n_ec_nueva_empresa" eval="True"/>
+        <field name="l10n_ec_fecha_constitucion">2024-06-15</field>
+        <field name="street">La Floresta, Calle Toledo 234</field>
+        <field name="city">Quito</field>
+        <field name="country_id" ref="base.ec"/>
+        <field name="phone">0999888777</field>
+        <field name="email">hola@startup.demo.ec</field>
+        <field name="customer_rank">1</field>
+        <field name="supplier_rank">0</field>
+        <field name="company_type">company</field>
+    </record>
+
+    <!-- Customer: Artesano Calificado (IVA 0% - LORTI Art. 56) -->
+    <record id="demo_customer_artesano" model="res.partner">
+        <field name="name">JOSÉ MANUEL TALLER ARTESANAL</field>
+        <field name="vat">1705678901001</field>
+        <field name="l10n_ec_identifier_type">ruc</field>
+        <field name="l10n_ec_taxpayer_type">general</field>
+        <field name="l10n_ec_artesano_calificado" eval="True"/>
+        <field name="street">La Mariscal, Calle Foch</field>
+        <field name="city">Quito</field>
+        <field name="country_id" ref="base.ec"/>
+        <field name="phone">0987123456</field>
+        <field name="email">artesano@demo.ec</field>
+        <field name="customer_rank">1</field>
+        <field name="supplier_rank">1</field>
+        <field name="company_type">person</field>
+    </record>
+
+    <!-- ================================================================= -->
     <!-- SUPPLIERS - Different Types for Retention Testing                 -->
     <!-- ================================================================= -->
 

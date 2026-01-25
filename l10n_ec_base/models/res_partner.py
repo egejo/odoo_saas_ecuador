@@ -30,14 +30,49 @@ class ResPartner(models.Model):
     l10n_ec_related_party = fields.Boolean("Related Party (ATS)", default=False)
 
     # =========================================================================
-    # LORTI Art. 74: Tercera Edad (65+ years - IVA Refund)
+    # Birth Date and Age - Auto-compute Tercera Edad
     # =========================================================================
+    l10n_ec_fecha_nacimiento = fields.Date(
+        string="Fecha de Nacimiento",
+        help="Fecha de nacimiento para calcular edad automáticamente",
+    )
+    l10n_ec_edad = fields.Integer(
+        string="Edad",
+        compute="_compute_edad",
+        store=True,
+        help="Edad calculada automáticamente desde fecha de nacimiento",
+    )
     l10n_ec_tercera_edad = fields.Boolean(
         string="Tercera Edad",
-        default=False,
-        help="Persona de 65 años o más. LORTI Art. 74: Derecho a devolución "
-             "de IVA en bienes de primera necesidad hasta 5 canastas básicas/mes.",
+        compute="_compute_tercera_edad",
+        store=True,
+        help="LORTI Art. 74: Se activa automáticamente si edad ≥ 65 años",
     )
+
+    @api.depends("l10n_ec_fecha_nacimiento")
+    def _compute_edad(self):
+        """Computes age from birthdate."""
+        from datetime import date
+        today = date.today()
+        for partner in self:
+            if partner.l10n_ec_fecha_nacimiento:
+                born = partner.l10n_ec_fecha_nacimiento
+                age = today.year - born.year - (
+                    (today.month, today.day) < (born.month, born.day)
+                )
+                partner.l10n_ec_edad = age
+            else:
+                partner.l10n_ec_edad = 0
+
+    @api.depends("l10n_ec_edad", "company_type")
+    def _compute_tercera_edad(self):
+        """Auto-compute Tercera Edad: person with age >= 65."""
+        for partner in self:
+            # Only persons can be Tercera Edad, not companies
+            if partner.company_type == "person" and partner.l10n_ec_edad >= 65:
+                partner.l10n_ec_tercera_edad = True
+            else:
+                partner.l10n_ec_tercera_edad = False
 
     # =========================================================================
     # Ley Orgánica de Discapacidades Art. 78: IVA Refund
@@ -56,6 +91,51 @@ class ResPartner(models.Model):
         string="Nº Carnet CONADIS",
         help="Número de carnet del CONADIS",
     )
+
+    # =========================================================================
+    # Entity Type and Special Regimes
+    # =========================================================================
+    l10n_ec_entity_type = fields.Selection(
+        [
+            ("sa", "Sociedad Anónima (S.A.)"),
+            ("cia_ltda", "Compañía Limitada (Cía. Ltda.)"),
+            ("sas", "Sociedad por Acciones Simplificada (S.A.S.)"),
+            ("ep", "Empresa Pública (E.P.)"),
+            ("fundacion", "Fundación sin Fines de Lucro"),
+            ("ong", "ONG / Organismo Internacional"),
+            ("cooperativa", "Cooperativa"),
+            ("zede", "ZEDE - Zona Especial"),
+            ("persona", "Persona Natural"),
+        ],
+        string="Tipo de Entidad",
+        help="Tipo de entidad jurídica para tratamiento tributario",
+    )
+    l10n_ec_nueva_empresa = fields.Boolean(
+        string="Nueva Empresa",
+        help="LORTI Art. 9.1 bis: Exoneración de IR por 3 años para nuevas empresas",
+    )
+    l10n_ec_fecha_constitucion = fields.Date(
+        string="Fecha de Constitución",
+        help="Fecha de constitución de la empresa",
+    )
+    l10n_ec_artesano_calificado = fields.Boolean(
+        string="Artesano Calificado",
+        help="LORTI Art. 56: IVA 0% en servicios de artesanos calificados por JNDA",
+    )
+
+    @api.constrains("l10n_ec_discapacidad", "l10n_ec_discapacidad_porcentaje")
+    def _check_discapacidad(self):
+        """Validates disability percentage if disability is marked."""
+        for partner in self:
+            if partner.l10n_ec_discapacidad:
+                if not partner.l10n_ec_discapacidad_porcentaje:
+                    raise ValidationError(
+                        _("Debe ingresar el porcentaje de discapacidad (30-100%).")
+                    )
+                if partner.l10n_ec_discapacidad_porcentaje < 30:
+                    raise ValidationError(
+                        _("El porcentaje mínimo para beneficios tributarios es 30%.")
+                    )
 
     # =========================================================================
     # DE 045-2025: UAF Certificate for Government Contractors
