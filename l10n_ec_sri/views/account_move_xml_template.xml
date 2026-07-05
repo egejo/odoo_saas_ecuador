@@ -3,7 +3,7 @@
 <template id="xml_invoice_v_2_26">
 <factura id="comprobante" version="2.1.0">
     <infoTributaria>
-        <ambiente><t t-esc="record.company_id.l10n_ec_sri_environment"/></ambiente>
+        <ambiente><t t-esc="'1' if record.company_id.l10n_ec_sri_environment == 'test' else '2'"/></ambiente>
         <tipoEmision>1</tipoEmision>
         <razonSocial><t t-esc="record.company_id.name"/></razonSocial>
         <nombreComercial><t t-esc="record.company_id.name"/></nombreComercial>

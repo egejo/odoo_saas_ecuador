@@ -30,7 +30,7 @@ class L10nEcSriXml(models.AbstractModel):
         date_inv = record.invoice_date.strftime("%d%m%Y")
         doc_type = record.l10n_latam_document_type_id.code  # e.g., '01'
         ruc = record.company_id.vat
-        env = record.company_id.l10n_ec_sri_environment
+        env = "1" if record.company_id.l10n_ec_sri_environment == "test" else "2"
 
         # Split Journal: 001-001
         try:

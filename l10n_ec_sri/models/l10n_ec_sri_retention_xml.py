@@ -54,7 +54,7 @@ class L10nEcSriRetentionXml(models.AbstractModel):
         date_inv = record.date_issue.strftime("%d%m%Y")
         doc_type = "07"  # SRM Code for Comprobante de Retención
         ruc = record.company_id.vat
-        env = record.company_id.l10n_ec_sri_environment
+        env = "1" if record.company_id.l10n_ec_sri_environment == "test" else "2"
 
         # Retention Sequence is usually 001-001-00000001
         try:

@@ -3,7 +3,7 @@
 <template id="xml_retention">
 <comprobanteRetencion id="comprobante" version="1.0.0">
     <infoTributaria>
-        <ambiente><t t-esc="company.l10n_ec_sri_environment"/></ambiente>
+        <ambiente><t t-esc="'1' if company.l10n_ec_sri_environment == 'test' else '2'"/></ambiente>
         <tipoEmision>1</tipoEmision>
         <razonSocial><t t-esc="company.name"/></razonSocial>
         <nombreComercial><t t-esc="company.name"/></nombreComercial>
