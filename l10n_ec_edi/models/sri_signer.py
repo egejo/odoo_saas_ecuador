@@ -60,10 +60,21 @@ class SriSigner(models.AbstractModel):
         document_digest = hashlib.sha1(xml_to_hash).digest()
         document_digest_b64 = base64.b64encode(document_digest).decode()
 
-        # 3.2 Construct SignedInfo
-        signed_info = self._build_signed_info(document_digest_b64)
+        # 3.2 Build Object (QualifyingProperties). XAdES-BES requires
+        # SignedProperties/SignedSignatureProperties/SigningCertificate to
+        # bind the cert to the signature — without it this is a plain
+        # XMLDSig signature, not XAdES-BES, and the SRI rejects it.
+        object_node, signed_properties_digest_b64 = self._build_qualifying_properties(
+            certificate
+        )
 
-        # 3.3 Sign SignedInfo (RSA-SHA1)
+        # 3.3 Construct SignedInfo (document Reference + SignedProperties
+        # Reference, both required by XAdES-BES)
+        signed_info = self._build_signed_info(
+            document_digest_b64, signed_properties_digest_b64
+        )
+
+        # 3.4 Sign SignedInfo (RSA-SHA1)
         # Verify if SRI requires SHA1 or SHA256 for the signature algorithm
         # Most documentation says RSA-SHA1 for XAdES-BES legacy support
         signature = private_key.sign(
@@ -73,14 +84,11 @@ class SriSigner(models.AbstractModel):
         )
         signature_value_b64 = base64.b64encode(signature).decode()
 
-        # 3.4 Build KeyInfo
+        # 3.5 Build KeyInfo
         cert_b64 = base64.b64encode(
             certificate.public_bytes(serialization.Encoding.DER)
         ).decode()
         key_info = self._build_key_info(cert_b64)
-
-        # 3.5 Build Object (QualifyingProperties)
-        object_node = self._build_qualifying_properties(certificate)
 
         # 4. Assemble Signature
         ns = "http://www.w3.org/2000/09/xmldsig#"
@@ -103,7 +111,7 @@ class SriSigner(models.AbstractModel):
             root, xml_declaration=True, encoding="UTF-8", standalone="yes"
         )
 
-    def _build_signed_info(self, digest_b64):
+    def _build_signed_info(self, document_digest_b64, signed_properties_digest_b64):
         ns = "http://www.w3.org/2000/09/xmldsig#"
         signed_info = etree.Element(f"{{{ns}}}SignedInfo", nsmap={None: ns})
 
@@ -125,7 +133,19 @@ class SriSigner(models.AbstractModel):
         digest_method.set("Algorithm", "http://www.w3.org/2000/09/xmldsig#sha1")
 
         digest_val = etree.SubElement(reference, f"{{{ns}}}DigestValue")
-        digest_val.text = digest_b64
+        digest_val.text = document_digest_b64
+
+        # XAdES-BES: Reference to SignedProperties is mandatory — without it
+        # the signature is plain XMLDSig, not XAdES-BES, and SRI rejects it.
+        sp_reference = etree.SubElement(signed_info, f"{{{ns}}}Reference")
+        sp_reference.set("Type", "http://uri.etsi.org/01903#SignedProperties")
+        sp_reference.set("URI", "#SignedProperties")
+
+        sp_digest_method = etree.SubElement(sp_reference, f"{{{ns}}}DigestMethod")
+        sp_digest_method.set("Algorithm", "http://www.w3.org/2000/09/xmldsig#sha1")
+
+        sp_digest_val = etree.SubElement(sp_reference, f"{{{ns}}}DigestValue")
+        sp_digest_val.text = signed_properties_digest_b64
 
         return signed_info
 
@@ -138,8 +158,13 @@ class SriSigner(models.AbstractModel):
         return key_info
 
     def _build_qualifying_properties(self, certificate):
-        # Implementation of XAdES specific properties (SignedProperties)
-        # This is simplified for the example but required for SRI
+        """
+        Builds SignedProperties (XAdES-BES) including SigningCertificate —
+        the element that binds the signing cert to the signature. Returns
+        (Object node, base64 SHA1 digest of the canonicalized
+        SignedProperties element), since SignedInfo needs that digest for
+        its own Reference to #SignedProperties.
+        """
         ns_xades = "http://uri.etsi.org/01903/v1.3.2#"
         ns_dsig = "http://www.w3.org/2000/09/xmldsig#"
 
@@ -164,6 +189,40 @@ class SriSigner(models.AbstractModel):
         signing_time = etree.SubElement(signed_sig_props, f"{{{ns_xades}}}SigningTime")
         signing_time.text = datetime.datetime.now().isoformat()
 
-        # Certificate Ref would go here
+        # SigningCertificate: cert digest + issuer/serial, mandatory in
+        # XAdES-BES (ETSI TS 101 903) to bind the certificate to the
+        # signature. SRI validates this structure.
+        cert_der = certificate.public_bytes(serialization.Encoding.DER)
+        cert_digest_b64 = base64.b64encode(hashlib.sha1(cert_der).digest()).decode()
 
-        return obj
+        signing_cert = etree.SubElement(
+            signed_sig_props, f"{{{ns_xades}}}SigningCertificate"
+        )
+        cert_node = etree.SubElement(signing_cert, f"{{{ns_xades}}}Cert")
+
+        cert_digest_node = etree.SubElement(cert_node, f"{{{ns_xades}}}CertDigest")
+        digest_method = etree.SubElement(cert_digest_node, f"{{{ns_dsig}}}DigestMethod")
+        digest_method.set("Algorithm", "http://www.w3.org/2000/09/xmldsig#sha1")
+        digest_value = etree.SubElement(cert_digest_node, f"{{{ns_dsig}}}DigestValue")
+        digest_value.text = cert_digest_b64
+
+        issuer_serial_node = etree.SubElement(
+            cert_node, f"{{{ns_xades}}}IssuerSerial"
+        )
+        issuer_name = etree.SubElement(issuer_serial_node, f"{{{ns_dsig}}}X509IssuerName")
+        issuer_name.text = certificate.issuer.rfc4514_string()
+        serial_number = etree.SubElement(
+            issuer_serial_node, f"{{{ns_dsig}}}X509SerialNumber"
+        )
+        serial_number.text = str(certificate.serial_number)
+
+        # Digest of SignedProperties itself, needed by SignedInfo's
+        # Reference URI="#SignedProperties".
+        signed_props_c14n = etree.tostring(
+            signed_props, method="c14n", exclusive=False, with_comments=False
+        )
+        signed_props_digest_b64 = base64.b64encode(
+            hashlib.sha1(signed_props_c14n).digest()
+        ).decode()
+
+        return obj, signed_props_digest_b64

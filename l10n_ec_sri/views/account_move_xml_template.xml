@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<template id="xml_invoice_v_2_26">
+<template id="xml_invoice">
 <factura id="comprobante" version="2.1.0">
     <infoTributaria>
         <ambiente><t t-esc="'1' if record.company_id.l10n_ec_sri_environment == 'test' else '2'"/></ambiente>
@@ -19,13 +19,19 @@
         <fechaEmision><t t-esc="record.invoice_date.strftime('%d/%m/%Y')"/></fechaEmision>
         <dirEstablecimiento><t t-esc="record.company_id.street"/></dirEstablecimiento>
         <obligadoContabilidad><t t-if="record.company_id.l10n_ec_forced_accounting">SI</t><t t-else="">NO</t></obligadoContabilidad>
-        <tipoIdentificacionComprador>05</tipoIdentificacionComprador>
+        <tipoIdentificacionComprador><t t-esc="tipo_identificacion_comprador"/></tipoIdentificacionComprador>
         <razonSocialComprador><t t-esc="record.partner_id.name"/></razonSocialComprador>
         <identificacionComprador><t t-esc="record.partner_id.vat"/></identificacionComprador>
         <totalSinImpuestos><t t-esc="'{:.2f}'.format(record.amount_untaxed)"/></totalSinImpuestos>
         <totalDescuento>0.00</totalDescuento>
         <totalConImpuestos>
-             <!-- Loop Taxes -->
+            <totalImpuesto t-foreach="tax_breakdown" t-as="tax">
+                <codigo><t t-esc="tax['codigo']"/></codigo>
+                <codigoPorcentaje><t t-esc="tax['codigo_porcentaje']"/></codigoPorcentaje>
+                <baseImponible><t t-esc="'{:.2f}'.format(tax['base_imponible'])"/></baseImponible>
+                <tarifa><t t-esc="tax['tarifa']"/></tarifa>
+                <valor><t t-esc="'{:.2f}'.format(tax['valor'])"/></valor>
+            </totalImpuesto>
         </totalConImpuestos>
         <propina>0.00</propina>
         <importeTotal><t t-esc="'{:.2f}'.format(record.amount_total)"/></importeTotal>
@@ -40,7 +46,13 @@
             <descuento>0.00</descuento>
             <precioTotalSinImpuesto><t t-esc="line.price_subtotal"/></precioTotalSinImpuesto>
             <impuestos>
-                 <!-- Tax Logic -->
+                <impuesto t-foreach="line_taxes[line.id]" t-as="tax">
+                    <codigo><t t-esc="tax['codigo']"/></codigo>
+                    <codigoPorcentaje><t t-esc="tax['codigo_porcentaje']"/></codigoPorcentaje>
+                    <tarifa><t t-esc="tax['tarifa']"/></tarifa>
+                    <baseImponible><t t-esc="'{:.2f}'.format(tax['base_imponible'])"/></baseImponible>
+                    <valor><t t-esc="'{:.2f}'.format(tax['valor'])"/></valor>
+                </impuesto>
             </impuestos>
         </detalle>
     </detalles>

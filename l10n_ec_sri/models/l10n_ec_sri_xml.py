@@ -88,17 +88,102 @@ class L10nEcSriXml(models.AbstractModel):
 
         return str(check_digit)
 
+    # tabla17/tabla18 del Comprobante Electronico SRI, tal como documentado en
+    # docs/05_data_mapping/DM_01_ELECTRONIC_INVOICE.md. Solo se incluyen las
+    # tarifas realmente usadas en este catalogo (0%, 5%, 12%, 14%, 15% +
+    # no objeto/exento); cualquier otra levanta error en vez de mandar un
+    # codigo adivinado al SRI.
+    _TABLA17_CODIGO_IMPUESTO = {
+        "vat05": "2", "vat08": "2", "vat12": "2", "vat13": "2", "vat14": "2",
+        "vat15": "2", "zero_vat": "2", "not_charged_vat": "2", "exempt_vat": "2",
+        "ice": "3",
+        "irbpnr": "5",
+    }
+    _TABLA18_CODIGO_PORCENTAJE = {
+        "zero_vat": "0",
+        "not_charged_vat": "6",
+        "exempt_vat": "7",
+        "vat05": "5",
+        "vat12": "2",
+        "vat14": "3",
+        "vat15": "4",
+    }
+    # Mapea partner._l10n_ec_get_identification_type() (l10n_ec core) al
+    # catalogo SRI de tipoIdentificacionComprador.
+    _TIPO_IDENTIFICACION = {
+        "ruc": "04",
+        "cedula": "05",
+        "ec_passport": "06",
+        "passport": "06",
+        "foreign": "08",
+    }
+
+    def _get_buyer_identification_code(self, record):
+        partner_type = record.partner_id._l10n_ec_get_identification_type()
+        return self._TIPO_IDENTIFICACION.get(partner_type, "05")
+
+    def _map_tax_codes(self, tax):
+        ec_type = tax.tax_group_id.l10n_ec_type
+        if (
+            ec_type not in self._TABLA17_CODIGO_IMPUESTO
+            or ec_type not in self._TABLA18_CODIGO_PORCENTAJE
+        ):
+            raise ValidationError(
+                "El impuesto '%s' (tipo SRI '%s') no tiene codigo de "
+                "catalogo SRI (tabla17/tabla18) configurado. Agrega el "
+                "mapeo en l10n_ec_sri_xml.py antes de enviar esta "
+                "factura al SRI." % (tax.name, ec_type or "sin definir")
+            )
+        return self._TABLA17_CODIGO_IMPUESTO[ec_type], self._TABLA18_CODIGO_PORCENTAJE[ec_type]
+
+    def _get_tax_breakdown(self, record):
+        """
+        Agrega los impuestos de la factura para <totalConImpuestos>.
+        """
+        breakdown = []
+        for line in record.line_ids.filtered(lambda l: l.tax_line_id):
+            codigo, codigo_porcentaje = self._map_tax_codes(line.tax_line_id)
+            breakdown.append(
+                {
+                    "codigo": codigo,
+                    "codigo_porcentaje": codigo_porcentaje,
+                    "tarifa": line.tax_line_id.amount,
+                    "base_imponible": abs(line.tax_base_amount),
+                    "valor": abs(line.balance),
+                }
+            )
+        return breakdown
+
+    def _get_line_taxes(self, line):
+        """
+        Impuestos aplicados a una linea de detalle, para <detalle>/<impuestos>.
+        """
+        result = []
+        for tax in line.tax_ids:
+            codigo, codigo_porcentaje = self._map_tax_codes(tax)
+            result.append(
+                {
+                    "codigo": codigo,
+                    "codigo_porcentaje": codigo_porcentaje,
+                    "tarifa": tax.amount,
+                    "base_imponible": line.price_subtotal,
+                    "valor": line.price_subtotal * tax.amount / 100,
+                }
+            )
+        return result
+
     @api.model
     def render_xml(self, record):
         """
         Render the XML using QWeb template.
         """
-        # We assume a qweb template 'l10n_ec_sri.xml_invoice' exists
-        # This returns bytes
-        # In a real implementation, we pass formatted values
         values = {
             "record": record,
             "access_key": record.l10n_ec_sri_access_key,
-            # Add all other XSD 2.26 fields here
+            "tipo_identificacion_comprador": self._get_buyer_identification_code(record),
+            "tax_breakdown": self._get_tax_breakdown(record),
+            "line_taxes": {
+                line.id: self._get_line_taxes(line) for line in record.invoice_line_ids
+            },
         }
         return self.env["ir.qweb"]._render("l10n_ec_sri.xml_invoice", values)
