@@ -36,6 +36,7 @@ This module provides full SRI electronic invoicing:
     "data": [
         "security/ir.model.access.csv",
         "views/l10n_ec_certificate_views.xml",
+        "views/res_company_views.xml",
     ],
     "images": ["static/description/banner.png"],
     "external_dependencies": {
