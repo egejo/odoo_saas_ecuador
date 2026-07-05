@@ -176,7 +176,17 @@ class L10nEcSriXml(models.AbstractModel):
     def render_xml(self, record):
         """
         Render the XML using QWeb template.
+
+        Dispatches by move_type: facturas (codDoc 01) and notas de credito
+        (codDoc 04) use different SRI schemas. Before this, every document
+        type was rendered as xml_invoice regardless of move_type, so a
+        credit note sharing the invoice's estab/ptoEmi/secuencial looked to
+        the SRI like the exact same already-authorized factura ("ERROR
+        SECUENCIAL REGISTRADO").
         """
+        if record.move_type == "out_refund":
+            return self._render_credit_note_xml(record)
+
         values = {
             "record": record,
             "access_key": record.l10n_ec_sri_access_key,
@@ -187,3 +197,26 @@ class L10nEcSriXml(models.AbstractModel):
             },
         }
         return self.env["ir.qweb"]._render("l10n_ec_sri.xml_invoice", values)
+
+    @api.model
+    def _render_credit_note_xml(self, record):
+        original_invoice = record.reversed_entry_id
+        if not original_invoice:
+            raise ValidationError(
+                "La nota de credito '%s' no tiene una factura original "
+                "vinculada (reversed_entry_id vacio). El SRI exige "
+                "codDocModificado/numDocModificado/fechaEmisionDocSustento "
+                "de la factura que se esta rectificando." % record.name
+            )
+        values = {
+            "record": record,
+            "access_key": record.l10n_ec_sri_access_key,
+            "tipo_identificacion_comprador": self._get_buyer_identification_code(record),
+            "tax_breakdown": self._get_tax_breakdown(record),
+            "line_taxes": {
+                line.id: self._get_line_taxes(line) for line in record.invoice_line_ids
+            },
+            "original_invoice": original_invoice,
+            "motivo": record.narration or record.name or "NOTA DE CREDITO",
+        }
+        return self.env["ir.qweb"]._render("l10n_ec_sri.xml_credit_note", values)

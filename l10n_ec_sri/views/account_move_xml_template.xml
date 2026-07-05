@@ -58,4 +58,73 @@
     </detalles>
 </factura>
 </template>
+
+<!--
+    Nota de Credito (codDoc 04). Antes de esto, action_send_sri renderizaba
+    SIEMPRE xml_invoice (codDoc 01) sin importar move_type, asi que una
+    nota de credito con el mismo estab/ptoEmi/secuencial que la factura
+    original chocaba contra ella misma en el SRI ("ERROR SECUENCIAL
+    REGISTRADO", codigo 45) porque para el SRI ambas parecian la MISMA
+    factura ya autorizada. La clave de acceso ya codificaba tipo=04
+    correctamente; lo que faltaba era el cuerpo XML acorde.
+-->
+<template id="xml_credit_note">
+<notaCredito id="comprobante" version="1.1.0">
+    <infoTributaria>
+        <ambiente><t t-esc="'1' if record.company_id.l10n_ec_sri_environment == 'test' else '2'"/></ambiente>
+        <tipoEmision>1</tipoEmision>
+        <razonSocial><t t-esc="record.company_id.name"/></razonSocial>
+        <nombreComercial><t t-esc="record.company_id.name"/></nombreComercial>
+        <ruc><t t-esc="record.company_id.vat"/></ruc>
+        <claveAcceso><t t-esc="access_key"/></claveAcceso>
+        <codDoc>04</codDoc>
+        <estab>001</estab>
+        <ptoEmi>001</ptoEmi>
+        <secuencial><t t-esc="record.name.split('-')[-1]"/></secuencial>
+        <dirMatriz><t t-esc="record.company_id.street"/></dirMatriz>
+    </infoTributaria>
+    <infoNotaCredito>
+        <fechaEmision><t t-esc="record.invoice_date.strftime('%d/%m/%Y')"/></fechaEmision>
+        <dirEstablecimiento><t t-esc="record.company_id.street"/></dirEstablecimiento>
+        <tipoIdentificacionComprador><t t-esc="tipo_identificacion_comprador"/></tipoIdentificacionComprador>
+        <razonSocialComprador><t t-esc="record.partner_id.name"/></razonSocialComprador>
+        <identificacionComprador><t t-esc="record.partner_id.vat"/></identificacionComprador>
+        <obligadoContabilidad><t t-if="record.company_id.l10n_ec_forced_accounting">SI</t><t t-else="">NO</t></obligadoContabilidad>
+        <codDocModificado>01</codDocModificado>
+        <numDocModificado><t t-esc="original_invoice.l10n_latam_document_number"/></numDocModificado>
+        <fechaEmisionDocSustento><t t-esc="original_invoice.invoice_date.strftime('%d/%m/%Y')"/></fechaEmisionDocSustento>
+        <totalSinImpuestos><t t-esc="'{:.2f}'.format(abs(record.amount_untaxed))"/></totalSinImpuestos>
+        <valorModificacion><t t-esc="'{:.2f}'.format(abs(record.amount_total))"/></valorModificacion>
+        <moneda>DOLAR</moneda>
+        <totalConImpuestos>
+            <totalImpuesto t-foreach="tax_breakdown" t-as="tax">
+                <codigo><t t-esc="tax['codigo']"/></codigo>
+                <codigoPorcentaje><t t-esc="tax['codigo_porcentaje']"/></codigoPorcentaje>
+                <baseImponible><t t-esc="'{:.2f}'.format(tax['base_imponible'])"/></baseImponible>
+                <valor><t t-esc="'{:.2f}'.format(tax['valor'])"/></valor>
+            </totalImpuesto>
+        </totalConImpuestos>
+        <motivo><t t-esc="motivo"/></motivo>
+    </infoNotaCredito>
+    <detalles>
+        <detalle t-foreach="record.invoice_line_ids" t-as="line">
+            <codigoInterno><t t-esc="line.product_id.default_code[:25] if line.product_id.default_code else 'GEN'"/></codigoInterno>
+            <descripcion><t t-esc="line.name"/></descripcion>
+            <cantidad><t t-esc="line.quantity"/></cantidad>
+            <precioUnitario><t t-esc="line.price_unit"/></precioUnitario>
+            <descuento>0.00</descuento>
+            <precioTotalSinImpuesto><t t-esc="abs(line.price_subtotal)"/></precioTotalSinImpuesto>
+            <impuestos>
+                <impuesto t-foreach="line_taxes[line.id]" t-as="tax">
+                    <codigo><t t-esc="tax['codigo']"/></codigo>
+                    <codigoPorcentaje><t t-esc="tax['codigo_porcentaje']"/></codigoPorcentaje>
+                    <tarifa><t t-esc="tax['tarifa']"/></tarifa>
+                    <baseImponible><t t-esc="'{:.2f}'.format(abs(tax['base_imponible']))"/></baseImponible>
+                    <valor><t t-esc="'{:.2f}'.format(abs(tax['valor']))"/></valor>
+                </impuesto>
+            </impuestos>
+        </detalle>
+    </detalles>
+</notaCredito>
+</template>
 </odoo>
