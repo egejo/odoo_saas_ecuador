@@ -34,6 +34,8 @@ Complete SRI (Servicio de Rentas Internas) integration:
     "depends": [
         "base",
         "account",
+        "mail",
+        "portal",
         "l10n_ec_base",
         "l10n_ec_edi",  # Base EDI module with field definitions
     ],
