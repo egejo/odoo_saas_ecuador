@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import models, _
 from odoo.exceptions import UserError
+import datetime
 import logging
 
 # Trusted External Libs
@@ -99,9 +100,20 @@ class SriService(models.AbstractModel):
             auth = response.autorizaciones.autorizacion[0]
             state = auth.estado  # 'AUTORIZADO', 'NO AUTORIZADO', 'EN PROCESO'
 
+            # SRI returns fechaAutorizacion with the America/Guayaquil UTC
+            # offset baked in (e.g. 2026-07-05T11:23:39-05:00). Odoo's
+            # fields.Datetime always stores naive UTC and raises ValueError
+            # on anything tz-aware, so it must be converted here before it
+            # ever reaches move.l10n_ec_authorization_date.
+            auth_date = auth.fechaAutorizacion
+            if auth_date is not None and auth_date.tzinfo is not None:
+                auth_date = auth_date.astimezone(datetime.timezone.utc).replace(
+                    tzinfo=None
+                )
+
             result = {
                 "status": state,
-                "date": auth.fechaAutorizacion,  # Check if this is datetime or str
+                "date": auth_date,
                 "xml": auth.comprobante,  # The authorized XML (with authorization tag)
                 "messages": [],
             }

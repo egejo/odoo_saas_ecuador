@@ -172,9 +172,17 @@ class L10nEcCertificate(models.Model):
                 # Serial Number
                 record.serial_number = str(certificate.serial_number)
 
-                # Dates
-                record.issue_date = certificate.not_valid_before_utc.date()
-                record.expiration_date = certificate.not_valid_after_utc.date()
+                # Dates. cryptography >= 42 renamed these to the *_utc
+                # variants; the version pinned in this image is 41.0.7,
+                # which only has the naive-datetime originals.
+                if hasattr(certificate, "not_valid_before_utc"):
+                    not_valid_before = certificate.not_valid_before_utc
+                    not_valid_after = certificate.not_valid_after_utc
+                else:
+                    not_valid_before = certificate.not_valid_before
+                    not_valid_after = certificate.not_valid_after
+                record.issue_date = not_valid_before.date()
+                record.expiration_date = not_valid_after.date()
 
             except Exception as e:
                 _logger.warning("Could not extract certificate metadata: %s", e)
