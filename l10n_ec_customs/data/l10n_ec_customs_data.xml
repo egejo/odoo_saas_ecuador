@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo noupdate="1">
-    <!-- Default Customs Parameters 2025 -->
-    <record id="l10n_ec_fodinfa_param" model="ir.config_parameter" forcecreate="False">
-        <field name="key">l10n_ec.fodinfa</field>
-        <field name="value">0.005</field>
-    </record>
-    <record id="l10n_ec_customs_iva_param" model="ir.config_parameter" forcecreate="False">
-        <field name="key">l10n_ec.customs_iva</field>
-        <field name="value">0.15</field>
-    </record>
+    <!-- l10n_ec.fodinfa y l10n_ec.customs_iva ya los define l10n_ec_base
+         (data/l10n_ec_sri_config.xml) con los mismos valores. Declararlos
+         de nuevo aqui con otro XML ID pero la misma "key" de
+         ir.config_parameter viola su unique constraint y rompe la
+         instalacion ("duplicate key value violates unique constraint
+         ir_config_parameter_key_uniq") en cuanto l10n_ec_base ya esta
+         instalado. -->
 </odoo>
 
