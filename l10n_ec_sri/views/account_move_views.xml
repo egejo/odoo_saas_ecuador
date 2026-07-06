@@ -24,6 +24,11 @@
                                    decoration-info="l10n_ec_sri_status == 'sent'"/>
                             <field name="l10n_ec_sri_access_key"/>
                             <field name="l10n_ec_authorization_date"/>
+                            <!-- Sin este campo en alguna vista, l10n_ec_sri_payment_id
+                                 (definido en el core l10n_ec) nunca se puede
+                                 llenar, y el RIDE nunca puede mostrar la
+                                 forma de pago. -->
+                            <field name="l10n_ec_sri_payment_id"/>
                         </group>
                         <group>
                             <field name="l10n_ec_sri_error" readonly="1" invisible="not l10n_ec_sri_error"/>

@@ -7,6 +7,19 @@
          barras, numero de autorizacion). Sin este bloque, el PDF impreso
          no es un RIDE valido aunque el XML ya este autorizado por el SRI. -->
     <template id="report_invoice_header">
+        <!-- Separador fijo, NO decorativo: wkhtmltopdf renderiza el
+             ".header" (logo+direccion+RUC de la empresa) como una capa
+             independiente sobre el margen superior de la pagina (ver
+             ir_actions_report._prepare_html), no como flujo normal de
+             documento. Si el bloque que antecede a este template no deja
+             suficiente alto (p.ej. al vaciar los divs de direccion del
+             cliente para no repetirlo dos veces, ver mas abajo), ese
+             ".header" queda pisando el inicio del cuerpo; un margin-top
+             en la tabla de abajo NO alcanza a corregirlo porque el
+             ".header" no forma parte del mismo flujo. Probado: sin este
+             div, "RUC: ..." de la empresa se superpone con el titulo
+             "ADRENASPORTS CIA. LTDA." de abajo.-->
+        <div style="height: 20mm; width: 100%;"><br/></div>
         <table class="table table-borderless w-100 m-1">
             <tr>
                 <td class="pe-1" style="width: 45%">
@@ -104,12 +117,32 @@
             <t t-call="l10n_ec_sri.report_invoice_header"/>
         </xpath>
 
-        <!-- El RUC/Cédula del cliente ya lo muestra el bloque de direccion
-             estandar de account.report_invoice_document (via vat_label del
-             pais fiscal); aqui solo se agrega lo que ese bloque no cubre:
-             la referencia al comprobante modificado, exigida por el SRI en
-             notas de credito/debito. -->
+        <!-- El bloque de direccion grande que Odoo pone justo debajo del
+             titulo queda mal ubicado ahora: la caja RIDE ya ocupa ese
+             espacio y los datos del cliente se muestran mas abajo, en la
+             fila "informations". Se quita para no repetir al cliente dos
+             veces con estilos distintos (mismo criterio que l10n_ec_edi de
+             Enterprise y l10n_cl). -->
+        <xpath expr="//div[@name='address_not_same_as_shipping']" position="replace">
+            <div name="address_not_same_as_shipping"/>
+        </xpath>
+        <xpath expr="//div[@name='address_same_as_shipping']" position="replace">
+            <div name="address_same_as_shipping"/>
+        </xpath>
+        <xpath expr="//div[@name='no_shipping']" position="replace">
+            <div name="no_shipping"/>
+        </xpath>
+
         <xpath expr="//div[@id='informations']/*" position="before">
+            <div class="col" name="l10n_ec_partner_info">
+                <strong>Cliente</strong>
+                <div t-esc="o.partner_id.name"/>
+                <div t-if="o.partner_id.vat">
+                    <t t-if="o.partner_id.l10n_latam_identification_type_id" t-esc="o.partner_id.l10n_latam_identification_type_id.name"/>
+                    <t t-else="">RUC/Cédula</t>: <span t-field="o.partner_id.vat"/>
+                </div>
+                <div t-esc="o.partner_id._display_address(without_company=True)"/>
+            </div>
             <div class="col" name="l10n_ec_modified_document" t-if="o.reversed_entry_id">
                 <strong>Comprobante Modificado</strong>
                 <div t-esc="o.reversed_entry_id.l10n_latam_document_number or o.reversed_entry_id.name"/>
@@ -122,6 +155,59 @@
                 <strong>Motivo</strong>
                 <div t-field="o.narration"/>
             </div>
+        </xpath>
+
+        <!-- Formas de pago e informacion adicional: el SRI exige mostrar la
+             forma de pago en el RIDE, y por convencion (ver l10n_ec_edi de
+             Enterprise) tambien referencia/vendedor/email de contacto. -->
+        <xpath expr="//div[@id='payment_term']" position="after">
+            <t t-set="l10n_ec_payment_data" t-value="o._l10n_ec_get_payment_data()"/>
+            <t t-set="l10n_ec_additional_info" t-value="o._l10n_ec_get_invoice_additional_info()"/>
+            <!-- Tabla exterior con anchos fijos en vez de row/col-* de
+                 Bootstrap: wkhtmltopdf no soporta flexbox y el grid
+                 flotante de Bootstrap no respeta el ancho de columna aqui,
+                 haciendo que las dos tablas internas se superpongan. -->
+            <table class="table table-borderless w-100" style="table-layout: fixed;" t-if="l10n_ec_payment_data or l10n_ec_additional_info">
+                <tr>
+                    <td style="width: 50%; vertical-align: top;" t-if="l10n_ec_payment_data" name="l10n_ec_payment_methods">
+                        <table class="table table-sm table-borderless" style="page-break-inside: avoid">
+                            <thead>
+                                <tr>
+                                    <th class="text-center" colspan="2">Forma de Pago</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="l10n_ec_payment_data" t-as="payment">
+                                    <td t-esc="payment['payment_name']"/>
+                                    <td class="text-end">
+                                        <span t-esc="payment['payment_total']"
+                                            t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                    <td t-else="" style="width: 50%"/>
+                    <td style="width: 50%; vertical-align: top;" t-if="l10n_ec_additional_info" name="l10n_ec_additional_info">
+                        <table class="table table-sm table-borderless" style="page-break-inside: avoid">
+                            <thead>
+                                <tr>
+                                    <th class="text-center" colspan="2">Información Adicional</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="l10n_ec_additional_info.items()" t-as="item">
+                                    <tr t-if="item[1]">
+                                        <td t-esc="item[0]"/>
+                                        <td t-esc="item[1]"/>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </td>
+                    <td t-else="" style="width: 50%"/>
+                </tr>
+            </table>
         </xpath>
     </template>
 

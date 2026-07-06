@@ -80,6 +80,37 @@ class AccountMove(models.Model):
                 move.l10n_ec_sri_status = "rejected"
                 move.l10n_ec_sri_error = "\n".join(response.get("messages", []))
 
+    def _l10n_ec_get_payment_data(self):
+        """
+        Forma de pago para el RIDE (l10n_ec_sri_payment_id existe en el
+        account.move core desde el modulo l10n_ec, pero nunca se expone en
+        ninguna vista ni se usa en ningun reporte: sin esto, la factura
+        impresa nunca puede mostrar como se pago, aunque el campo ya este
+        ahi).
+        """
+        self.ensure_one()
+        pay_term_lines = self.line_ids.filtered(
+            lambda l: l.account_id.account_type in ("asset_receivable", "liability_payable")
+        )
+        payment_name = self.l10n_ec_sri_payment_id.name or _("Sin especificar")
+        return [
+            {"payment_name": payment_name, "payment_total": abs(line.balance)}
+            for line in pay_term_lines
+        ]
+
+    def _l10n_ec_get_invoice_additional_info(self):
+        """
+        Bloque "Informacion Adicional" del RIDE (referencia, vendedor,
+        email de contacto), tal como lo muestra el RIDE de Odoo Enterprise
+        para Ecuador.
+        """
+        self.ensure_one()
+        return {
+            _("Referencia"): self.name,
+            _("Vendedor"): self.invoice_user_id.name or "",
+            _("E-mail"): self.invoice_user_id.email or "",
+        }
+
     def _get_name_invoice_report(self):
         # EXTENDS account_move
         # Sin esto, Odoo siempre imprime account.report_invoice_document
