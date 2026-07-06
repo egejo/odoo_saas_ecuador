@@ -80,6 +80,24 @@ class AccountMove(models.Model):
                 move.l10n_ec_sri_status = "rejected"
                 move.l10n_ec_sri_error = "\n".join(response.get("messages", []))
 
+    def _get_name_invoice_report(self):
+        # EXTENDS account_move
+        # Sin esto, Odoo siempre imprime account.report_invoice_document
+        # (el layout generico) sin clave de acceso, numero de autorizacion,
+        # ni codigo de barras: no es un RIDE valido ante el SRI. Solo se activa
+        # para los tipos de documento que realmente se firman/envian hoy
+        # (factura y nota de credito, ver l10n_ec.sri.xml.render_xml); el
+        # resto (nota de debito, guia de remision, etc.) sigue sin RIDE hasta
+        # que su generacion de XML este implementada.
+        self.ensure_one()
+        if (
+            self.l10n_latam_use_documents
+            and self.country_code == "EC"
+            and self.l10n_latam_document_type_id.code in ("01", "04")
+        ):
+            return "l10n_ec_sri.report_invoice_document"
+        return super()._get_name_invoice_report()
+
     def _sign_xml(self, xml_content):
         """
         Internal helper to call the signer lib.

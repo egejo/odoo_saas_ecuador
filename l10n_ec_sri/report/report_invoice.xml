@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- RIDE (Representacion Impresa de Documento Electronico): bloque de
+         identificacion legal exigido por el SRI (razon social, RUC,
+         ambiente, tipo/numero de comprobante, clave de acceso + codigo de
+         barras, numero de autorizacion). Sin este bloque, el PDF impreso
+         no es un RIDE valido aunque el XML ya este autorizado por el SRI. -->
+    <template id="report_invoice_header">
+        <table class="table table-borderless w-100 m-1">
+            <tr>
+                <td class="pe-1" style="width: 45%">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td class="p-1">
+                                <h4 style="letter-spacing: 1px;">
+                                    <span t-esc="o.company_id.l10n_ec_commercial_name or o.company_id.name"/>
+                                </h4>
+                                <div style="font-size: 12px;">
+                                    <strong>RUC: </strong>
+                                    <span t-field="o.company_id.partner_id.vat"/>
+                                    <br/>
+                                    <t t-if="o.journal_id.l10n_ec_emission_address_id">
+                                        <strong>Dirección Matriz/Sucursal: </strong>
+                                        <span t-esc="o.journal_id.l10n_ec_emission_address_id._display_address()"/>
+                                        <br/>
+                                    </t>
+                                    <strong>Ambiente: </strong>
+                                    <t t-if="o.company_id.l10n_ec_sri_environment == 'production'">PRODUCCIÓN</t>
+                                    <t t-else="">PRUEBAS</t>
+                                    <br/>
+                                    <strong>Emisión: </strong>NORMAL
+                                    <br/>
+                                    <strong>Obligado a Llevar Contabilidad: </strong>
+                                    <t t-if="o.company_id.l10n_ec_forced_accounting">SÍ</t>
+                                    <t t-else="">NO</t>
+                                    <br/>
+                                    <t t-if="o.company_id.l10n_ec_special_resolution">
+                                        <strong>Contribuyente Especial Res. No.: </strong>
+                                        <span t-field="o.company_id.l10n_ec_special_resolution"/>
+                                        <br/>
+                                    </t>
+                                    <t t-if="o.company_id.l10n_ec_withhold_agent">
+                                        <strong>Agente de Retención Res. No.: </strong>
+                                        <span t-field="o.company_id.l10n_ec_withhold_resolution"/>
+                                        <br/>
+                                    </t>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td class="p-1" style="width: 55%">
+                    <table class="table table-condensed m-1">
+                        <tr>
+                            <td class="text-center border-top-0 p-1">
+                                <h4 style="letter-spacing: 1px;">
+                                    <span t-esc="o.l10n_latam_document_type_id.report_name or o.l10n_latam_document_type_id.name"/>
+                                    <br/>
+                                    <span t-esc="o.l10n_latam_document_number or o.name"/>
+                                </h4>
+                                <t t-if="o.l10n_ec_sri_status == 'authorized'">
+                                    <div class="text-center" style="font-size: 12px">
+                                        <strong>Número de Autorización: </strong>
+                                        <span t-field="o.l10n_ec_sri_access_key"/>
+                                    </div>
+                                    <div t-if="o.l10n_ec_authorization_date" class="text-center" style="font-size: 12px">
+                                        <strong>Fecha y Hora de Autorización: </strong>
+                                        <span t-field="o.l10n_ec_authorization_date"/>
+                                    </div>
+                                    <div class="text-center">
+                                        <img style="width:100%; height:15mm;"
+                                            t-att-src="'/report/barcode/Code128/' + o.l10n_ec_sri_access_key"
+                                            alt="Código de barras: clave de acceso"
+                                        />
+                                    </div>
+                                    <div class="text-center" style="font-size: 11px">
+                                        <strong>Clave de Acceso: </strong>
+                                        <span t-field="o.l10n_ec_sri_access_key"/>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="text-center bg-danger text-white p-2" style="font-size: 13px;">
+                                        <strong>
+                                            DOCUMENTO NO AUTORIZADO POR EL SRI
+                                            <span t-if="o.l10n_ec_sri_status"> (<span t-esc="o.l10n_ec_sri_status.upper()"/>)</span>
+                                        </strong>
+                                        <div>Este comprobante no tiene validez tributaria hasta ser autorizado.</div>
+                                    </div>
+                                </t>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </template>
+
+    <template id="report_invoice_document" inherit_id="account.report_invoice_document" primary="True">
+
+        <!-- Reemplaza el titulo generico ("Invoice"/"Credit Note") por el
+             bloque RIDE completo. -->
+        <xpath expr="//t[@t-set='layout_document_title']" position="replace">
+            <t t-call="l10n_ec_sri.report_invoice_header"/>
+        </xpath>
+
+        <!-- El RUC/Cédula del cliente ya lo muestra el bloque de direccion
+             estandar de account.report_invoice_document (via vat_label del
+             pais fiscal); aqui solo se agrega lo que ese bloque no cubre:
+             la referencia al comprobante modificado, exigida por el SRI en
+             notas de credito/debito. -->
+        <xpath expr="//div[@id='informations']/*" position="before">
+            <div class="col" name="l10n_ec_modified_document" t-if="o.reversed_entry_id">
+                <strong>Comprobante Modificado</strong>
+                <div t-esc="o.reversed_entry_id.l10n_latam_document_number or o.reversed_entry_id.name"/>
+            </div>
+            <div class="col" name="l10n_ec_modified_document_date" t-if="o.reversed_entry_id">
+                <strong>Fecha Emisión Doc. Modificado</strong>
+                <div t-field="o.reversed_entry_id.invoice_date"/>
+            </div>
+            <div class="col" name="l10n_ec_modification_reason" t-if="o.reversed_entry_id and o.narration">
+                <strong>Motivo</strong>
+                <div t-field="o.narration"/>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Sin esto, account.report_invoice nunca invoca el template de
+         arriba: su t-if solo llama a account.report_invoice_document
+         cuando _get_name_invoice_report() devuelve ese nombre generico. -->
+    <template id="report_invoice" inherit_id="account.report_invoice">
+        <xpath expr="//t[@t-call='account.report_invoice_document']" position="after">
+            <t t-if="o._get_name_invoice_report() == 'l10n_ec_sri.report_invoice_document'"
+               t-call="l10n_ec_sri.report_invoice_document"
+               t-lang="lang"/>
+        </xpath>
+    </template>
+
+</odoo>
