@@ -29,6 +29,23 @@ class L10nEcSriXml(models.AbstractModel):
         # 1. Extraction
         date_inv = record.invoice_date.strftime("%d%m%Y")
         doc_type = record.l10n_latam_document_type_id.code  # e.g., '01'
+        if not doc_type:
+            # Sin este chequeo, un doc_type vacio (l10n_latam_document_type_id
+            # sin asignar) se cuela directo al f-string de mas abajo como
+            # el texto literal "False", y el modulo 11 revienta con un
+            # ValueError críptico ("invalid literal for int() with base 10:
+            # 'e'") al toparse con esa letra. Caso real: una nota de debito
+            # creada via el wizard nativo "Add Debit Note" cuyo
+            # l10n_latam_document_type_id nunca se recompus (la causa raiz
+            # encontrada fue un catalogo de l10n_latam.document.type
+            # duplicado -- ver l10n_ec_base/__manifest__.py -- que dejaba
+            # la seleccion de tipo de documento ambigua).
+            raise ValidationError(
+                "El comprobante '%s' no tiene un Tipo de Documento SRI "
+                "(l10n_latam_document_type_id) asignado. Verifique el "
+                "Diario y el tipo de documento antes de enviarlo al SRI."
+                % record.name
+            )
         ruc = record.company_id.vat
         env = "1" if record.company_id.l10n_ec_sri_environment == "test" else "2"
 

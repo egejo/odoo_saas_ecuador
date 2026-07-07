@@ -32,6 +32,13 @@ This module provides the base localization for Ecuador:
         "purchase",
         "purchase_stock",
         "l10n_latam_invoice_document",
+        # l10n_ec (localizacion oficial de Odoo para Ecuador) ya estaba
+        # instalado en este servidor (arrastrado por el plan de cuentas
+        # elegido al configurar la compañía) pero nunca se declaro aqui
+        # como dependencia real, pese a que este modulo reutiliza sus
+        # catalogos (l10n_latam.document.type, l10n_ec.sri.payment, etc.)
+        # y varios metodos de res.partner (_l10n_ec_get_identification_type).
+        "l10n_ec",
     ],
     "data": [
         "security/l10n_ec_groups.xml",
@@ -42,7 +49,6 @@ This module provides the base localization for Ecuador:
         "data/l10n_ec_provinces.xml",
         "data/l10n_ec.canton.csv",
         "data/account_chart_template.xml",
-        "data/l10n_latam.document.type.csv",
         "views/res_partner_views.xml",
         "views/res_company_views.xml",
     ],
