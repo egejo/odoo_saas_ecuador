@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from collections import defaultdict
+
 from odoo import models, fields, _
 from odoo.exceptions import UserError
 import base64
@@ -107,15 +109,59 @@ class AccountMove(models.Model):
 
     def _l10n_ec_get_invoice_additional_info(self):
         """
-        Bloque "Informacion Adicional" del RIDE: solo vendedor (dato ya
-        disponible en toda factura) mas lo que el usuario haya escrito a
-        mano en l10n_ec_sri_additional_info. Referencia y email del
-        vendedor se quitaron a pedido del usuario -- ya se ve el numero
-        de comprobante en el titulo del RIDE.
+        Bloque "Informacion Adicional" del RIDE: vendedor (dato ya
+        disponible en toda factura) y el correo del cliente registrado
+        (a donde el SRI/Odoo remite el comprobante electronico) mas lo
+        que el usuario haya escrito a mano en l10n_ec_sri_additional_info.
+        El telefono del cliente NO va aqui: se muestra en el bloque de
+        identificacion del cliente, junto a RUC/Fecha Emision/Vence.
         """
         self.ensure_one()
         return {
             _("Vendedor"): self.invoice_user_id.name or "",
+            _("Correo"): self.partner_id.email or "",
+        }
+
+    def _l10n_ec_get_ride_totals(self):
+        """
+        Desglose de totales del RIDE (Subtotal 0%/5%/15%, No Objeto de
+        IVA, Exento de IVA, ICE, IVA 5%/15%, etc.), agrupado por
+        l10n_ec_type del grupo de impuesto de cada linea -- el mismo
+        campo que l10n_ec.sri.xml usa para clasificar impuestos en el
+        XML firmado (tabla17/tabla18 del SRI). Se reutiliza esa misma
+        clasificacion aqui para que el PDF impreso nunca muestre un
+        desglose distinto al que realmente se envio al SRI.
+        """
+        self.ensure_one()
+        bases = defaultdict(float)
+        amounts = defaultdict(float)
+
+        for line in self.invoice_line_ids.filtered(
+            lambda l: l.display_type == "product"
+        ):
+            for tax in line.tax_ids:
+                bases[tax.tax_group_id.l10n_ec_type] += line.price_subtotal
+
+        for line in self.line_ids.filtered(lambda l: l.tax_line_id):
+            amounts[line.tax_line_id.tax_group_id.l10n_ec_type] += abs(line.balance)
+
+        # Sin mecanismo de descuento global/de cabecera en este sistema
+        # (el descuento por linea ya esta incluido en price_subtotal):
+        # Descuento siempre 0.00, Subtotal Neto == Subtotal.
+        return {
+            "subtotal": self.amount_untaxed,
+            "descuento": 0.0,
+            "subtotal_neto": self.amount_untaxed,
+            "subtotal_5": bases.get("vat05", 0.0),
+            "subtotal_15": bases.get("vat15", 0.0),
+            "subtotal_0": bases.get("zero_vat", 0.0),
+            "subtotal_no_objeto": bases.get("not_charged_vat", 0.0),
+            "subtotal_exento": bases.get("exempt_vat", 0.0),
+            "ice": amounts.get("ice", 0.0),
+            "iva_5": amounts.get("vat05", 0.0),
+            "iva_15": amounts.get("vat15", 0.0),
+            "propina": 0.0,
+            "valor_total": self.amount_total,
         }
 
     def _get_name_invoice_report(self):

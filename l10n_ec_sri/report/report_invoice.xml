@@ -10,9 +10,12 @@
          por el resto de reportes de Odoo) arrastra un encabezado con
          nombre/direccion/RUC/tagline de la empresa que ya se repite
          completo en el bloque RIDE de abajo. En vez de vaciar ese
-         encabezado a pedazos, se reemplaza por uno propio con solo el
-         logo arriba a la izquierda; el resto de la identificacion legal
-         de la empresa vive unicamente en report_invoice_header. -->
+         encabezado a pedazos, se reemplaza por uno vacio: el logo y toda
+         la identificacion legal de la empresa viven ahora dentro del
+         cuadro con bordes de report_invoice_header (para poder encerrar
+         logo+datos de la empresa en el mismo recuadro, como en el modelo
+         de referencia del cliente), no en la zona de header de
+         wkhtmltopdf. -->
     <template id="external_layout_ride">
         <t t-if="not o" t-set="o" t-value="doc"/>
         <t t-if="not company">
@@ -27,21 +30,30 @@
             </t>
         </t>
 
-        <!-- padding-top:0 pisa la regla global ".header{padding-top: 11mm}"
-             del CSS compartido de reportes (pensada para el encabezado
-             completo de otros layouts). El tamano del logo (max-height)
-             esta acoplado al header_spacing definido en
-             data/report_paperformat.xml: ver el comentario ahi antes de
-             cambiar este valor, o el logo vuelve a superponerse con el
-             titulo del RIDE. -->
-        <div t-attf-class="header o_company_#{company.id}_layout" style="padding-top: 0;">
-            <img t-if="company.logo" style="max-height: 75px; max-width: 200px;" t-att-src="image_data_uri(company.logo)" alt="Logo"/>
-        </div>
+        <!-- Zona de header de wkhtmltopdf deliberadamente vacia: ver
+             data/report_paperformat.xml (paperformat_ride) para el ajuste
+             de margin_top/header_spacing correspondiente. -->
+        <div t-attf-class="header o_company_#{company.id}_layout"/>
 
         <div t-attf-class="article o_company_#{company.id}_layout"
              t-att-data-oe-model="o and o._name"
              t-att-data-oe-id="o and o.id"
              t-att-data-oe-lang="o and o.env.context.get('lang')">
+            <!-- Bordes de celda explicitos vía inline style / clases
+                 propias en vez de utilidades Bootstrap (table-bordered,
+                 border, etc.): wkhtmltopdf usa un motor webkit viejo y ya
+                 hubo problemas reales de layout con el grid de Bootstrap
+                 en este mismo reporte (ver comentario en report_invoice_
+                 additional_info mas abajo). border-collapse:collapse
+                 fusiona los bordes contiguos de celdas vecinas en una
+                 sola linea, igual que el modelo de referencia del
+                 cliente. -->
+            <style>
+                .l10n_ec_ride_box { border-collapse: collapse; width: 100%; }
+                .l10n_ec_ride_box td { border: 1px solid #000; padding: 4px 6px; vertical-align: top; }
+                .l10n_ec_ride_items { border-collapse: collapse; width: 100%; }
+                .l10n_ec_ride_items th, .l10n_ec_ride_items td { border: 1px solid #000; padding: 3px 5px; }
+            </style>
             <t t-out="0"/>
         </div>
 
@@ -57,95 +69,152 @@
     </template>
 
     <!-- RIDE (Representacion Impresa de Documento Electronico): bloque de
-         identificacion legal exigido por el SRI (razon social, RUC,
-         ambiente, tipo/numero de comprobante, clave de acceso + codigo de
-         barras, numero de autorizacion). Sin este bloque, el PDF impreso
-         no es un RIDE valido aunque el XML ya este autorizado por el SRI. -->
+         identificacion legal exigido por el SRI, mas el bloque de
+         identificacion del cliente (Nombres/Direccion/RUC/Fecha
+         Emision/Vence/Telefono), en un solo recuadro con bordes
+         inmediatamente debajo, tal como el modelo de referencia del
+         cliente. -->
     <template id="report_invoice_header">
-        <table class="table table-borderless w-100 m-1">
+        <table class="l10n_ec_ride_box" style="margin-bottom: 6px; table-layout: fixed;">
             <tr>
-                <td class="pe-1" style="width: 45%">
-                    <table class="table table-borderless">
-                        <tr>
-                            <td class="p-1">
-                                <h4 style="letter-spacing: 1px;">
-                                    <span t-esc="o.company_id.l10n_ec_commercial_name or o.company_id.name"/>
-                                </h4>
-                                <div style="font-size: 12px;">
-                                    <strong>RUC: </strong>
-                                    <span t-field="o.company_id.partner_id.vat"/>
-                                    <br/>
-                                    <t t-if="o.journal_id.l10n_ec_emission_address_id">
-                                        <strong>Dirección Matriz/Sucursal: </strong>
-                                        <span t-esc="o.journal_id.l10n_ec_emission_address_id._display_address(without_company=True)"/>
-                                        <br/>
-                                    </t>
-                                    <strong>Ambiente: </strong>
-                                    <t t-if="o.company_id.l10n_ec_sri_environment == 'production'">PRODUCCIÓN</t>
-                                    <t t-else="">PRUEBAS</t>
-                                    <br/>
-                                    <strong>Emisión: </strong>NORMAL
-                                    <br/>
-                                    <strong>Obligado a Llevar Contabilidad: </strong>
-                                    <t t-if="o.company_id.l10n_ec_forced_accounting">SÍ</t>
-                                    <t t-else="">NO</t>
-                                    <br/>
-                                    <t t-if="o.company_id.l10n_ec_special_resolution">
-                                        <strong>Contribuyente Especial Res. No.: </strong>
-                                        <span t-field="o.company_id.l10n_ec_special_resolution"/>
-                                        <br/>
-                                    </t>
-                                    <t t-if="o.company_id.l10n_ec_withhold_agent">
-                                        <strong>Agente de Retención Res. No.: </strong>
-                                        <span t-field="o.company_id.l10n_ec_withhold_resolution"/>
-                                        <br/>
-                                    </t>
-                                </div>
-                            </td>
-                        </tr>
-                    </table>
+                <td style="width: 45%;">
+                    <div class="text-center" t-if="o.company_id.logo">
+                        <img style="max-height: 65px; max-width: 100%;" t-att-src="image_data_uri(o.company_id.logo)" alt="Logo"/>
+                    </div>
+                    <h4 class="text-center" style="letter-spacing: 1px; margin-top: 4px;">
+                        <span t-esc="o.company_id.l10n_ec_commercial_name or o.company_id.name"/>
+                    </h4>
+                    <div style="font-size: 12px;">
+                        <strong>RUC: </strong>
+                        <span t-field="o.company_id.partner_id.vat"/>
+                        <br/>
+                        <t t-if="o.journal_id.l10n_ec_emission_address_id">
+                            <strong>Dirección Matriz/Sucursal: </strong>
+                            <span t-esc="o.journal_id.l10n_ec_emission_address_id._display_address(without_company=True)"/>
+                            <br/>
+                        </t>
+                        <t t-if="o.company_id.phone">
+                            <strong>Teléfono: </strong>
+                            <span t-field="o.company_id.phone"/>
+                            <br/>
+                        </t>
+                        <t t-if="o.company_id.email">
+                            <strong>Correo: </strong>
+                            <span t-field="o.company_id.email"/>
+                            <br/>
+                        </t>
+                        <strong>Ambiente: </strong>
+                        <t t-if="o.company_id.l10n_ec_sri_environment == 'production'">PRODUCCIÓN</t>
+                        <t t-else="">PRUEBAS</t>
+                        <br/>
+                        <strong>Emisión: </strong>NORMAL
+                        <br/>
+                        <strong>Obligado a Llevar Contabilidad: </strong>
+                        <t t-if="o.company_id.l10n_ec_forced_accounting">SÍ</t>
+                        <t t-else="">NO</t>
+                        <br/>
+                        <t t-if="o.company_id.l10n_ec_special_resolution">
+                            <strong>Contribuyente Especial Res. No.: </strong>
+                            <span t-field="o.company_id.l10n_ec_special_resolution"/>
+                            <br/>
+                        </t>
+                        <t t-if="o.company_id.l10n_ec_withhold_agent">
+                            <strong>Agente de Retención Res. No.: </strong>
+                            <span t-field="o.company_id.l10n_ec_withhold_resolution"/>
+                            <br/>
+                        </t>
+                    </div>
                 </td>
-                <td class="p-1" style="width: 55%">
-                    <table class="table table-condensed m-1">
-                        <tr>
-                            <td class="text-center border-top-0 p-1">
-                                <h4 style="letter-spacing: 1px;">
-                                    <span t-esc="o.l10n_latam_document_type_id.report_name or o.l10n_latam_document_type_id.name"/>
-                                    <br/>
-                                    <span t-esc="o.l10n_latam_document_number or o.name"/>
-                                </h4>
-                                <t t-if="o.l10n_ec_sri_status == 'authorized'">
-                                    <div class="text-center" style="font-size: 12px">
-                                        <strong>Número de Autorización: </strong>
-                                        <span t-field="o.l10n_ec_sri_access_key"/>
-                                    </div>
-                                    <div t-if="o.l10n_ec_authorization_date" class="text-center" style="font-size: 12px">
-                                        <strong>Fecha y Hora de Autorización: </strong>
-                                        <span t-field="o.l10n_ec_authorization_date"/>
-                                    </div>
-                                    <div class="text-center">
-                                        <img style="width:100%; height:15mm;"
-                                            t-att-src="'/report/barcode/Code128/' + o.l10n_ec_sri_access_key"
-                                            alt="Código de barras: clave de acceso"
-                                        />
-                                    </div>
-                                    <div class="text-center" style="font-size: 11px">
-                                        <strong>Clave de Acceso: </strong>
-                                        <span t-field="o.l10n_ec_sri_access_key"/>
-                                    </div>
-                                </t>
-                                <t t-else="">
-                                    <div class="text-center bg-danger text-white p-2" style="font-size: 13px;">
-                                        <strong>
-                                            DOCUMENTO NO AUTORIZADO POR EL SRI
-                                            <span t-if="o.l10n_ec_sri_status"> (<span t-esc="o.l10n_ec_sri_status.upper()"/>)</span>
-                                        </strong>
-                                        <div>Este comprobante no tiene validez tributaria hasta ser autorizado.</div>
-                                    </div>
-                                </t>
-                            </td>
-                        </tr>
-                    </table>
+                <td style="width: 55%;">
+                    <div class="text-center">
+                        <h4 style="letter-spacing: 1px;">
+                            <span t-esc="o.l10n_latam_document_type_id.report_name or o.l10n_latam_document_type_id.name"/>
+                            <br/>
+                            <span t-esc="o.l10n_latam_document_number or o.name"/>
+                        </h4>
+                        <t t-if="o.l10n_ec_sri_status == 'authorized'">
+                            <div style="font-size: 12px">
+                                <strong>Número de Autorización: </strong>
+                                <span t-field="o.l10n_ec_sri_access_key"/>
+                            </div>
+                            <div t-if="o.l10n_ec_authorization_date" style="font-size: 12px">
+                                <strong>Fecha y Hora de Autorización: </strong>
+                                <span t-field="o.l10n_ec_authorization_date"/>
+                            </div>
+                            <div>
+                                <img style="width:100%; height:15mm;"
+                                    t-att-src="'/report/barcode/Code128/' + o.l10n_ec_sri_access_key"
+                                    alt="Código de barras: clave de acceso"
+                                />
+                            </div>
+                            <div style="font-size: 11px">
+                                <strong>Clave de Acceso: </strong>
+                                <span t-field="o.l10n_ec_sri_access_key"/>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="bg-danger text-white p-2" style="font-size: 13px;">
+                                <strong>
+                                    DOCUMENTO NO AUTORIZADO POR EL SRI
+                                    <span t-if="o.l10n_ec_sri_status"> (<span t-esc="o.l10n_ec_sri_status.upper()"/>)</span>
+                                </strong>
+                                <div>Este comprobante no tiene validez tributaria hasta ser autorizado.</div>
+                            </div>
+                        </t>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="l10n_ec_ride_box" style="table-layout: fixed;">
+            <tr>
+                <td colspan="4">
+                    <strong>Nombres: </strong>
+                    <span t-esc="o.partner_id.name"/>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <strong>Dirección: </strong>
+                    <span t-esc="o.partner_id._display_address(without_company=True)"/>
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 25%;">
+                    <t t-if="o.partner_id.l10n_latam_identification_type_id">
+                        <strong t-esc="o.partner_id.l10n_latam_identification_type_id.name"/>
+                    </t>
+                    <strong t-else="">RUC/Cédula</strong>
+                    <strong>: </strong>
+                    <span t-field="o.partner_id.vat"/>
+                </td>
+                <td style="width: 25%;">
+                    <strong>Fecha Emisión: </strong>
+                    <span t-field="o.invoice_date"/>
+                </td>
+                <td style="width: 25%;">
+                    <strong>Vence: </strong>
+                    <span t-if="o.invoice_date_due" t-field="o.invoice_date_due"/>
+                </td>
+                <td style="width: 25%;">
+                    <strong>Teléfono: </strong>
+                    <span t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/>
+                </td>
+            </tr>
+            <tr t-if="o.reversed_entry_id">
+                <td colspan="2">
+                    <strong>Comprobante Modificado: </strong>
+                    <span t-esc="o.reversed_entry_id.l10n_latam_document_number or o.reversed_entry_id.name"/>
+                </td>
+                <td colspan="2">
+                    <strong>Fecha Emisión Doc. Modificado: </strong>
+                    <span t-field="o.reversed_entry_id.invoice_date"/>
+                </td>
+            </tr>
+            <tr t-if="o.reversed_entry_id and o.narration">
+                <td colspan="4">
+                    <strong>Motivo: </strong>
+                    <span t-field="o.narration"/>
                 </td>
             </tr>
         </table>
@@ -153,25 +222,24 @@
 
     <template id="report_invoice_document" inherit_id="account.report_invoice_document" primary="True">
 
-        <!-- Usa el layout propio (solo logo) en vez de web.external_layout,
-             que aplicaria el tema general de la empresa con su encabezado
-             completo. -->
+        <!-- Usa el layout propio (sin encabezado de wkhtmltopdf) en vez de
+             web.external_layout, que aplicaria el tema general de la
+             empresa con su encabezado completo. -->
         <xpath expr="//t[@t-call='web.external_layout']" position="attributes">
             <attribute name="t-call">l10n_ec_sri.external_layout_ride</attribute>
         </xpath>
 
         <!-- Reemplaza el titulo generico ("Invoice"/"Credit Note") por el
-             bloque RIDE completo. -->
+             bloque RIDE completo (identificacion legal + cliente). -->
         <xpath expr="//t[@t-set='layout_document_title']" position="replace">
             <t t-call="l10n_ec_sri.report_invoice_header"/>
         </xpath>
 
         <!-- El bloque de direccion grande que Odoo pone justo debajo del
-             titulo queda mal ubicado ahora: la caja RIDE ya ocupa ese
-             espacio y los datos del cliente se muestran mas abajo, en la
-             fila "informations". Se quita para no repetir al cliente dos
-             veces con estilos distintos (mismo criterio que l10n_ec_edi de
-             Enterprise y l10n_cl). -->
+             titulo queda mal ubicado ahora: los datos del cliente ya se
+             muestran en el recuadro de report_invoice_header. Se quita
+             para no repetir al cliente dos veces con estilos distintos
+             (mismo criterio que l10n_ec_edi de Enterprise y l10n_cl). -->
         <xpath expr="//div[@name='address_not_same_as_shipping']" position="replace">
             <div name="address_not_same_as_shipping"/>
         </xpath>
@@ -182,86 +250,125 @@
             <div name="no_shipping"/>
         </xpath>
 
-        <xpath expr="//div[@id='informations']/*" position="before">
-            <div class="col" name="l10n_ec_partner_info">
-                <strong>Cliente</strong>
-                <div t-esc="o.partner_id.name"/>
-                <div t-if="o.partner_id.vat">
-                    <t t-if="o.partner_id.l10n_latam_identification_type_id" t-esc="o.partner_id.l10n_latam_identification_type_id.name"/>
-                    <t t-else="">RUC/Cédula</t>: <span t-field="o.partner_id.vat"/>
-                </div>
-                <div t-esc="o.partner_id._display_address(without_company=True)"/>
-            </div>
-            <div class="col" name="l10n_ec_modified_document" t-if="o.reversed_entry_id">
-                <strong>Comprobante Modificado</strong>
-                <div t-esc="o.reversed_entry_id.l10n_latam_document_number or o.reversed_entry_id.name"/>
-            </div>
-            <div class="col" name="l10n_ec_modified_document_date" t-if="o.reversed_entry_id">
-                <strong>Fecha Emisión Doc. Modificado</strong>
-                <div t-field="o.reversed_entry_id.invoice_date"/>
-            </div>
-            <div class="col" name="l10n_ec_modification_reason" t-if="o.reversed_entry_id and o.narration">
-                <strong>Motivo</strong>
-                <div t-field="o.narration"/>
-            </div>
+        <!-- La fila "informations" (Invoice Date/Due Date/Source/
+             Reference/etc. de Odoo core) tambien queda de sobra: Fecha
+             Emision/Vence/Comprobante Modificado ya se muestran en el
+             recuadro de cliente de report_invoice_header. -->
+        <xpath expr="//div[@id='informations']" position="replace">
+            <div id="informations"/>
         </xpath>
 
-        <!-- Formas de pago e informacion adicional: el SRI exige mostrar la
-             forma de pago en el RIDE. "Informacion Adicional" solo trae
-             vendedor de forma automatica; el resto (referencia y email se
-             quitaron a pedido del usuario) lo escribe el usuario a mano en
-             l10n_ec_sri_additional_info antes de emitir el comprobante,
-             solo si lo necesita. -->
+        <!-- Tabla de items: se le quita table-borderless y se le agrega
+             la clase con bordes de celda (ver <style> en
+             external_layout_ride) para que coincida con el modelo de
+             referencia del cliente (filos de celda visibles). -->
+        <xpath expr="//table[@name='invoice_line_table']" position="attributes">
+            <attribute name="class">o_has_total_table table o_main_table l10n_ec_ride_items mb-0</attribute>
+        </xpath>
+
+        <!-- Columnas Código y Med. (unidad de medida): el modelo de
+             referencia del cliente las muestra como columnas propias
+             antes de Cantidad, no como Odoo core (que solo incluye la
+             unidad pegada junto a la cantidad, sin columna de código). -->
+        <xpath expr="//th[@name='th_description']" position="before">
+            <th name="th_code" class="text-start" style="width: 12%;"><span>Código</span></th>
+        </xpath>
+        <xpath expr="//td[@name='account_invoice_line_name']" position="before">
+            <td name="td_code" t-esc="line.product_id.default_code or ''"/>
+        </xpath>
+        <xpath expr="//th[@name='th_quantity']" position="before">
+            <th name="th_uom" class="text-center" groups="uom.group_uom" style="width: 8%;"><span>Med.</span></th>
+        </xpath>
+        <xpath expr="//td[@name='td_quantity']" position="before">
+            <td name="td_uom" class="text-center" groups="uom.group_uom" t-esc="line.product_uom_id.name or ''"/>
+        </xpath>
+        <xpath expr="//td[@name='td_quantity']/span[@t-field='line.product_uom_id']" position="replace"/>
+
+        <!-- El cuadro generico de subtotales/impuestos de Odoo core se
+             reemplaza por el desglose legal SRI (Subtotal 0/5/15%, No
+             Objeto/Exento de IVA, ICE, IVA 5/15%, Valor Total) armado
+             mas abajo junto con Forma de Pago/Informacion Adicional, en
+             un solo recuadro con bordes como en el modelo de referencia. -->
+        <xpath expr="//t[@t-call='account.document_tax_totals']" position="replace"/>
+
+        <!-- Forma de pago, informacion adicional (vendedor + correo del
+             cliente registrado, a donde se remite la factura electronica)
+             y el desglose de totales SRI: un solo recuadro con bordes,
+             forma de pago/info adicional a la izquierda y el desglose de
+             totales a la derecha, tal como el modelo de referencia del
+             cliente. -->
         <xpath expr="//div[@id='payment_term']" position="after">
             <t t-set="l10n_ec_payment_data" t-value="o._l10n_ec_get_payment_data()"/>
             <t t-set="l10n_ec_additional_info" t-value="o._l10n_ec_get_invoice_additional_info()"/>
-            <t t-set="l10n_ec_has_additional_info" t-value="any(l10n_ec_additional_info.values()) or o.l10n_ec_sri_additional_info"/>
+            <t t-set="l10n_ec_ride_totals" t-value="o._l10n_ec_get_ride_totals()"/>
+            <t t-set="l10n_ec_ride_total_rows" t-value="[
+                ('Subtotal', 'subtotal'),
+                ('Descuento', 'descuento'),
+                ('Subtotal Neto', 'subtotal_neto'),
+                ('Subtotal 5%', 'subtotal_5'),
+                ('Subtotal 15%', 'subtotal_15'),
+                ('Subtotal 0%', 'subtotal_0'),
+                ('Subtotal No Objeto IVA', 'subtotal_no_objeto'),
+                ('Subtotal Exento IVA', 'subtotal_exento'),
+                ('ICE', 'ice'),
+                ('IVA 5%', 'iva_5'),
+                ('IVA 15%', 'iva_15'),
+                ('Propina', 'propina'),
+            ]"/>
             <!-- Tabla exterior con anchos fijos en vez de row/col-* de
                  Bootstrap: wkhtmltopdf no soporta flexbox y el grid
                  flotante de Bootstrap no respeta el ancho de columna aqui,
                  haciendo que las dos tablas internas se superpongan. -->
-            <table class="table table-borderless w-100" style="table-layout: fixed;" t-if="l10n_ec_payment_data or l10n_ec_has_additional_info">
+            <table class="l10n_ec_ride_box" style="table-layout: fixed;">
                 <tr>
-                    <td style="width: 50%; vertical-align: top;" t-if="l10n_ec_payment_data" name="l10n_ec_payment_methods">
-                        <table class="table table-sm table-borderless" style="page-break-inside: avoid">
-                            <thead>
-                                <tr>
-                                    <th class="text-center" colspan="2">Forma de Pago</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                    <td style="width: 55%; vertical-align: top;">
+                        <div t-if="l10n_ec_payment_data">
+                            <strong>Forma Pago</strong>
+                            <table style="width: 100%; border-collapse: collapse;">
                                 <tr t-foreach="l10n_ec_payment_data" t-as="payment">
-                                    <td t-esc="payment['payment_name']"/>
-                                    <td class="text-end">
+                                    <td style="border: 0; padding: 1px 0;" t-esc="payment['payment_name']"/>
+                                    <td class="text-end" style="border: 0; padding: 1px 0;">
                                         <span t-esc="payment['payment_total']"
                                             t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                                     </td>
                                 </tr>
-                            </tbody>
-                        </table>
-                    </td>
-                    <td t-else="" style="width: 50%"/>
-                    <td style="width: 50%; vertical-align: top;" t-if="l10n_ec_has_additional_info" name="l10n_ec_additional_info">
-                        <table class="table table-sm table-borderless" style="page-break-inside: avoid">
-                            <thead>
-                                <tr>
-                                    <th class="text-center" colspan="2">Información Adicional</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top: 6px;">
+                            <strong>INFORMACIÓN ADICIONAL</strong>
+                            <table style="width: 100%; border-collapse: collapse;">
                                 <t t-foreach="l10n_ec_additional_info.items()" t-as="item">
                                     <tr t-if="item[1]">
-                                        <td t-esc="item[0]"/>
-                                        <td t-esc="item[1]"/>
+                                        <td style="border: 0; padding: 1px 0; width: 30%;" t-esc="item[0]"/>
+                                        <td style="border: 0; padding: 1px 0;" t-esc="item[1]"/>
                                     </tr>
                                 </t>
                                 <tr t-if="o.l10n_ec_sri_additional_info">
-                                    <td colspan="2" style="white-space: pre-wrap;" t-esc="o.l10n_ec_sri_additional_info"/>
+                                    <td colspan="2" style="border: 0; white-space: pre-wrap; padding: 1px 0;" t-esc="o.l10n_ec_sri_additional_info"/>
                                 </tr>
-                            </tbody>
+                            </table>
+                        </div>
+                    </td>
+                    <td style="width: 45%; vertical-align: top; padding: 0;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <t t-foreach="l10n_ec_ride_total_rows" t-as="row">
+                                <tr>
+                                    <td style="border: 0; border-bottom: 1px solid #000; padding: 3px 6px;" t-esc="row[0]"/>
+                                    <td class="text-end" style="border: 0; border-bottom: 1px solid #000; padding: 3px 6px;">
+                                        <span t-esc="l10n_ec_ride_totals[row[1]]"
+                                            t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                    </td>
+                                </tr>
+                            </t>
+                            <tr>
+                                <td style="border: 0; padding: 5px 6px; font-weight: bold; font-size: 13px;">VALOR TOTAL</td>
+                                <td class="text-end" style="border: 0; padding: 5px 6px; font-weight: bold; font-size: 13px;">
+                                    <span t-esc="l10n_ec_ride_totals['valor_total']"
+                                        t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                </td>
+                            </tr>
                         </table>
                     </td>
-                    <td t-else="" style="width: 50%"/>
                 </tr>
             </table>
         </xpath>
