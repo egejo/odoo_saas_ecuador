@@ -34,6 +34,9 @@
                             <field name="l10n_ec_sri_error" readonly="1" invisible="not l10n_ec_sri_error"/>
                         </group>
                     </group>
+                    <group>
+                        <field name="l10n_ec_sri_additional_info" placeholder="Texto libre para el bloque 'Información Adicional' del RIDE (opcional)"/>
+                    </group>
                 </page>
             </xpath>
         </field>

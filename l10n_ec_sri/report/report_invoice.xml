@@ -27,8 +27,15 @@
             </t>
         </t>
 
-        <div t-attf-class="header o_company_#{company.id}_layout">
-            <img t-if="company.logo" class="o_company_logo_small" t-att-src="image_data_uri(company.logo)" alt="Logo"/>
+        <!-- padding-top:0 pisa la regla global ".header{padding-top: 11mm}"
+             del CSS compartido de reportes (pensada para el encabezado
+             completo de otros layouts). El tamano del logo (max-height)
+             esta acoplado al header_spacing definido en
+             data/report_paperformat.xml: ver el comentario ahi antes de
+             cambiar este valor, o el logo vuelve a superponerse con el
+             titulo del RIDE. -->
+        <div t-attf-class="header o_company_#{company.id}_layout" style="padding-top: 0;">
+            <img t-if="company.logo" style="max-height: 75px; max-width: 200px;" t-att-src="image_data_uri(company.logo)" alt="Logo"/>
         </div>
 
         <div t-attf-class="article o_company_#{company.id}_layout"
@@ -200,16 +207,20 @@
         </xpath>
 
         <!-- Formas de pago e informacion adicional: el SRI exige mostrar la
-             forma de pago en el RIDE, y por convencion (ver l10n_ec_edi de
-             Enterprise) tambien referencia/vendedor/email de contacto. -->
+             forma de pago en el RIDE. "Informacion Adicional" solo trae
+             vendedor de forma automatica; el resto (referencia y email se
+             quitaron a pedido del usuario) lo escribe el usuario a mano en
+             l10n_ec_sri_additional_info antes de emitir el comprobante,
+             solo si lo necesita. -->
         <xpath expr="//div[@id='payment_term']" position="after">
             <t t-set="l10n_ec_payment_data" t-value="o._l10n_ec_get_payment_data()"/>
             <t t-set="l10n_ec_additional_info" t-value="o._l10n_ec_get_invoice_additional_info()"/>
+            <t t-set="l10n_ec_has_additional_info" t-value="any(l10n_ec_additional_info.values()) or o.l10n_ec_sri_additional_info"/>
             <!-- Tabla exterior con anchos fijos en vez de row/col-* de
                  Bootstrap: wkhtmltopdf no soporta flexbox y el grid
                  flotante de Bootstrap no respeta el ancho de columna aqui,
                  haciendo que las dos tablas internas se superpongan. -->
-            <table class="table table-borderless w-100" style="table-layout: fixed;" t-if="l10n_ec_payment_data or l10n_ec_additional_info">
+            <table class="table table-borderless w-100" style="table-layout: fixed;" t-if="l10n_ec_payment_data or l10n_ec_has_additional_info">
                 <tr>
                     <td style="width: 50%; vertical-align: top;" t-if="l10n_ec_payment_data" name="l10n_ec_payment_methods">
                         <table class="table table-sm table-borderless" style="page-break-inside: avoid">
@@ -230,7 +241,7 @@
                         </table>
                     </td>
                     <td t-else="" style="width: 50%"/>
-                    <td style="width: 50%; vertical-align: top;" t-if="l10n_ec_additional_info" name="l10n_ec_additional_info">
+                    <td style="width: 50%; vertical-align: top;" t-if="l10n_ec_has_additional_info" name="l10n_ec_additional_info">
                         <table class="table table-sm table-borderless" style="page-break-inside: avoid">
                             <thead>
                                 <tr>
@@ -244,6 +255,9 @@
                                         <td t-esc="item[1]"/>
                                     </tr>
                                 </t>
+                                <tr t-if="o.l10n_ec_sri_additional_info">
+                                    <td colspan="2" style="white-space: pre-wrap;" t-esc="o.l10n_ec_sri_additional_info"/>
+                                </tr>
                             </tbody>
                         </table>
                     </td>

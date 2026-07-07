@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        El paperformat por defecto de la empresa reserva 52mm de margen
+        superior con header_spacing=52, pensado para el encabezado
+        completo (logo+tagline+direccion/RUC) de
+        web.external_layout_standard. El RIDE usa su propio layout con
+        SOLO el logo (ver external_layout_ride en report/report_invoice.xml),
+        asi que esos valores dejaban un espacio en blanco enorme entre el
+        logo y el titulo. Se define un paperformat propio y se asigna
+        unicamente a las acciones de impresion de factura/nota de credito
+        (no al paperformat_id de la empresa, que sigue aplicando sin
+        cambios al resto de reportes).
+
+        margin_top y header_spacing NO se comportan como en la
+        documentacion de wkhtmltopdf ("espacio entre header y contenido").
+        Medido empiricamente contra el bounding box real del logo y del
+        titulo del RIDE (via pdfminer): la posicion del header resulta
+        (margin_top - header_spacing) mm desde el borde superior de la
+        pagina, y el body arranca en margin_top. O sea header_spacing
+        controla el alto disponible para el header (debe ser mayor a la
+        altura real del logo, ~13mm con el max-height de 75px usado en
+        report_invoice.xml, para no superponerse con el cuerpo), mientras
+        que margin_top solo corre el conjunto header+cuerpo hacia abajo
+        sin afectar el espacio entre ambos. Cambiar el tamano del logo en
+        report_invoice.xml sin ajustar header_spacing aqui vuelve a
+        producir superposicion.
+    -->
+    <record id="paperformat_ride" model="report.paperformat">
+        <field name="name">SRI RIDE</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">27</field>
+        <field name="margin_bottom">32</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">17</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- account.report_invoice es el nombre del template QWeb, no de la
+         accion de impresion: hay dos acciones reales que renderizan
+         facturas ("Invoice PDF" con pagos, y "PDF without Payment"), y el
+         boton "Imprimir" del formulario puede resolver a cualquiera de
+         las dos segun version/config. Se fija el paperformat en ambas. -->
+    <record id="account.account_invoices" model="ir.actions.report">
+        <field name="paperformat_id" ref="l10n_ec_sri.paperformat_ride"/>
+    </record>
+    <record id="account.account_invoices_without_payment" model="ir.actions.report">
+        <field name="paperformat_id" ref="l10n_ec_sri.paperformat_ride"/>
+    </record>
+</odoo>

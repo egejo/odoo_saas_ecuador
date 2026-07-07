@@ -19,6 +19,13 @@ class AccountMove(models.Model):
         string="Authorization Date", copy=False
     )
     l10n_ec_sri_error = fields.Text(string="SRI Error Message", copy=False)
+    l10n_ec_sri_additional_info = fields.Text(
+        string="Información Adicional (RIDE)",
+        help="Texto libre que se imprime en el bloque \"Información "
+        "Adicional\" del RIDE. El usuario lo completa manualmente antes "
+        "de emitir el comprobante, si lo necesita (no se genera "
+        "automáticamente).",
+    )
 
     def action_send_sri(self):
         """
@@ -100,15 +107,15 @@ class AccountMove(models.Model):
 
     def _l10n_ec_get_invoice_additional_info(self):
         """
-        Bloque "Informacion Adicional" del RIDE (referencia, vendedor,
-        email de contacto), tal como lo muestra el RIDE de Odoo Enterprise
-        para Ecuador.
+        Bloque "Informacion Adicional" del RIDE: solo vendedor (dato ya
+        disponible en toda factura) mas lo que el usuario haya escrito a
+        mano en l10n_ec_sri_additional_info. Referencia y email del
+        vendedor se quitaron a pedido del usuario -- ya se ve el numero
+        de comprobante en el titulo del RIDE.
         """
         self.ensure_one()
         return {
-            _("Referencia"): self.name,
             _("Vendedor"): self.invoice_user_id.name or "",
-            _("E-mail"): self.invoice_user_id.email or "",
         }
 
     def _get_name_invoice_report(self):
