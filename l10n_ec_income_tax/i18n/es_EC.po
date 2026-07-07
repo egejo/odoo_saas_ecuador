@@ -1,0 +1,229 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* l10n_ec_income_tax
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0-20260630\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-07 02:31+0000\n"
+"PO-Revision-Date: 2026-07-07 02:31+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+"Language: es_EC\n"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__food
+msgid "Alimentación"
+msgstr "Alimentación"
+
+#. module: l10n_ec_income_tax
+#: model_terms:ir.ui.view,arch_db:l10n_ec_income_tax.view_l10n_ec_gastos_personales_wizard_form
+msgid "Apply to Contract"
+msgstr "Aplicar al Contrato"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_tax_table__basic_fraction
+msgid "Basic Fraction"
+msgstr "Fracción Básica"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_tax_table__basic_tax
+msgid "Basic Tax on Fraction"
+msgstr "Impuesto Básico sobre Fracción"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model,name:l10n_ec_income_tax.model_l10n_ec_family_basket
+msgid "Canasta Básica Familiar & Rebaja Criteria (LORTI Art. 10)"
+msgstr "Canasta Básica Familiar & Rebaja Criteria (LORTI Art. 10)"
+
+#. module: l10n_ec_income_tax
+#: model_terms:ir.ui.view,arch_db:l10n_ec_income_tax.view_l10n_ec_gastos_personales_wizard_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,help:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__clothing
+msgid "Clothing and footwear"
+msgstr "Vestimenta y calzado"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_family_basket__basket_cost
+msgid "Cost of Canasta Básica (Jan)"
+msgstr "Costo de la Canasta Básica (Enero)"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_family_basket__create_uid
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__create_uid
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_tax_table__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_family_basket__create_date
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__create_date
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_tax_table__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: l10n_ec_income_tax
+#: model_terms:ir.ui.view,arch_db:l10n_ec_income_tax.view_l10n_ec_gastos_personales_wizard_form
+msgid "Detalle de Gastos (Proyección Anual)"
+msgstr "Detalle de Gastos (Proyección Anual)"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_family_basket__display_name
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__display_name
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_tax_table__display_name
+msgid "Display Name"
+msgstr "Nombre Mostrado"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__education
+msgid "Educación / Arte / Cultura"
+msgstr "Educación / Arte / Cultura"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__employee_id
+msgid "Employee"
+msgstr "Empleado"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_tax_table__excess_until
+msgid "Excess Until"
+msgstr "Exceso Hasta"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_family_basket__year
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__year
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_tax_table__year
+msgid "Fiscal Year"
+msgstr "Año Fiscal"
+
+#. module: l10n_ec_income_tax
+#: model:ir.ui.menu,name:l10n_ec_income_tax.menu_l10n_ec_gastos_personales
+msgid "Formulario GP (Gastos)"
+msgstr "Formulario GP (Gastos)"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model,name:l10n_ec_income_tax.model_l10n_ec_gastos_personales_wizard
+msgid "Formulario GP: Proyección Gastos Personales"
+msgstr "Formulario GP: Proyección Gastos Personales"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,help:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__food
+msgid "Groceries, restaurants"
+msgstr "Alimentación, restaurantes"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_family_basket__id
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__id
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_tax_table__id
+msgid "ID"
+msgstr "ID"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model,name:l10n_ec_income_tax.model_l10n_ec_tax_table
+msgid "Impuesto a la Renta Progressive Table (2026)"
+msgstr "Tabla Progresiva de Impuesto a la Renta (2026)"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_family_basket__write_uid
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__write_uid
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_tax_table__write_uid
+msgid "Last Updated by"
+msgstr "Última Actualización por"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_family_basket__write_date
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__write_date
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_tax_table__write_date
+msgid "Last Updated on"
+msgstr "Última Actualización el"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_tax_table__marginal_rate
+msgid "Marginal Rate %"
+msgstr "Tarifa Marginal %"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,help:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__health
+msgid "Medical fees, medication, insurance, deductibles"
+msgstr "Honorarios médicos, medicinas, seguros, deducibles"
+
+#. module: l10n_ec_income_tax
+#. odoo-python
+#: code:addons/l10n_ec_income_tax/wizard/gastos_personales_wizard.py:0
+msgid "No active contract found for %s. Cannot update projected expenses."
+msgstr "No se encontró un contrato activo para %s. No se pueden actualizar los gastos proyectados."
+
+#. module: l10n_ec_income_tax
+#. odoo-python
+#: code:addons/l10n_ec_income_tax/wizard/gastos_personales_wizard.py:0
+msgid "Projected expenses updated on contract ($%s)"
+msgstr "Gastos proyectados actualizados en el contrato ($%s)"
+
+#. module: l10n_ec_income_tax
+#: model:ir.actions.act_window,name:l10n_ec_income_tax.action_l10n_ec_gastos_personales
+msgid "Proyección Gastos Personales"
+msgstr "Proyección Gastos Personales"
+
+#. module: l10n_ec_income_tax
+#: model_terms:ir.ui.view,arch_db:l10n_ec_income_tax.view_l10n_ec_gastos_personales_wizard_form
+msgid "Proyección Gastos Personales (Formulario GP)"
+msgstr "Proyección Gastos Personales (Formulario GP)"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,help:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__tourism
+msgid "Registered local tourism expenses"
+msgstr "Gastos de turismo nacional registrados"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,help:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__housing
+msgid "Rental checks, mortgage interest, property tax, utilities"
+msgstr "Arriendo, intereses hipotecarios, impuesto predial, servicios básicos"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__health
+msgid "Salud"
+msgstr "Salud"
+
+#. module: l10n_ec_income_tax
+#. odoo-python
+#: code:addons/l10n_ec_income_tax/wizard/gastos_personales_wizard.py:0
+msgid "Success"
+msgstr "Éxito"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__total_projected
+msgid "Total Expenses"
+msgstr "Total de Gastos"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,help:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__education
+msgid "Tuition, supplies, art/culture classes"
+msgstr "Educación, útiles, clases de arte/cultura"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__tourism
+msgid "Turismo Nacional"
+msgstr "Turismo Nacional"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,help:l10n_ec_income_tax.field_l10n_ec_family_basket__basket_cost
+msgid "Value of CBA in January of the fiscal year"
+msgstr "Valor de la CBA en enero del ejercicio fiscal"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__clothing
+msgid "Vestimenta"
+msgstr "Vestimenta"
+
+#. module: l10n_ec_income_tax
+#: model:ir.model.fields,field_description:l10n_ec_income_tax.field_l10n_ec_gastos_personales_wizard__housing
+msgid "Vivienda"
+msgstr "Vivienda"

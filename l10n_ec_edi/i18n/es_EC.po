@@ -1,0 +1,520 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* l10n_ec_edi
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0-20260630\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-07 02:31+0000\n"
+"PO-Revision-Date: 2026-07-07 02:31+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+"Language: es_EC\n"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__account_move__l10n_ec_sustento_code__01
+msgid "01 - Crédito Tributario para IVA"
+msgstr "01 - Crédito Tributario para IVA"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__account_move__l10n_ec_sustento_code__02
+msgid "02 - Costo o Gasto"
+msgstr "02 - Costo o Gasto"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__account_move__l10n_ec_sustento_code__03
+msgid "03 - Activo Fijo"
+msgstr "03 - Activo Fijo"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__account_move__l10n_ec_sustento_code__04
+msgid "04 - Liquidación Gastos"
+msgstr "04 - Liquidación Gastos"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__account_move__l10n_ec_sustento_code__05
+msgid "05 - Liquidación Reembolsos"
+msgstr "05 - Liquidación Reembolsos"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__account_move__l10n_ec_sustento_code__06
+msgid "06 - Sin Crédito Tributario"
+msgstr "06 - Sin Crédito Tributario"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__account_move__l10n_ec_sustento_code__07
+msgid "07 - Pagos Reembolsos"
+msgstr "07 - Pagos Reembolsos"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,help:l10n_ec_edi.field_account_bank_statement_line__l10n_ec_sri_access_key
+#: model:ir.model.fields,help:l10n_ec_edi.field_account_move__l10n_ec_sri_access_key
+msgid "49-digit Clave de Acceso"
+msgstr "Clave de Acceso de 49 dígitos"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__l10n_ec_certificate__state__active
+msgid "Active"
+msgstr "Activo"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_res_company__l10n_ec_sri_authorization_url
+msgid "Authorization WSDL"
+msgstr "WSDL de Autorización"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__account_move__l10n_ec_sri_status__authorized
+msgid "Authorized"
+msgstr "Autorizado"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,help:l10n_ec_edi.field_l10n_ec_certificate__issuer_cn
+msgid "Certificate Authority that issued this certificate"
+msgstr "Autoridad Certificadora que emitió este certificado"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__content
+msgid "Certificate File (.p12)"
+msgstr "Archivo del Certificado (.p12)"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/l10n_ec_certificate.py:0
+msgid "Certificate expired on %s. Please upload a valid certificate."
+msgstr "El certificado expiró el %s. Por favor cargue un certificado válido."
+
+#. module: l10n_ec_edi
+#: model:ir.model.constraint,message:l10n_ec_edi.constraint_l10n_ec_certificate_uniq_name_company
+msgid "Certificate name must be unique per company"
+msgstr "El nombre del certificado debe ser único por compañía"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_res_company__l10n_ec_commercial_name
+msgid "Commercial Name"
+msgstr "Nombre Comercial"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,help:l10n_ec_edi.field_l10n_ec_certificate__subject_cn
+msgid "Common Name from certificate"
+msgstr "Nombre Común del certificado"
+
+#. module: l10n_ec_edi
+#: model:ir.model,name:l10n_ec_edi.model_res_company
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/sri_service.py:0
+msgid "Could not connect to SRI WSDL at %s. Error: %s"
+msgstr "No se pudo conectar al WSDL del SRI en %s. Error: %s"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/l10n_ec_certificate.py:0
+msgid "Could not load P12 file: %s"
+msgstr "No se pudo cargar el archivo P12: %s"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,help:l10n_ec_edi.field_account_bank_statement_line__l10n_ec_sustento_code
+#: model:ir.model.fields,help:l10n_ec_edi.field_account_move__l10n_ec_sustento_code
+msgid "Código de Sustento Tributario para ATS"
+msgstr "Código de Sustento Tributario para ATS"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__days_until_expiry
+msgid "Days Until Expiry"
+msgstr "Días para Expirar"
+
+#. module: l10n_ec_edi
+#: model:ir.actions.act_window,name:l10n_ec_edi.action_l10n_ec_certificate
+#: model:ir.ui.menu,name:l10n_ec_edi.menu_l10n_ec_certificate
+msgid "Digital Signatures"
+msgstr "Firmas Digitales"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__display_name
+msgid "Display Name"
+msgstr "Nombre Mostrado"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__account_move__l10n_ec_sri_status__draft
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__l10n_ec_certificate__state__draft
+msgid "Draft"
+msgstr "Borrador"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/account_move.py:0
+msgid "EDI Format method _export_l10n_ec_edi not found. Check installation."
+msgstr "No se encontró el método _export_l10n_ec_edi del formato EDI. Verifique la instalación."
+
+#. module: l10n_ec_edi
+#: model:ir.model,name:l10n_ec_edi.model_account_edi_format
+msgid "EDI format"
+msgstr "Formato EDI"
+
+#. module: l10n_ec_edi
+#: model_terms:ir.ui.view,arch_db:l10n_ec_edi.view_company_form_l10n_ec_edi
+msgid "Ecuador SRI"
+msgstr "Ecuador SRI"
+
+#. module: l10n_ec_edi
+#: model:ir.model,name:l10n_ec_edi.model_l10n_ec_certificate
+msgid "Ecuadorian Digital Signature (SRI)"
+msgstr "Firma Digital Ecuatoriana (SRI)"
+
+#. module: l10n_ec_edi
+#: model_terms:ir.ui.view,arch_db:l10n_ec_edi.view_company_form_l10n_ec_edi
+msgid "Environment & Signature"
+msgstr "Ambiente y Firma"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__expiration_date
+msgid "Expiration Date"
+msgstr "Fecha de Expiración"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__l10n_ec_certificate__state__expired
+msgid "Expired"
+msgstr "Expirado"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_res_company__l10n_ec_forced_accounting
+msgid "Forced to keep Accounting"
+msgstr "Obligado a Llevar Contabilidad"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,help:l10n_ec_edi.field_l10n_ec_certificate__name
+msgid "Friendly name, e.g. \"Firma 2026\""
+msgstr "Nombre descriptivo, ej. \"Firma 2026\""
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__id
+msgid "ID"
+msgstr "ID"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/sri_signer.py:0
+msgid "Invalid Certificate Password or File: %s"
+msgstr "Contraseña o archivo de certificado inválido: %s"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/l10n_ec_certificate.py:0
+msgid "Invalid P12 file: %s"
+msgstr "Archivo P12 inválido: %s"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__l10n_ec_certificate__state__invalid
+msgid "Invalid Password"
+msgstr "Contraseña Inválida"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/l10n_ec_certificate.py:0
+msgid "Invalid certificate file format"
+msgstr "Formato de archivo de certificado inválido"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/l10n_ec_certificate.py:0
+msgid "Invalid password for P12 certificate. Please verify the password is correct."
+msgstr "Contraseña inválida para el certificado P12. Por favor verifique que la contraseña sea correcta."
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/account_move.py:0
+msgid "Invoice must be Posted before sending to SRI."
+msgstr "La factura debe estar Contabilizada antes de enviarla al SRI."
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__issue_date
+msgid "Issue Date"
+msgstr "Fecha de Emisión"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__issuer_cn
+msgid "Issuer"
+msgstr "Emisor"
+
+#. module: l10n_ec_edi
+#: model:ir.model,name:l10n_ec_edi.model_account_move
+msgid "Journal Entry"
+msgstr "Asiento Contable"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__write_uid
+msgid "Last Updated by"
+msgstr "Última Actualización por"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__write_date
+msgid "Last Updated on"
+msgstr "Última Actualización el"
+
+#. module: l10n_ec_edi
+#: model_terms:ir.ui.view,arch_db:l10n_ec_edi.view_l10n_ec_certificate_form
+msgid "Metadata"
+msgstr "Metadatos"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/account_move.py:0
+msgid "Missing configuration: l10n_ec.annulment_day_limit\nPlease install l10n_ec module or configure System Parameters."
+msgstr "Falta configuración: l10n_ec.annulment_day_limit\nPor favor instale el módulo l10n_ec o configure los Parámetros del Sistema."
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/account_move.py:0
+msgid "Missing configuration: l10n_ec.consumidor_final_limit\nPlease install l10n_ec module or configure System Parameters."
+msgstr "Falta configuración: l10n_ec.consumidor_final_limit\nPor favor instale el módulo l10n_ec o configure los Parámetros del Sistema."
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/account_move.py:0
+msgid "Missing configuration: l10n_ec.consumidor_final_ruc\nPlease install l10n_ec module or configure System Parameters."
+msgstr "Falta configuración: l10n_ec.consumidor_final_ruc\nPor favor instale el módulo l10n_ec o configure los Parámetros del Sistema."
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/l10n_ec_certificate.py:0
+msgid "No certificate found in P12 file"
+msgstr "No se encontró certificado en el archivo P12"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__password
+msgid "Password"
+msgstr "Contraseña"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,help:l10n_ec_edi.field_l10n_ec_certificate__password
+msgid "Password for the .p12 file. Stored securely."
+msgstr "Contraseña del archivo .p12. Almacenada de forma segura."
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/l10n_ec_certificate.py:0
+msgid "Please upload a .p12 file"
+msgstr "Por favor cargue un archivo .p12"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__res_company__l10n_ec_sri_environment__production
+msgid "Production"
+msgstr "Producción"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_res_company__l10n_ec_sri_reception_url
+msgid "Reception WSDL"
+msgstr "WSDL de Recepción"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/account_move.py:0
+msgid "Regulación SRI 2026: Facturas a Consumidor Final (%s) no pueden superar $%.2f USD.\nTotal actual: $%.2f"
+msgstr "Regulación SRI 2026: Facturas a Consumidor Final (%s) no pueden superar $%.2f USD.\nTotal actual: $%.2f"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__account_move__l10n_ec_sri_status__rejected
+msgid "Rejected"
+msgstr "Rechazado"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_res_company__l10n_ec_withhold_resolution
+msgid "Resolution Number"
+msgstr "Número de Resolución"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/account_move.py:0
+msgid "SRI 2026 (Res. NAC-DGERCGC25-00000017): No se puede anular esta factura autorizada.\n\nFecha de emisión: %s\nFecha límite de anulación: %s\nFecha actual: %s"
+msgstr "SRI 2026 (Res. NAC-DGERCGC25-00000017): No se puede anular esta factura autorizada.\n\nFecha de emisión: %s\nFecha límite de anulación: %s\nFecha actual: %s"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/account_move.py:0
+msgid "SRI 2026: Facturas autorizadas a Consumidor Final (%s) no pueden ser anuladas."
+msgstr "SRI 2026: Facturas autorizadas a Consumidor Final (%s) no pueden ser anuladas."
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/account_move.py:0
+msgid "SRI 2026: No se puede anular.\n\nFecha límite: día %s del mes siguiente.\nEmisión: %s | Límite: %s | Hoy: %s"
+msgstr "SRI 2026: No se puede anular.\n\nFecha límite: día %s del mes siguiente.\nEmisión: %s | Límite: %s | Hoy: %s"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_account_bank_statement_line__l10n_ec_sri_access_key
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_account_move__l10n_ec_sri_access_key
+msgid "SRI Access Key"
+msgstr "Clave de Acceso SRI"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_res_company__l10n_ec_certificate_id
+msgid "SRI Electronic Signature"
+msgstr "Firma Electrónica SRI"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_res_company__l10n_ec_sri_environment
+msgid "SRI Environment"
+msgstr "Ambiente SRI"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/account_move.py:0
+msgid "SRI Error: No active Signing Certificate configured for company %s"
+msgstr "Error SRI: No hay un Certificado de Firma activo configurado para la compañía %s"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/account_edi_format.py:0
+msgid "SRI Error: No active Signing Certificate configured."
+msgstr "Error SRI: No hay un Certificado de Firma activo configurado."
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/account_move.py:0
+msgid "SRI Rechazado: %s"
+msgstr "SRI Rechazado: %s"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_account_bank_statement_line__l10n_ec_sri_response
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_account_move__l10n_ec_sri_response
+msgid "SRI Response"
+msgstr "Respuesta SRI"
+
+#. module: l10n_ec_edi
+#: model:ir.model,name:l10n_ec_edi.model_l10n_ec_sri_service
+msgid "SRI SOAP Web Service Client"
+msgstr "Cliente de Servicio Web SOAP SRI"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_account_bank_statement_line__l10n_ec_sri_status
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_account_move__l10n_ec_sri_status
+msgid "SRI Status"
+msgstr "Estado SRI"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/account_edi_format.py:0
+msgid "SRI Transmission Error: %s"
+msgstr "Error de Transmisión al SRI: %s"
+
+#. module: l10n_ec_edi
+#: model_terms:ir.ui.view,arch_db:l10n_ec_edi.view_company_form_l10n_ec_edi
+msgid "SRI Web Service URLs"
+msgstr "URLs de Servicios Web SRI"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,help:l10n_ec_edi.field_res_company__l10n_ec_certificate_id
+msgid "Select the active P12 certificate for signing."
+msgstr "Seleccione el certificado P12 activo para la firma."
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__account_move__l10n_ec_sri_status__sent
+msgid "Sent"
+msgstr "Enviado"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__serial_number
+msgid "Serial Number"
+msgstr "Número de Serie"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__account_move__l10n_ec_sri_status__signed
+msgid "Signed"
+msgstr "Firmado"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_account_bank_statement_line__l10n_ec_xml_data
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_account_move__l10n_ec_xml_data
+msgid "Signed XML"
+msgstr "XML Firmado"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/account_move.py:0
+msgid "Signing Error: %s"
+msgstr "Error de Firma: %s"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_res_company__l10n_ec_special_resolution
+msgid "Special Contributor Resolution"
+msgstr "Resolución de Contribuyente Especial"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__state
+msgid "Status"
+msgstr "Estado"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_l10n_ec_certificate__subject_cn
+msgid "Subject (CN)"
+msgstr "Sujeto (CN)"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_account_bank_statement_line__l10n_ec_sustento_code
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_account_move__l10n_ec_sustento_code
+msgid "Sustento Tributario"
+msgstr "Sustento Tributario"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields.selection,name:l10n_ec_edi.selection__res_company__l10n_ec_sri_environment__test
+msgid "Test"
+msgstr "Pruebas"
+
+#. module: l10n_ec_edi
+#. odoo-python
+#: code:addons/l10n_ec_edi/models/l10n_ec_certificate.py:0
+msgid "The 'cryptography' Python library is not installed. Please run: pip install cryptography"
+msgstr "La librería Python 'cryptography' no está instalada. Por favor ejecute: pip install cryptography"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,help:l10n_ec_edi.field_l10n_ec_certificate__content
+msgid "Upload the .p12 or .pfx file from your authorized provider"
+msgstr "Cargue el archivo .p12 o .pfx de su proveedor autorizado"
+
+#. module: l10n_ec_edi
+#: model_terms:ir.ui.view,arch_db:l10n_ec_edi.view_l10n_ec_certificate_form
+msgid "Validate & Activate"
+msgstr "Validar y Activar"
+
+#. module: l10n_ec_edi
+#: model_terms:ir.ui.view,arch_db:l10n_ec_edi.view_company_form_l10n_ec_edi
+msgid "Withholding"
+msgstr "Retención"
+
+#. module: l10n_ec_edi
+#: model:ir.model.fields,field_description:l10n_ec_edi.field_res_company__l10n_ec_withhold_agent
+msgid "Withholding Agent"
+msgstr "Agente de Retención"
+
+#. module: l10n_ec_edi
+#: model:ir.model,name:l10n_ec_edi.model_l10n_ec_sri_signer
+msgid "XAdES-BES Signer Service"
+msgstr "Servicio de Firma XAdES-BES"
