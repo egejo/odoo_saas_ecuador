@@ -6,20 +6,55 @@
          ambiente, tipo/numero de comprobante, clave de acceso + codigo de
          barras, numero de autorizacion). Sin este bloque, el PDF impreso
          no es un RIDE valido aunque el XML ya este autorizado por el SRI. -->
+    <!-- Layout propio para los RIDE: web.external_layout_standard (usado
+         por el resto de reportes de Odoo) arrastra un encabezado con
+         nombre/direccion/RUC/tagline de la empresa que ya se repite
+         completo en el bloque RIDE de abajo. En vez de vaciar ese
+         encabezado a pedazos, se reemplaza por uno propio con solo el
+         logo arriba a la izquierda; el resto de la identificacion legal
+         de la empresa vive unicamente en report_invoice_header. -->
+    <template id="external_layout_ride">
+        <t t-if="not o" t-set="o" t-value="doc"/>
+        <t t-if="not company">
+            <t t-if="company_id">
+                <t t-set="company" t-value="company_id"/>
+            </t>
+            <t t-elif="o and 'company_id' in o and o.company_id.sudo()">
+                <t t-set="company" t-value="o.company_id.sudo()"/>
+            </t>
+            <t t-else="else">
+                <t t-set="company" t-value="res_company"/>
+            </t>
+        </t>
+
+        <div t-attf-class="header o_company_#{company.id}_layout">
+            <img t-if="company.logo" class="o_company_logo_small" t-att-src="image_data_uri(company.logo)" alt="Logo"/>
+        </div>
+
+        <div t-attf-class="article o_company_#{company.id}_layout"
+             t-att-data-oe-model="o and o._name"
+             t-att-data-oe-id="o and o.id"
+             t-att-data-oe-lang="o and o.env.context.get('lang')">
+            <t t-out="0"/>
+        </div>
+
+        <div t-attf-class="footer o_company_#{company.id}_layout {{report_type != 'pdf' and 'mt-auto'}}">
+            <div class="o_footer_content d-flex border-top pt-2">
+                <div class="flex-grow-1 text-start me-2" t-field="company.report_footer"/>
+                <div class="text-end text-muted">
+                    <div t-if="report_type == 'pdf' and display_name_in_footer" t-out="o.name">(document name)</div>
+                    <div t-if="report_type == 'pdf'" class="text-nowrap">Página <span class="page"/> / <span class="topage"/></div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- RIDE (Representacion Impresa de Documento Electronico): bloque de
+         identificacion legal exigido por el SRI (razon social, RUC,
+         ambiente, tipo/numero de comprobante, clave de acceso + codigo de
+         barras, numero de autorizacion). Sin este bloque, el PDF impreso
+         no es un RIDE valido aunque el XML ya este autorizado por el SRI. -->
     <template id="report_invoice_header">
-        <!-- Separador fijo, NO decorativo: wkhtmltopdf renderiza el
-             ".header" (logo+direccion+RUC de la empresa) como una capa
-             independiente sobre el margen superior de la pagina (ver
-             ir_actions_report._prepare_html), no como flujo normal de
-             documento. Si el bloque que antecede a este template no deja
-             suficiente alto (p.ej. al vaciar los divs de direccion del
-             cliente para no repetirlo dos veces, ver mas abajo), ese
-             ".header" queda pisando el inicio del cuerpo; un margin-top
-             en la tabla de abajo NO alcanza a corregirlo porque el
-             ".header" no forma parte del mismo flujo. Probado: sin este
-             div, "RUC: ..." de la empresa se superpone con el titulo
-             "ADRENASPORTS CIA. LTDA." de abajo.-->
-        <div style="height: 20mm; width: 100%;"><br/></div>
         <table class="table table-borderless w-100 m-1">
             <tr>
                 <td class="pe-1" style="width: 45%">
@@ -35,7 +70,7 @@
                                     <br/>
                                     <t t-if="o.journal_id.l10n_ec_emission_address_id">
                                         <strong>Dirección Matriz/Sucursal: </strong>
-                                        <span t-esc="o.journal_id.l10n_ec_emission_address_id._display_address()"/>
+                                        <span t-esc="o.journal_id.l10n_ec_emission_address_id._display_address(without_company=True)"/>
                                         <br/>
                                     </t>
                                     <strong>Ambiente: </strong>
@@ -110,6 +145,13 @@
     </template>
 
     <template id="report_invoice_document" inherit_id="account.report_invoice_document" primary="True">
+
+        <!-- Usa el layout propio (solo logo) en vez de web.external_layout,
+             que aplicaria el tema general de la empresa con su encabezado
+             completo. -->
+        <xpath expr="//t[@t-call='web.external_layout']" position="attributes">
+            <attribute name="t-call">l10n_ec_sri.external_layout_ride</attribute>
+        </xpath>
 
         <!-- Reemplaza el titulo generico ("Invoice"/"Credit Note") por el
              bloque RIDE completo. -->
