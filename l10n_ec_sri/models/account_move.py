@@ -164,6 +164,41 @@ class AccountMove(models.Model):
             "valor_total": self.amount_total,
         }
 
+    def _l10n_ec_get_xml_attachment(self):
+        """
+        ir.attachment del XML firmado/autorizado que se envia al SRI.
+        l10n_ec_xml_data (definido en l10n_ec_edi como
+        fields.Binary(attachment=True)) ya crea automaticamente un
+        ir.attachment al asignarle un valor, pero sin nombre ni mimetype
+        utiles para adjuntarlo al correo del cliente (queda con el label
+        generico del campo, "Signed XML", sin extension). Se le pone un
+        nombre real la primera vez que se necesita, en vez de crear un
+        adjunto nuevo cada vez.
+        """
+        self.ensure_one()
+        if not self.l10n_ec_xml_data:
+            return self.env["ir.attachment"]
+        attachment = self.env["ir.attachment"].search(
+            [
+                ("res_model", "=", "account.move"),
+                ("res_id", "=", self.id),
+                ("res_field", "=", "l10n_ec_xml_data"),
+            ],
+            limit=1,
+        )
+        if attachment and (
+            attachment.mimetype != "application/xml"
+            or not attachment.name.endswith(".xml")
+        ):
+            attachment.write(
+                {
+                    "name": "%s.xml"
+                    % (self.l10n_ec_sri_access_key or self.name or "comprobante"),
+                    "mimetype": "application/xml",
+                }
+            )
+        return attachment
+
     def _get_name_invoice_report(self):
         # EXTENDS account_move
         # Sin esto, Odoo siempre imprime account.report_invoice_document

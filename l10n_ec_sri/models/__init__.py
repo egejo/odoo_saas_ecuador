@@ -2,6 +2,7 @@
 
 from . import res_company
 from . import account_move
+from . import account_move_send
 from . import account_move_purchase
 from . import l10n_ec_sri_xml
 from . import l10n_ec_retention

@@ -13,7 +13,31 @@
                          invisible="l10n_ec_sri_status != 'sent'"/>
             </xpath>
 
-            <!-- Notebook Page -->
+            <!-- Forma de pago (SRI) e Informacion Adicional del RIDE: antes
+                 vivian unicamente en la pestana "SRI Electronics" (una
+                 pestana secundaria del notebook, poco visible durante la
+                 creacion de la factura). Se llenan en CADA factura antes
+                 de emitir: no son datos de solo lectura/tecnicos como el
+                 resto de esa pestana (clave de acceso, estado, fecha de
+                 autorizacion), asi que se mueven al cuerpo principal del
+                 formulario, junto a l10n_latam_document_number, igual que
+                 l10n_ec_edi de Odoo Enterprise coloca l10n_ec_sri_payment_id
+                 (ver views/account_move_views.xml ahi: xpath sobre
+                 field[@name='l10n_latam_document_number'] position="after").
+                 Solo aplica a documentos de venta EC (move_type
+                 out_invoice/out_refund, country_code EC), igual que en
+                 Enterprise. -->
+            <xpath expr="//field[@name='l10n_latam_document_number']" position="after">
+                <field name="l10n_ec_sri_payment_id"
+                       options="{'no_create': True, 'no_open': True}"
+                       invisible="country_code != 'EC' or move_type not in ('out_invoice', 'out_refund')"/>
+                <field name="l10n_ec_sri_additional_info"
+                       invisible="country_code != 'EC' or move_type not in ('out_invoice', 'out_refund')"
+                       placeholder="Información Adicional del RIDE (opcional)"/>
+            </xpath>
+
+            <!-- Notebook Page: solo datos tecnicos/de solo lectura del
+                 estado de transmision al SRI. -->
             <xpath expr="//notebook" position="inside">
                 <page string="SRI Electronics" name="sri_electronics">
                     <group>
@@ -24,18 +48,10 @@
                                    decoration-info="l10n_ec_sri_status == 'sent'"/>
                             <field name="l10n_ec_sri_access_key"/>
                             <field name="l10n_ec_authorization_date"/>
-                            <!-- Sin este campo en alguna vista, l10n_ec_sri_payment_id
-                                 (definido en el core l10n_ec) nunca se puede
-                                 llenar, y el RIDE nunca puede mostrar la
-                                 forma de pago. -->
-                            <field name="l10n_ec_sri_payment_id"/>
                         </group>
                         <group>
                             <field name="l10n_ec_sri_error" readonly="1" invisible="not l10n_ec_sri_error"/>
                         </group>
-                    </group>
-                    <group>
-                        <field name="l10n_ec_sri_additional_info" placeholder="Texto libre para el bloque 'Información Adicional' del RIDE (opcional)"/>
                     </group>
                 </page>
             </xpath>

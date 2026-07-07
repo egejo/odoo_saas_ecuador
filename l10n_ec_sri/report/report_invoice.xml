@@ -250,6 +250,16 @@
             <div name="no_shipping"/>
         </xpath>
 
+        <!-- "Terminos y condiciones" (o.narration, renderizado por Odoo
+             core como el link/texto legal generico de la empresa) no es
+             un dato exigido por el SRI para el RIDE y el cliente no lo
+             necesita en este documento: se oculta, a diferencia de
+             "Terminos de pago" y "Referencia de pago" (#payment_term),
+             que si se mantienen. -->
+        <xpath expr="//div[@name='comment']" position="replace">
+            <div name="comment"/>
+        </xpath>
+
         <!-- La fila "informations" (Invoice Date/Due Date/Source/
              Reference/etc. de Odoo core) tambien queda de sobra: Fecha
              Emision/Vence/Comprobante Modificado ya se muestran en el
