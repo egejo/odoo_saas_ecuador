@@ -29,7 +29,7 @@
              parametrizado (2.0) para el codigo de porcentaje 312". Esa
              misma resolucion cambio otras tarifas (energia electrica,
              tarjetas de credito/debito, seguros, construccion,
-             arrendamiento mercantil, etc.) -- valdria la pena auditar el
+             arrendamiento mercantil, etc.): valdria la pena auditar el
              resto de este catalogo contra esa resolucion, no solo este
              codigo. -->
         <record id="tax_ret_ir_312" model="l10n_ec.withholding.tax">
