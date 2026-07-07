@@ -296,8 +296,14 @@
              y el desglose de totales SRI: un solo recuadro con bordes,
              forma de pago/info adicional a la izquierda y el desglose de
              totales a la derecha, tal como el modelo de referencia del
-             cliente. -->
-        <xpath expr="//div[@id='payment_term']" position="after">
+             cliente. Se inserta ANTES de "#payment_term" (no despues):
+             ese div trae terminos de pago, referencia de pago y terminos
+             y condiciones (o.narration): contenido que debe ir despues
+             de Valor Total, al final de la factura, no antes. Insertarlo
+             despues de "#payment_term" (como se hizo originalmente)
+             hacia que ese contenido apareciera ANTES del cuadro de
+             totales, cuando en realidad va al final del documento. -->
+        <xpath expr="//div[@id='payment_term']" position="before">
             <t t-set="l10n_ec_payment_data" t-value="o._l10n_ec_get_payment_data()"/>
             <t t-set="l10n_ec_additional_info" t-value="o._l10n_ec_get_invoice_additional_info()"/>
             <t t-set="l10n_ec_ride_totals" t-value="o._l10n_ec_get_ride_totals()"/>
