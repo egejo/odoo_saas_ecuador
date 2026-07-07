@@ -201,17 +201,21 @@
                     <span t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/>
                 </td>
             </tr>
-            <tr t-if="o.reversed_entry_id">
+            <!-- Comprobante modificado: nota de credito lo vincula via
+                 reversed_entry_id, nota de debito via debit_origin_id
+                 (nunca ambos a la vez en el mismo comprobante). -->
+            <t t-set="l10n_ec_modified_doc" t-value="o.reversed_entry_id or o.debit_origin_id"/>
+            <tr t-if="l10n_ec_modified_doc">
                 <td colspan="2">
                     <strong>Comprobante Modificado: </strong>
-                    <span t-esc="o.reversed_entry_id.l10n_latam_document_number or o.reversed_entry_id.name"/>
+                    <span t-esc="l10n_ec_modified_doc.l10n_latam_document_number or l10n_ec_modified_doc.name"/>
                 </td>
                 <td colspan="2">
                     <strong>Fecha Emisión Doc. Modificado: </strong>
-                    <span t-field="o.reversed_entry_id.invoice_date"/>
+                    <span t-field="l10n_ec_modified_doc.invoice_date"/>
                 </td>
             </tr>
-            <tr t-if="o.reversed_entry_id and o.narration">
+            <tr t-if="l10n_ec_modified_doc and o.narration">
                 <td colspan="4">
                     <strong>Motivo: </strong>
                     <span t-field="o.narration"/>

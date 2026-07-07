@@ -3,6 +3,42 @@ from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError, UserError
 import base64
 
+# Tabla 06 del SRI (tipo de identificacion). Mismo mapeo que
+# l10n_ec_sri_xml.py usa para el comprador de facturas -- se duplica aqui
+# (en vez de agregar l10n_ec_sri como dependencia de este modulo, solo
+# para 4 lineas estables de un catalogo SRI que no cambia) porque
+# l10n_ec_withholding no depende de l10n_ec_sri.
+_TIPO_IDENTIFICACION_SUJETO_RETENIDO = {
+    "ruc": "04",
+    "cedula": "05",
+    "ec_passport": "06",
+    "passport": "06",
+    "foreign": "08",
+}
+# Tabla 16 del SRI (codigo de impuesto en <retenciones><retencion><codigo>):
+# 1=Renta, 2=IVA, 6=ISD. account.retention.line.tax_type usa el mismo
+# vocabulario que l10n_ec.withholding.tax.type ("renta"/"iva"/"isd"), asi
+# que hace falta este mapeo para el XML.
+_RETENTION_TAX_TYPE_CODE = {"renta": "1", "iva": "2", "isd": "6"}
+# Tabla 17/18 del SRI, para los impuestos DE LA FACTURA SUSTENO
+# (impuestosDocSustento) -- no confundir con los impuestos retenidos. Es
+# el mismo mapeo que l10n_ec_sri_xml.py usa para el XML de facturas.
+_TABLA17_CODIGO_IMPUESTO = {
+    "vat05": "2", "vat08": "2", "vat12": "2", "vat13": "2", "vat14": "2",
+    "vat15": "2", "zero_vat": "2", "not_charged_vat": "2", "exempt_vat": "2",
+    "ice": "3",
+    "irbpnr": "5",
+}
+_TABLA18_CODIGO_PORCENTAJE = {
+    "zero_vat": "0",
+    "not_charged_vat": "6",
+    "exempt_vat": "7",
+    "vat05": "5",
+    "vat12": "2",
+    "vat14": "3",
+    "vat15": "4",
+}
+
 
 class AccountRetention(models.Model):
     _name = "account.retention"
@@ -45,6 +81,9 @@ class AccountRetention(models.Model):
     )
     l10n_ec_sri_response = fields.Text("SRI Response")
     l10n_ec_xml_data = fields.Binary("XML File", attachment=True)
+    l10n_ec_authorization_date = fields.Datetime(
+        string="Authorization Date", copy=False
+    )
 
     # Lines
     retention_line_ids = fields.One2many(
@@ -146,50 +185,65 @@ class AccountRetention(models.Model):
 
     def _generate_access_key(self):
         """
-        Uses l10n_ec_edi.models.access_key
+        Genera la clave de acceso usando el helper compartido de
+        l10n_ec_edi (mismo algoritmo modulo 11 que usa l10n_ec_sri, solo
+        que expuesto ahi como clase Python en vez de metodo de modelo).
         """
+        from odoo.addons.l10n_ec_edi.models.access_key import AccessKey
+
         for record in self:
-            if not record.l10n_ec_sri_access_key:
-                from ..models.access_key import AccessKey  # Import from EDI module?
+            if record.l10n_ec_sri_access_key:
+                continue
 
-                # Better: Use the shared helper if possible or re-implement simple call
-                # Since l10n_ec_edi is a dependency, we can import from it.
-                # However, Odoo imports are tricky.
-                # Let's rely on the method being available or duplicate the helper call for safety in this scope?
-                # No, duplicating code is bad.
-                # We can call the helper class from l10n_ec_edi.models.access_key
-                # But it's not an Odoo model.
+            env = (
+                "2"
+                if record.company_id.l10n_ec_sri_environment == "production"
+                else "1"
+            )
 
-                # Option B: Add a transient model or utility in EDI to generate keys.
-                # Or just import it:
-                from odoo.addons.l10n_ec_edi.models.access_key import AccessKey
+            # Formato esperado del nombre: "001-001-000000001" (ver
+            # data/l10n_ec_withholding.xml: prefix="001-001-", padding=9).
+            parts = record.name.split("-")
+            if len(parts) == 3:
+                estab, pto, seq = parts
+            else:
+                estab, pto = "001", "001"
+                seq = record.id
 
-                # Check environment
-                env = (
-                    "2"
-                    if record.company_id.l10n_ec_sri_environment == "production"
-                    else "1"
-                )
+            record.l10n_ec_sri_access_key = AccessKey.generate(
+                invoice_date=record.date,
+                doc_type="07",  # Comprobante de Retencion
+                ruc=record.company_id.vat,
+                environment=env,
+                establishment=estab,
+                emission_point=pto,
+                sequential=seq,
+            )
 
-                # Parse sequence "001-001-000000001"
-                parts = record.name.split("-")
-                if len(parts) == 3:
-                    estab, pto, seq = parts
-                else:
-                    # Fallback for draft/bad format
-                    estab, pto = "001", "001"
-                    seq = record.id
-
-                key = AccessKey.generate(
-                    invoice_date=record.date,
-                    doc_type="07",  # Retention
-                    ruc=record.company_id.vat,
-                    environment=env,
-                    establishment=estab,
-                    emission_point=pto,
-                    sequential=seq,
-                )
-                record.l10n_ec_sri_access_key = key
+    def _get_invoice_tax_breakdown(self, invoice):
+        """
+        Desglose de los impuestos DE LA FACTURA SUSTENTO (no de la
+        retencion), para <impuestosDocSustento> -- el SRI exige mostrar
+        ahi los impuestos originales de la factura que se esta
+        retención, ademas de los valores retenidos en <retenciones>.
+        Misma clasificacion por l10n_ec_type que usa l10n_ec_sri_xml.py
+        para las facturas.
+        """
+        breakdown = []
+        for line in invoice.line_ids.filtered(lambda l: l.tax_line_id):
+            ec_type = line.tax_line_id.tax_group_id.l10n_ec_type
+            if ec_type not in _TABLA17_CODIGO_IMPUESTO:
+                continue
+            breakdown.append(
+                {
+                    "codigo": _TABLA17_CODIGO_IMPUESTO[ec_type],
+                    "codigo_porcentaje": _TABLA18_CODIGO_PORCENTAJE.get(ec_type, "0"),
+                    "tarifa": line.tax_line_id.amount,
+                    "base_imponible": abs(line.tax_base_amount),
+                    "valor": abs(line.balance),
+                }
+            )
+        return breakdown
 
     def action_send_sri(self):
         """
@@ -198,6 +252,9 @@ class AccountRetention(models.Model):
         for record in self:
             if not record.l10n_ec_sri_access_key:
                 record._generate_access_key()
+
+            invoice = record.invoice_id
+            partner_type = record.partner_id._l10n_ec_get_identification_type()
 
             # 1. Render XML
             values = {
@@ -210,11 +267,23 @@ class AccountRetention(models.Model):
                 "access_key": record.l10n_ec_sri_access_key,
                 "format_monetary": lambda x: "%.2f" % x,
                 "format_float": lambda x, p: ("%." + str(p) + "f") % x,
-                "identifier_code": (
-                    "05"
-                    if record.partner_id.l10n_ec_identifier_type == "cedula"
-                    else "04"
-                ),  # Simplified
+                "identifier_code": _TIPO_IDENTIFICACION_SUJETO_RETENIDO.get(
+                    partner_type, "05"
+                ),
+                "retention_tax_type_code": _RETENTION_TAX_TYPE_CODE,
+                "invoice_sustento_code": invoice.l10n_ec_sustento_code or "01",
+                "invoice_doc_type_code": invoice.l10n_latam_document_type_id.code
+                or "01",
+                "invoice_doc_number": (
+                    invoice.l10n_latam_document_number or invoice.name or ""
+                ).replace("-", ""),
+                "invoice_doc_date": (
+                    invoice.invoice_date.strftime("%d/%m/%Y")
+                    if invoice.invoice_date
+                    else ""
+                ),
+                "invoice_tax_breakdown": record._get_invoice_tax_breakdown(invoice),
+                "invoice_payment_code": invoice.l10n_ec_sri_payment_id.code or "01",
             }
             xml_content = self.env["ir.qweb"]._render(
                 "l10n_ec_withholding.l10n_ec_retention_xml", values
@@ -262,3 +331,28 @@ class AccountRetention(models.Model):
             except Exception as e:
                 record.l10n_ec_sri_response = f"System Error: {str(e)}"
                 # Don't rollback, save the error
+
+    def action_check_sri(self):
+        """
+        Consulta el estado de autorizacion en el SRI. Sin esto, el
+        comprobante quedaba atascado en 'sent' para siempre -- nunca
+        habia forma de confirmar 'AUTORIZADO' (a diferencia del flujo de
+        facturas en l10n_ec_sri, que si tiene action_check_sri).
+        """
+        for record in self:
+            if not record.l10n_ec_sri_access_key:
+                raise UserError(_("No Access Key generated yet."))
+
+            response = self.env["l10n_ec.sri.service"].check_authorization(
+                record.l10n_ec_sri_access_key
+            )
+
+            if response.get("status") == "AUTORIZADO":
+                record.l10n_ec_sri_status = "authorized"
+                if response.get("date"):
+                    record.l10n_ec_authorization_date = response["date"]
+            elif response.get("status") == "NO AUTORIZADO":
+                record.l10n_ec_sri_status = "rejected"
+                record.l10n_ec_sri_response = "\n".join(
+                    response.get("messages", [])
+                )

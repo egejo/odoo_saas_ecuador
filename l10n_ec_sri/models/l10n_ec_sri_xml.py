@@ -183,9 +183,16 @@ class L10nEcSriXml(models.AbstractModel):
         credit note sharing the invoice's estab/ptoEmi/secuencial looked to
         the SRI like the exact same already-authorized factura ("ERROR
         SECUENCIAL REGISTRADO").
+
+        Una nota de debito NO tiene move_type propio (Odoo la crea con
+        move_type='out_invoice' + debit_origin_id, via el wizard nativo
+        "Add Debit Note" de account_debit_note) -- se distingue por
+        l10n_latam_document_type_id.code, no por move_type.
         """
         if record.move_type == "out_refund":
             return self._render_credit_note_xml(record)
+        if record.l10n_latam_document_type_id.code == "05":
+            return self._render_debit_note_xml(record)
 
         values = {
             "record": record,
@@ -220,3 +227,30 @@ class L10nEcSriXml(models.AbstractModel):
             "motivo": record.narration or record.name or "NOTA DE CREDITO",
         }
         return self.env["ir.qweb"]._render("l10n_ec_sri.xml_credit_note", values)
+
+    @api.model
+    def _render_debit_note_xml(self, record):
+        """
+        Nota de Debito (codDoc 05). A diferencia de la nota de credito,
+        Odoo la vincula al comprobante original via debit_origin_id (no
+        reversed_entry_id) -- ver account_debit_note (wizard nativo
+        "Add Debit Note", ya instalado). El schema tampoco tiene
+        <detalles> por linea de producto: solo <motivos> (razon + valor
+        por linea) y un <impuestos> agregado a nivel de cabecera.
+        """
+        original_invoice = record.debit_origin_id
+        if not original_invoice:
+            raise ValidationError(
+                "La nota de debito '%s' no tiene un comprobante original "
+                "vinculado (debit_origin_id vacio). El SRI exige "
+                "codDocModificado/numDocModificado/fechaEmisionDocSustento "
+                "del comprobante que se esta afectando." % record.name
+            )
+        values = {
+            "record": record,
+            "access_key": record.l10n_ec_sri_access_key,
+            "tipo_identificacion_comprador": self._get_buyer_identification_code(record),
+            "tax_breakdown": self._get_tax_breakdown(record),
+            "original_invoice": original_invoice,
+        }
+        return self.env["ir.qweb"]._render("l10n_ec_sri.xml_debit_note", values)

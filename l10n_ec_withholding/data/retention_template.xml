@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <!-- Comprobante de Retencion v2.0.0. Estructura verificada contra
+             el modulo Enterprise oficial l10n_ec_edi (withhold_template/
+             withhold_info_template/withhold_details_info_template en
+             /home/egejo/addonsEnterprise/addons/l10n_ec_edi/data/templates/
+             edi_document.xml, usado solo como referencia de esquema, no
+             copiado). La version anterior de este template ponia los
+             impuestos retenidos directamente bajo la raiz del
+             comprobante, sin el envoltorio obligatorio docsSustento/
+             docSustento que exige el esquema real: un comprobante asi
+             es rechazado por el SRI o al menos no es valido. Tambien
+             faltaban impuestosDocSustento (los impuestos de la factura
+             sustento, no de la retencion), pagos (forma de pago) y
+             parteRel. Solo se soporta 1 documento sustento (retention.
+             invoice_id) porque ese es el diseño actual del modelo
+             account.retention; si en el futuro se permite retener varias
+             facturas en un solo comprobante, este template necesitaria
+             un t-foreach sobre esos documentos en vez de uno solo. -->
         <template id="l10n_ec_retention_xml">
             <comprobanteRetencion id="comprobante" version="2.0.0">
                 <infoTributaria>
@@ -20,27 +37,58 @@
                 <infoCompRetencion>
                     <fechaEmision t-out="retention.date.strftime('%d/%m/%Y')"/>
                     <dirEstablecimiento t-out="company.street[:300]"/>
-                    <contribuyenteEspecial t-if="company.l10n_ec_taxpayer_type == 'special'" t-out="company.l10n_ec_special_resolution"/>
+                    <!-- company.l10n_ec_taxpayer_type no existe (ese
+                         campo es de res.partner, no de res.company): se
+                         usa la misma condicion que report_invoice.xml
+                         para "Contribuyente Especial". -->
+                    <contribuyenteEspecial t-if="company.l10n_ec_special_resolution" t-out="company.l10n_ec_special_resolution"/>
                     <obligadoContabilidad t-out="'SI' if company.l10n_ec_forced_accounting else 'NO'"/>
                     <tipoIdentificacionSujetoRetenido t-out="identifier_code"/>
+                    <parteRel t-out="'SI' if partner.l10n_ec_related_party else 'NO'"/>
                     <razonSocialSujetoRetenido t-out="partner.name[:300]"/>
                     <identificacionSujetoRetenido t-out="partner.vat"/>
                     <periodoFiscal t-out="retention.date.strftime('%m/%Y')"/>
                 </infoCompRetencion>
-                <impuestos>
-                    <t t-foreach="retention.retention_line_ids" t-as="line">
-                        <impuesto>
-                            <codigo t-out="line.tax_type"/>
-                            <codigoRetencion t-out="line.tax_code"/>
-                            <baseImponible t-out="format_monetary(line.base)"/>
-                            <porcentajeRetener t-out="format_float(line.percentage, 2)"/>
-                            <valorRetenido t-out="format_monetary(line.amount)"/>
-                            <codDocSustento>01</codDocSustento> <!-- Assumed Factura for now, need field on retention line if multi-doc -->
-                            <numDocSustento t-out="retention.invoice_id.l10n_latam_document_number.replace('-', '') if retention.invoice_id.l10n_latam_document_number else '000000000000000'"/>
-                            <fechaEmisionDocSustento t-out="retention.invoice_id.invoice_date.strftime('%d/%m/%Y') if retention.invoice_id.invoice_date else ''"/>
-                        </impuesto>
-                    </t>
-                </impuestos>
+                <docsSustento>
+                    <docSustento>
+                        <!-- Solo proveedores locales soportados (pagoLocExt
+                             fijo en "01"): el modelo no tiene los campos
+                             de convenio de doble tributacion/regimen
+                             fiscal que exige el SRI para proveedores del
+                             exterior (pagoLocExt "02"). -->
+                        <codSustento t-out="invoice_sustento_code"/>
+                        <codDocSustento t-out="invoice_doc_type_code"/>
+                        <numDocSustento t-out="invoice_doc_number"/>
+                        <fechaEmisionDocSustento t-out="invoice_doc_date"/>
+                        <pagoLocExt>01</pagoLocExt>
+                        <totalSinImpuestos t-out="format_monetary(retention.invoice_id.amount_untaxed)"/>
+                        <importeTotal t-out="format_monetary(retention.invoice_id.amount_total)"/>
+                        <impuestosDocSustento t-if="invoice_tax_breakdown">
+                            <impuestoDocSustento t-foreach="invoice_tax_breakdown" t-as="tax_data">
+                                <codImpuestoDocSustento t-out="tax_data['codigo']"/>
+                                <codigoPorcentaje t-out="tax_data['codigo_porcentaje']"/>
+                                <baseImponible t-out="format_monetary(tax_data['base_imponible'])"/>
+                                <tarifa t-out="format_float(tax_data['tarifa'], 2)"/>
+                                <valorImpuesto t-out="format_monetary(tax_data['valor'])"/>
+                            </impuestoDocSustento>
+                        </impuestosDocSustento>
+                        <retenciones>
+                            <retencion t-foreach="retention.retention_line_ids" t-as="line">
+                                <codigo t-out="retention_tax_type_code[line.tax_type]"/>
+                                <codigoRetencion t-out="line.tax_code"/>
+                                <baseImponible t-out="format_monetary(line.base)"/>
+                                <porcentajeRetener t-out="format_float(line.percentage, 2)"/>
+                                <valorRetenido t-out="format_monetary(line.amount)"/>
+                            </retencion>
+                        </retenciones>
+                        <pagos>
+                            <pago>
+                                <formaPago t-out="invoice_payment_code"/>
+                                <total t-out="format_monetary(retention.invoice_id.amount_total)"/>
+                            </pago>
+                        </pagos>
+                    </docSustento>
+                </docsSustento>
                 <infoAdicional t-if="partner.email">
                    <campoAdicional nombre="Email" t-out="partner.email"/>
                 </infoAdicional>

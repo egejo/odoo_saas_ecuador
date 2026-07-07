@@ -15,14 +15,26 @@ class AccountRetentionLine(models.Model):
     )
     currency_id = fields.Many2one(related="retention_id.currency_id")
 
-    # Tax Information
+    # Tax Information: el tipo usa el mismo vocabulario que
+    # l10n_ec.withholding.tax.type ("renta"/"iva"/"isd"), no el codigo
+    # numerico de la Tabla 16 del SRI (1/2/6) -- antes se comparaban aqui
+    # los dos vocabularios distintos ("1"/"2"/"6" vs "renta"/"iva"/"isd"),
+    # asi que el dominio de tax_id nunca encontraba ninguna coincidencia
+    # y el campo (requerido) quedaba imposible de completar. El mapeo al
+    # codigo SRI (1/2/6) para el XML vive en account_retention.py.
     tax_type = fields.Selection(
-        [("1", "Renta"), ("2", "IVA"), ("6", "ISD")], string="Impuesto", required=True
+        [
+            ("renta", "Impuesto a la Renta (Tabla 19)"),
+            ("iva", "IVA (Tabla 21)"),
+            ("isd", "ISD"),
+        ],
+        string="Impuesto",
+        required=True,
     )
 
     tax_id = fields.Many2one(
         "l10n_ec.withholding.tax",
-        string="Tax Code",
+        string="Código de Retención",
         required=True,
         domain="[('type', '=', tax_type)]",
     )

@@ -127,4 +127,67 @@
     </detalles>
 </notaCredito>
 </template>
+
+<!--
+    Nota de Debito (codDoc 05). Estructura verificada contra el modulo
+    Enterprise oficial l10n_ec_edi (debit_note_template en
+    /home/egejo/addonsEnterprise/addons/l10n_ec_edi/data/templates/
+    edi_document.xml, usado solo como referencia de esquema, no
+    copiado). A diferencia de factura/nota de credito, este comprobante
+    no tiene <detalles> por producto: el SRI solo pide <motivos> (razon +
+    valor por linea) y un <impuestos> agregado a nivel de cabecera con
+    tarifa ANTES de baseImponible (al reves que <totalConImpuestos> de
+    factura).
+-->
+<template id="xml_debit_note">
+<notaDebito id="comprobante" version="1.0.0">
+    <infoTributaria>
+        <ambiente><t t-esc="'1' if record.company_id.l10n_ec_sri_environment == 'test' else '2'"/></ambiente>
+        <tipoEmision>1</tipoEmision>
+        <razonSocial><t t-esc="record.company_id.name"/></razonSocial>
+        <nombreComercial><t t-esc="record.company_id.name"/></nombreComercial>
+        <ruc><t t-esc="record.company_id.vat"/></ruc>
+        <claveAcceso><t t-esc="access_key"/></claveAcceso>
+        <codDoc>05</codDoc>
+        <estab>001</estab>
+        <ptoEmi>001</ptoEmi>
+        <secuencial><t t-esc="record.name.split('-')[-1]"/></secuencial>
+        <dirMatriz><t t-esc="record.company_id.street"/></dirMatriz>
+    </infoTributaria>
+    <infoNotaDebito>
+        <fechaEmision><t t-esc="record.invoice_date.strftime('%d/%m/%Y')"/></fechaEmision>
+        <dirEstablecimiento><t t-esc="record.company_id.street"/></dirEstablecimiento>
+        <tipoIdentificacionComprador><t t-esc="tipo_identificacion_comprador"/></tipoIdentificacionComprador>
+        <razonSocialComprador><t t-esc="record.partner_id.name"/></razonSocialComprador>
+        <identificacionComprador><t t-esc="record.partner_id.vat"/></identificacionComprador>
+        <obligadoContabilidad><t t-if="record.company_id.l10n_ec_forced_accounting">SI</t><t t-else="">NO</t></obligadoContabilidad>
+        <codDocModificado>01</codDocModificado>
+        <numDocModificado><t t-esc="original_invoice.l10n_latam_document_number"/></numDocModificado>
+        <fechaEmisionDocSustento><t t-esc="original_invoice.invoice_date.strftime('%d/%m/%Y')"/></fechaEmisionDocSustento>
+        <totalSinImpuestos><t t-esc="'{:.2f}'.format(abs(record.amount_untaxed))"/></totalSinImpuestos>
+        <impuestos>
+            <impuesto t-foreach="tax_breakdown" t-as="tax">
+                <codigo><t t-esc="tax['codigo']"/></codigo>
+                <codigoPorcentaje><t t-esc="tax['codigo_porcentaje']"/></codigoPorcentaje>
+                <tarifa><t t-esc="tax['tarifa']"/></tarifa>
+                <baseImponible><t t-esc="'{:.2f}'.format(abs(tax['base_imponible']))"/></baseImponible>
+                <valor><t t-esc="'{:.2f}'.format(abs(tax['valor']))"/></valor>
+            </impuesto>
+        </impuestos>
+        <valorTotal><t t-esc="'{:.2f}'.format(abs(record.amount_total))"/></valorTotal>
+        <pagos>
+            <pago>
+                <formaPago><t t-esc="record.l10n_ec_sri_payment_id.code or '01'"/></formaPago>
+                <total><t t-esc="'{:.2f}'.format(abs(record.amount_total))"/></total>
+            </pago>
+        </pagos>
+    </infoNotaDebito>
+    <motivos>
+        <motivo t-foreach="record.invoice_line_ids" t-as="line">
+            <razon><t t-esc="(line.name or line.product_id.name or 'AJUSTE')[:300]"/></razon>
+            <valor><t t-esc="'{:.2f}'.format(abs(line.price_subtotal))"/></valor>
+        </motivo>
+    </motivos>
+</notaDebito>
+</template>
 </odoo>

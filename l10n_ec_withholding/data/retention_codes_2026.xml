@@ -21,11 +21,22 @@
         </record>
 
         <!-- GOODS / SERVICES -->
+        <!-- 312 subio de 1.75% a 2% desde el 01-mar-2026 (Resolucion
+             NAC-DGERCGC26-00000009, que actualizo varios porcentajes de
+             retencion de renta). Encontrado como bug real: el propio
+             validador del SRI rechazo un comprobante de retencion de
+             prueba end-to-end con "La tarifa (1.75) no es igual al
+             parametrizado (2.0) para el codigo de porcentaje 312". Esa
+             misma resolucion cambio otras tarifas (energia electrica,
+             tarjetas de credito/debito, seguros, construccion,
+             arrendamiento mercantil, etc.) -- valdria la pena auditar el
+             resto de este catalogo contra esa resolucion, no solo este
+             codigo. -->
         <record id="tax_ret_ir_312" model="l10n_ec.withholding.tax">
             <field name="code">312</field>
-            <field name="name">Transferencia Bienes Muebles (1.75%)</field>
+            <field name="name">Transferencia Bienes Muebles (2%)</field>
             <field name="type">renta</field>
-            <field name="percentage">1.75</field>
+            <field name="percentage">2.0</field>
         </record>
 
         <record id="tax_ret_ir_3440" model="l10n_ec.withholding.tax">

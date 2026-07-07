@@ -39,21 +39,25 @@ class RetentionWizard(models.TransientModel):
             # Base Imponible Renta = Amount Untaxed
             # Base Imponible IVA = Amount Tax (only if Retaining IVA)
 
-            # 1. Renta Line Suggestion
+            # Sugerencia de bases (Renta = subtotal sin impuestos; IVA =
+            # valor del IVA de la factura, ya que la retencion de IVA se
+            # calcula como % sobre el IVA facturado, no sobre el
+            # subtotal). El codigo de retencion (tax_id) exacto depende
+            # del tipo de bien/servicio -- no se puede adivinar de forma
+            # confiable, asi que se deja en blanco para que el usuario lo
+            # elija; solo se preselecciona el tipo de impuesto y la base
+            # para ahorrar tipeo.
             lines.append(
                 (
                     0,
                     0,
                     {
-                        "tax_type": "1",  # Renta
+                        "tax_type": "renta",
                         "base": invoice.amount_untaxed,
-                        "percentage": 0.0,
-                        "tax_code": "332",  # Default/Common code, user can change
                     },
                 )
             )
 
-            # 2. IVA Line Suggestion (if there is VAT)
             total_vat = sum(
                 line.price_total - line.price_subtotal
                 for line in invoice.invoice_line_ids
@@ -64,17 +68,8 @@ class RetentionWizard(models.TransientModel):
                         0,
                         0,
                         {
-                            "tax_type": "2",  # IVA
-                            "base": total_vat,  # Base for IVA Retention is the VAT amount itself?
-                            # No, usually percentage of VAT amount (10%, 30%, 70%, 100%)
-                            # Or is base the invoice subtotal?
-                            # Ficha Tecnica: baseImponible for code 2 (IVA) is the VAT AMOUNT.
-                            # Review DM_02: "baseImponible" -> "Decimal 2 places".
-                            # For IVA retention, the base is the IVA value.
-                            # Let's confirm: "Retention of IVA is X% of the IVA Value."
+                            "tax_type": "iva",
                             "base": total_vat,
-                            "percentage": 30.0,  # Common Goods %
-                            "tax_code": "2",  # Common Code
                         },
                     )
                 )
@@ -98,16 +93,23 @@ class RetentionWizard(models.TransientModel):
         }
 
         for line in self.line_ids:
+            # tax_code/percentage son related (derivados de tax_id) y no
+            # hace falta pasarlos aqui. "amount" si se pasa explicito:
+            # es un campo computado con store=True que depende de un
+            # related (percentage), y al crear account.retention con sus
+            # retention_line_ids anidados en un solo create() -- igual que
+            # aqui -- Odoo puede intentar el INSERT antes de resolver esa
+            # cadena de related+compute, violando el NOT NULL de "amount".
+            # Calcularlo aqui de una vez evita depender de ese orden.
             retention_vals["retention_line_ids"].append(
                 (
                     0,
                     0,
                     {
                         "tax_type": line.tax_type,
-                        "tax_code": line.tax_code,
+                        "tax_id": line.tax_id.id,
                         "base": line.base,
-                        "percentage": line.percentage,
-                        "amount": line.amount,
+                        "amount": line.base * (line.tax_id.percentage / 100.0),
                     },
                 )
             )
@@ -130,13 +132,30 @@ class RetentionWizardLine(models.TransientModel):
     _description = "Retention Wizard Line"
 
     wizard_id = fields.Many2one("l10n_ec.retention.wizard", required=True)
+    # Mismo vocabulario que l10n_ec.withholding.tax.type y
+    # account.retention.line.tax_type (ver comentario ahi): antes usaba
+    # "1"/"2"/"6" mientras tax_id.type usa "renta"/"iva"/"isd", asi que el
+    # dominio de abajo nunca encontraba resultados.
     tax_type = fields.Selection(
-        [("1", "Renta"), ("2", "IVA"), ("6", "ISD")], string="Impuesto", required=True
+        [
+            ("renta", "Impuesto a la Renta (Tabla 19)"),
+            ("iva", "IVA (Tabla 21)"),
+            ("isd", "ISD"),
+        ],
+        string="Impuesto",
+        required=True,
     )
-
-    tax_code = fields.Char(string="Código Retención", required=True)
+    tax_id = fields.Many2one(
+        "l10n_ec.withholding.tax",
+        string="Código de Retención",
+        required=True,
+        domain="[('type', '=', tax_type)]",
+    )
+    tax_code = fields.Char(related="tax_id.code", string="Código", readonly=True)
+    percentage = fields.Float(
+        related="tax_id.percentage", string="Porcentaje %", readonly=True
+    )
     base = fields.Monetary(string="Base Imponible", required=True)
-    percentage = fields.Float(string="Porcentaje %", required=True)
     amount = fields.Monetary(string="Valor Retenido", compute="_compute_amount")
     currency_id = fields.Many2one(related="wizard_id.invoice_id.currency_id")
 

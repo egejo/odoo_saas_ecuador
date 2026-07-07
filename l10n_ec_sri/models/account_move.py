@@ -205,14 +205,14 @@ class AccountMove(models.Model):
         # (el layout generico) sin clave de acceso, numero de autorizacion,
         # ni codigo de barras: no es un RIDE valido ante el SRI. Solo se activa
         # para los tipos de documento que realmente se firman/envian hoy
-        # (factura y nota de credito, ver l10n_ec.sri.xml.render_xml); el
-        # resto (nota de debito, guia de remision, etc.) sigue sin RIDE hasta
-        # que su generacion de XML este implementada.
+        # (factura, nota de credito y nota de debito, ver
+        # l10n_ec.sri.xml.render_xml); el resto (guia de remision, etc.)
+        # sigue sin RIDE hasta que su generacion de XML este implementada.
         self.ensure_one()
         if (
             self.l10n_latam_use_documents
             and self.country_code == "EC"
-            and self.l10n_latam_document_type_id.code in ("01", "04")
+            and self.l10n_latam_document_type_id.code in ("01", "04", "05")
         ):
             return "l10n_ec_sri.report_invoice_document"
         return super()._get_name_invoice_report()

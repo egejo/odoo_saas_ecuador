@@ -19,9 +19,10 @@
                         <field name="line_ids">
                             <list editable="bottom">
                                 <field name="tax_type"/>
-                                <field name="tax_code"/>
+                                <field name="tax_id" options="{'no_create': True}"/>
+                                <field name="tax_code" readonly="1"/>
                                 <field name="base"/>
-                                <field name="percentage"/>
+                                <field name="percentage" readonly="1"/>
                                 <field name="amount" readonly="1"/>
                                 <field name="currency_id" invisible="1"/>
                             </list>
