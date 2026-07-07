@@ -27,6 +27,8 @@
                         <button name="action_post" string="Post" class="oe_highlight" type="object" invisible="state != 'draft'"/>
                         <button name="action_send_sri" string="Send to SRI" class="oe_highlight" type="object" invisible="l10n_ec_sri_status in ('sent', 'authorized') or state == 'draft'"/>
                         <button name="action_check_sri" string="Check SRI Status" type="object" invisible="l10n_ec_sri_status != 'sent'"/>
+                        <button name="%(l10n_ec_withholding.action_report_retention)d" string="Imprimir RIDE" type="action"/>
+                        <button name="action_send_by_email" string="Enviar por Correo" type="object" invisible="l10n_ec_sri_status != 'authorized'"/>
                         <button name="%(l10n_ec_edi.action_l10n_ec_certificate)d" string="Check Certificate" type="action" groups="base.group_no_one"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,posted"/>
                     </header>

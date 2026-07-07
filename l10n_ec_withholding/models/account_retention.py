@@ -5,9 +5,10 @@ import base64
 
 # Tabla 06 del SRI (tipo de identificacion). Mismo mapeo que
 # l10n_ec_sri_xml.py usa para el comprador de facturas -- se duplica aqui
-# (en vez de agregar l10n_ec_sri como dependencia de este modulo, solo
-# para 4 lineas estables de un catalogo SRI que no cambia) porque
-# l10n_ec_withholding no depende de l10n_ec_sri.
+# en vez de importar esa constante de l10n_ec_sri (aunque este modulo ya
+# depende de el para el layout del RIDE, ver report/report_retention.xml)
+# porque es un catalogo SRI estable de 4 lineas, no vale la pena acoplar
+# el import a la estructura interna de l10n_ec_sri_xml.py.
 _TIPO_IDENTIFICACION_SUJETO_RETENIDO = {
     "ruc": "04",
     "cedula": "05",
@@ -356,3 +357,97 @@ class AccountRetention(models.Model):
                 record.l10n_ec_sri_response = "\n".join(
                     response.get("messages", [])
                 )
+
+    def _l10n_ec_get_xml_attachment(self):
+        """
+        ir.attachment del XML firmado/autorizado. l10n_ec_xml_data (Binary
+        con attachment=True) ya crea automaticamente un ir.attachment al
+        asignarle un valor, pero sin nombre/mimetype utiles para
+        adjuntarlo al correo del proveedor (mismo patron que
+        account.move._l10n_ec_get_xml_attachment en l10n_ec_sri).
+        """
+        self.ensure_one()
+        if not self.l10n_ec_xml_data:
+            return self.env["ir.attachment"]
+        attachment = self.env["ir.attachment"].search(
+            [
+                ("res_model", "=", "account.retention"),
+                ("res_id", "=", self.id),
+                ("res_field", "=", "l10n_ec_xml_data"),
+            ],
+            limit=1,
+        )
+        if attachment and (
+            attachment.mimetype != "application/xml"
+            or not attachment.name.endswith(".xml")
+        ):
+            attachment.write(
+                {
+                    "name": "%s.xml"
+                    % (self.l10n_ec_sri_access_key or self.name or "retencion"),
+                    "mimetype": "application/xml",
+                }
+            )
+        return attachment
+
+    def action_send_by_email(self):
+        """
+        Envia el RIDE (PDF) y el XML autorizado al correo del proveedor.
+
+        Normativa vigente (Resolucion NAC-DGERCGC18-00000233, Art. 6
+        "Entrega de comprobantes electronicos", ver l10n_ec_sri/models/
+        account_move_send.py para el mismo requisito aplicado a
+        facturas): el comprobante electronico -- cualquiera de los tipos
+        que cubre esa resolucion, incluido el comprobante de retencion --
+        solo se entiende entregado cuando se envian AMBOS archivos (XML y
+        RIDE) al correo del receptor; enviar solo uno "constituye falta
+        de entrega" segun el mismo articulo. account.retention no hereda
+        de account.move, asi que no puede reusar el asistente "Enviar e
+        Imprimir" (account.move.send): se abre el compositor de correo
+        generico de Odoo con ambos adjuntos ya preparados.
+        """
+        self.ensure_one()
+        if self.l10n_ec_sri_status != "authorized":
+            raise UserError(
+                _(
+                    "El comprobante debe estar Autorizado por el SRI antes de "
+                    "enviarlo por correo."
+                )
+            )
+
+        report = self.env.ref("l10n_ec_withholding.action_report_retention")
+        pdf_content, _unused = report._render_qweb_pdf(report.report_name, self.ids)
+        pdf_attachment = self.env["ir.attachment"].create(
+            {
+                "name": "%s.pdf" % (self.name or "retencion"),
+                "type": "binary",
+                "datas": base64.b64encode(pdf_content),
+                "res_model": "account.retention",
+                "res_id": self.id,
+                "mimetype": "application/pdf",
+            }
+        )
+        attachment_ids = [pdf_attachment.id]
+        xml_attachment = self._l10n_ec_get_xml_attachment()
+        if xml_attachment:
+            attachment_ids.append(xml_attachment.id)
+
+        compose_form = self.env.ref("mail.email_compose_message_wizard_form")
+        ctx = {
+            "default_model": "account.retention",
+            "default_res_ids": self.ids,
+            "default_partner_ids": [self.partner_id.id],
+            "default_subject": _("Comprobante de Retención %s") % (self.name or ""),
+            "default_attachment_ids": attachment_ids,
+            "default_composition_mode": "comment",
+        }
+        return {
+            "name": _("Enviar por Correo"),
+            "type": "ir.actions.act_window",
+            "res_model": "mail.compose.message",
+            "view_mode": "form",
+            "views": [(compose_form.id, "form")],
+            "view_id": compose_form.id,
+            "target": "new",
+            "context": ctx,
+        }

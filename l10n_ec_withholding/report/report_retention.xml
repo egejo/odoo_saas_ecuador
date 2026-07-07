@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- RIDE del Comprobante de Retencion (codDoc 07): igual que la
+         factura/nota de credito/debito, el SRI exige un RIDE valido
+         (identificacion legal, clave de acceso, codigo de barras,
+         numero de autorizacion) ademas del XML. Reutiliza el layout con
+         bordes de celda (l10n_ec_sri.external_layout_ride, ver
+         report_invoice.xml ahi) para que todos los comprobantes de este
+         sistema compartan el mismo estilo visual. -->
+    <template id="report_retention_header">
+        <table class="l10n_ec_ride_box" style="margin-bottom: 6px; table-layout: fixed;">
+            <tr>
+                <td style="width: 45%;">
+                    <div class="text-center" t-if="o.company_id.logo">
+                        <img style="max-height: 65px; max-width: 100%;" t-att-src="image_data_uri(o.company_id.logo)" alt="Logo"/>
+                    </div>
+                    <h4 class="text-center" style="letter-spacing: 1px; margin-top: 4px;">
+                        <span t-esc="o.company_id.l10n_ec_commercial_name or o.company_id.name"/>
+                    </h4>
+                    <div style="font-size: 12px;">
+                        <strong>RUC: </strong>
+                        <span t-field="o.company_id.partner_id.vat"/>
+                        <br/>
+                        <t t-if="o.company_id.phone">
+                            <strong>Teléfono: </strong>
+                            <span t-field="o.company_id.phone"/>
+                            <br/>
+                        </t>
+                        <t t-if="o.company_id.email">
+                            <strong>Correo: </strong>
+                            <span t-field="o.company_id.email"/>
+                            <br/>
+                        </t>
+                        <strong>Ambiente: </strong>
+                        <t t-if="o.company_id.l10n_ec_sri_environment == 'production'">PRODUCCIÓN</t>
+                        <t t-else="">PRUEBAS</t>
+                        <br/>
+                        <strong>Emisión: </strong>NORMAL
+                        <br/>
+                        <strong>Obligado a Llevar Contabilidad: </strong>
+                        <t t-if="o.company_id.l10n_ec_forced_accounting">SÍ</t>
+                        <t t-else="">NO</t>
+                        <br/>
+                        <t t-if="o.company_id.l10n_ec_special_resolution">
+                            <strong>Contribuyente Especial Res. No.: </strong>
+                            <span t-field="o.company_id.l10n_ec_special_resolution"/>
+                            <br/>
+                        </t>
+                        <t t-if="o.company_id.l10n_ec_withhold_agent">
+                            <strong>Agente de Retención Res. No.: </strong>
+                            <span t-field="o.company_id.l10n_ec_withhold_resolution"/>
+                            <br/>
+                        </t>
+                    </div>
+                </td>
+                <td style="width: 55%;">
+                    <div class="text-center">
+                        <h4 style="letter-spacing: 1px;">
+                            COMPROBANTE DE RETENCIÓN
+                            <br/>
+                            <span t-esc="o.name"/>
+                        </h4>
+                        <t t-if="o.l10n_ec_sri_status == 'authorized'">
+                            <div style="font-size: 12px">
+                                <strong>Número de Autorización: </strong>
+                                <span t-field="o.l10n_ec_sri_access_key"/>
+                            </div>
+                            <div t-if="o.l10n_ec_authorization_date" style="font-size: 12px">
+                                <strong>Fecha y Hora de Autorización: </strong>
+                                <span t-field="o.l10n_ec_authorization_date"/>
+                            </div>
+                            <div>
+                                <img style="width:100%; height:15mm;"
+                                    t-att-src="'/report/barcode/Code128/' + o.l10n_ec_sri_access_key"
+                                    alt="Código de barras: clave de acceso"
+                                />
+                            </div>
+                            <div style="font-size: 11px">
+                                <strong>Clave de Acceso: </strong>
+                                <span t-field="o.l10n_ec_sri_access_key"/>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="bg-danger text-white p-2" style="font-size: 13px;">
+                                <strong>
+                                    DOCUMENTO NO AUTORIZADO POR EL SRI
+                                    <span t-if="o.l10n_ec_sri_status"> (<span t-esc="o.l10n_ec_sri_status.upper()"/>)</span>
+                                </strong>
+                                <div>Este comprobante no tiene validez tributaria hasta ser autorizado.</div>
+                            </div>
+                        </t>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="l10n_ec_ride_box" style="table-layout: fixed;">
+            <tr>
+                <td colspan="4">
+                    <strong>Nombres: </strong>
+                    <span t-esc="o.partner_id.name"/>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <strong>Dirección: </strong>
+                    <span t-esc="o.partner_id._display_address(without_company=True)"/>
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 25%;">
+                    <t t-if="o.partner_id.l10n_latam_identification_type_id">
+                        <strong t-esc="o.partner_id.l10n_latam_identification_type_id.name"/>
+                    </t>
+                    <strong t-else="">RUC/Cédula</strong>
+                    <strong>: </strong>
+                    <span t-field="o.partner_id.vat"/>
+                </td>
+                <td style="width: 25%;">
+                    <strong>Fecha Emisión: </strong>
+                    <span t-field="o.date"/>
+                </td>
+                <td style="width: 25%;">
+                    <strong>Período Fiscal: </strong>
+                    <span t-esc="o.date.strftime('%m/%Y')"/>
+                </td>
+                <td style="width: 25%;">
+                    <strong>Teléfono: </strong>
+                    <span t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/>
+                </td>
+            </tr>
+        </table>
+    </template>
+
+    <template id="report_retention_document">
+        <t t-call="l10n_ec_sri.external_layout_ride">
+            <t t-call="l10n_ec_withholding.report_retention_header"/>
+
+            <table class="l10n_ec_ride_items" style="margin-top: 6px;">
+                <thead>
+                    <tr>
+                        <th class="text-start">Documento Sustento</th>
+                        <th class="text-start">Fecha Emisión</th>
+                        <th class="text-start">Impuesto</th>
+                        <th class="text-end">Base Imponible</th>
+                        <th class="text-end">% Retenido</th>
+                        <th class="text-end">Valor Retenido</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="o.retention_line_ids" t-as="line">
+                        <td>
+                            <span t-esc="o.invoice_id.l10n_latam_document_number or o.invoice_id.name"/>
+                        </td>
+                        <td>
+                            <span t-field="o.invoice_id.invoice_date"/>
+                        </td>
+                        <td>
+                            <span t-esc="line.tax_id.name"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-esc="'{:.2f}'.format(line.base)"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-esc="'{:.2f}'.format(line.percentage)"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-esc="'{:.2f}'.format(line.amount)"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="l10n_ec_ride_box" style="table-layout: fixed; margin-top: 6px;">
+                <tr>
+                    <td style="width: 60%; vertical-align: top;">
+                        <strong>INFORMACIÓN ADICIONAL</strong>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="border: 0; padding: 1px 0; width: 30%;">Vendedor</td>
+                                <td style="border: 0; padding: 1px 0;">
+                                    <span t-esc="o.create_uid.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 0; padding: 1px 0;">Correo</td>
+                                <td style="border: 0; padding: 1px 0;">
+                                    <span t-esc="o.partner_id.email or ''"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td style="width: 40%; vertical-align: top; padding: 0;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="border: 0; padding: 5px 6px; font-weight: bold; font-size: 13px;">TOTAL RETENIDO</td>
+                                <td class="text-end" style="border: 0; padding: 5px 6px; font-weight: bold; font-size: 13px;">
+                                    <span t-esc="'{:.2f}'.format(sum(o.retention_line_ids.mapped('amount')))"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </t>
+    </template>
+
+    <template id="report_retention">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="o.partner_id.lang"/>
+                <t t-call="l10n_ec_withholding.report_retention_document" t-lang="lang"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_retention" model="ir.actions.report">
+        <field name="name">Comprobante de Retención (RIDE)</field>
+        <field name="model">account.retention</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">l10n_ec_withholding.report_retention</field>
+        <field name="report_file">l10n_ec_withholding.report_retention</field>
+        <field name="print_report_name">'Retencion %s' % (object.name or '')</field>
+        <field name="paperformat_id" ref="l10n_ec_sri.paperformat_ride"/>
+        <field name="binding_model_id" ref="model_account_retention"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

@@ -30,13 +30,16 @@ Complete withholding management for Ecuador:
     "depends": [
         "l10n_ec_base",
         "l10n_ec_edi",
+        "l10n_ec_sri",
         "account",
+        "mail",
     ],
     "data": [
         "security/ir.model.access.csv",
         "data/l10n_ec_withholding.xml",
         "data/retention_codes_2026.xml",
         "data/retention_template.xml",
+        "report/report_retention.xml",
         "views/account_retention_views.xml",
         "wizard/retention_wizard_views.xml",
         "views/account_move_views_fixed.xml",
