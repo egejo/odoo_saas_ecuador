@@ -44,6 +44,7 @@
                     <contribuyenteEspecial t-if="company.l10n_ec_special_resolution" t-out="company.l10n_ec_special_resolution"/>
                     <obligadoContabilidad t-out="'SI' if company.l10n_ec_forced_accounting else 'NO'"/>
                     <tipoIdentificacionSujetoRetenido t-out="identifier_code"/>
+                    <tipoSujetoRetenido t-if="tipo_sujeto_retenido" t-out="tipo_sujeto_retenido"/>
                     <parteRel t-out="'SI' if partner.l10n_ec_related_party else 'NO'"/>
                     <razonSocialSujetoRetenido t-out="partner.name[:300]"/>
                     <identificacionSujetoRetenido t-out="partner.vat"/>
@@ -51,16 +52,24 @@
                 </infoCompRetencion>
                 <docsSustento>
                     <docSustento>
-                        <!-- Solo proveedores locales soportados (pagoLocExt
-                             fijo en "01"): el modelo no tiene los campos
-                             de convenio de doble tributacion/regimen
-                             fiscal que exige el SRI para proveedores del
-                             exterior (pagoLocExt "02"). -->
+                        <!-- Proveedores del exterior: pagoLocExt "02" mas
+                             tipoRegi/paisEfecPago/aplicConvDobTrib
+                             (obligatorios en ese caso), y
+                             pagExtSujRetNorLeg si no aplica convenio de
+                             doble tributacion. Estructura verificada
+                             contra Enterprise l10n_ec_edi
+                             (withhold_taxsupport_template), ver
+                             account_retention.py action_send_sri para de
+                             donde salen estos valores. -->
                         <codSustento t-out="invoice_sustento_code"/>
                         <codDocSustento t-out="invoice_doc_type_code"/>
                         <numDocSustento t-out="invoice_doc_number"/>
                         <fechaEmisionDocSustento t-out="invoice_doc_date"/>
-                        <pagoLocExt>01</pagoLocExt>
+                        <pagoLocExt t-out="pago_loc_ext"/>
+                        <tipoRegi t-if="pago_loc_ext == '02'" t-out="foreign_regime_type"/>
+                        <paisEfecPago t-if="pago_loc_ext == '02'" t-out="foreign_country_code"/>
+                        <aplicConvDobTrib t-if="pago_loc_ext == '02'" t-out="foreign_double_taxation"/>
+                        <pagExtSujRetNorLeg t-if="pago_loc_ext == '02' and foreign_double_taxation == 'NO'" t-out="foreign_subject_withhold"/>
                         <totalSinImpuestos t-out="format_monetary(retention.invoice_id.amount_untaxed)"/>
                         <importeTotal t-out="format_monetary(retention.invoice_id.amount_total)"/>
                         <impuestosDocSustento t-if="invoice_tax_breakdown">

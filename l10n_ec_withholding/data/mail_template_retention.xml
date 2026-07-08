@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Mail template en NOUPDATE para que el usuario pueda personalizarla
+         libremente desde Ajustes > Técnico > Plantillas de Correo sin que
+         una actualizacion de modulo la pise. Antes de esto,
+         action_send_by_email (account_retention.py) abria el compositor
+         de correo generico sin default_template_id: el cuerpo quedaba
+         completamente en blanco, solo con el asunto. -->
+    <data noupdate="1">
+        <record id="mail_template_retention" model="mail.template">
+            <field name="name">Retención: Envío al Proveedor</field>
+            <field name="model_id" ref="l10n_ec_withholding.model_account_retention"/>
+            <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="subject">{{ object.company_id.name }}: Comprobante de Retención {{ object.name or '' }}</field>
+            <field name="description">Enviado al proveedor al presionar "Enviar por Correo" en un comprobante de retención autorizado</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Estimados
+        <t t-out="object.partner_id.name or ''">Proveedor</t>,
+        <br/><br/>
+        Adjunto el Comprobante de Retención
+        <span style="font-weight:bold;" t-out="object.name or ''">001-001-000000001</span>
+        emitido por
+        <t t-out="object.company_id.name or ''">Adrenalina Action Sports Adrenasports Cia. LTDA.</t>
+        correspondiente a la factura
+        <t t-out="object.invoice_id.name or object.invoice_id.ref or ''">FAC-001</t>
+        con fecha
+        <t t-out="format_date(object.date) or ''">01/01/2026</t>,
+        por un valor total retenido de
+        <span style="font-weight:bold;" t-out="format_amount(sum(object.retention_line_ids.mapped('amount')), object.currency_id) or ''">$ 0.00</span>.
+        <br/><br/>
+        Se adjuntan ambos archivos del comprobante electrónico -- la
+        representación impresa (RIDE) en PDF y el XML autorizado por el
+        SRI --, tal como exige la normativa vigente para la entrega de
+        comprobantes electrónicos.
+        <br/><br/>
+        Clave de acceso:
+        <span t-out="object.l10n_ec_sri_access_key or ''">0000000000000000000000000000000000000000000000</span>
+        <br/><br/>
+        Cualquier consulta sobre este comprobante, no dude en
+        contactarnos.
+        <br/><br/>
+        Saludos cordiales,
+        <br/>
+        <t t-out="object.company_id.name or ''">Adrenalina Action Sports Adrenasports Cia. LTDA.</t>
+        <t t-if="object.company_id.phone">
+            <br/>Tel: <t t-out="object.company_id.phone"/>
+        </t>
+        <t t-if="object.company_id.email">
+            <br/>Email: <t t-out="object.company_id.email"/>
+        </t>
+        <t t-if="object.company_id.website">
+            <br/><a t-att-href="object.company_id.website" t-out="object.company_id.website"/>
+        </t>
+    </p>
+</div>
+            </field>
+            <field name="report_template_ids" eval="[]"/>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

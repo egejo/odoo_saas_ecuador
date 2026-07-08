@@ -246,6 +246,22 @@ class AccountRetention(models.Model):
             )
         return breakdown
 
+    def _get_tipo_sujeto_retenido(self, partner):
+        """
+        Tabla del SRI: Tipo de Sujeto Retenido exterior. '01' persona
+        natural, '02' sociedad -- segun el tercer digito del vat (6 o 9
+        = entidad publica/sociedad privada; el resto, persona natural).
+        Mismo criterio que usa Enterprise
+        (res.partner._get_l10n_ec_edi_supplier_identification_type_code,
+        verificado como referencia estructural). Solo tiene sentido
+        incluirlo en el XML cuando tipoIdentificacionSujetoRetenido es
+        '08' (exterior) -- ver action_send_sri.
+        """
+        vat = (partner.vat or "").strip()
+        if len(vat) < 3 or not vat[2].isdigit():
+            return False
+        return "02" if vat[2] in ("6", "9") else "01"
+
     def action_send_sri(self):
         """
         Generates XML, Signs it, and Sends to SRI.
@@ -255,21 +271,60 @@ class AccountRetention(models.Model):
                 record._generate_access_key()
 
             invoice = record.invoice_id
-            partner_type = record.partner_id._l10n_ec_get_identification_type()
+            partner = record.partner_id
+            partner_type = partner._l10n_ec_get_identification_type()
+            identifier_code = _TIPO_IDENTIFICACION_SUJETO_RETENIDO.get(
+                partner_type, "05"
+            )
+            is_foreign = identifier_code == "08"
+
+            if is_foreign:
+                # Bug real reportado en produccion: retener a un
+                # proveedor identificado como exterior (codigo '08')
+                # sin este campo, el SRI rechaza con "ERROR EN
+                # DIFERENCIAS: Si el tipo de identificacion corresponde
+                # a identificacion del exterior, se debe especificar el
+                # tipo de Sujeto Retenido." Ademas, pagoLocExt pasa a
+                # '02' y el schema real (verificado contra Enterprise
+                # l10n_ec_edi, ver retention_template.xml) exige
+                # tambien tipoRegi/paisEfecPago/aplicConvDobTrib -- sin
+                # catalogo de paises SRI en este sistema (exclusivo de
+                # Enterprise), se piden a mano en la ficha del
+                # proveedor en vez de adivinar un dato incorrecto.
+                missing = []
+                if not partner.l10n_ec_withhold_foreign_country_code:
+                    missing.append(_("Código País SRI"))
+                if not partner.l10n_ec_withhold_foreign_regime:
+                    missing.append(_("Tipo de Régimen Fiscal"))
+                if missing:
+                    raise UserError(
+                        _(
+                            "El proveedor '%(partner)s' está identificado "
+                            "como del exterior. Antes de transmitir, "
+                            "complete en su ficha de Contacto: %(fields)s."
+                        )
+                        % {
+                            "partner": partner.display_name,
+                            "fields": ", ".join(missing),
+                        }
+                    )
+
+            double_taxation = is_foreign and partner.l10n_ec_withhold_double_taxation
 
             # 1. Render XML
             values = {
                 "retention": record,
                 "company": record.company_id,
-                "partner": record.partner_id,
+                "partner": partner,
                 "environment": (
                     "1" if record.company_id.l10n_ec_sri_environment == "test" else "2"
                 ),
                 "access_key": record.l10n_ec_sri_access_key,
                 "format_monetary": lambda x: "%.2f" % x,
                 "format_float": lambda x, p: ("%." + str(p) + "f") % x,
-                "identifier_code": _TIPO_IDENTIFICACION_SUJETO_RETENIDO.get(
-                    partner_type, "05"
+                "identifier_code": identifier_code,
+                "tipo_sujeto_retenido": (
+                    self._get_tipo_sujeto_retenido(partner) if is_foreign else False
                 ),
                 "retention_tax_type_code": _RETENTION_TAX_TYPE_CODE,
                 "invoice_sustento_code": invoice.l10n_ec_sustento_code or "01",
@@ -285,6 +340,19 @@ class AccountRetention(models.Model):
                 ),
                 "invoice_tax_breakdown": record._get_invoice_tax_breakdown(invoice),
                 "invoice_payment_code": invoice.l10n_ec_sri_payment_id.code or "01",
+                "pago_loc_ext": "02" if is_foreign else "01",
+                "foreign_regime_type": (
+                    partner.l10n_ec_withhold_foreign_regime if is_foreign else False
+                ),
+                "foreign_country_code": (
+                    partner.l10n_ec_withhold_foreign_country_code
+                    if is_foreign
+                    else False
+                ),
+                "foreign_double_taxation": "SI" if double_taxation else "NO",
+                "foreign_subject_withhold": (
+                    ("NO" if double_taxation else "SI") if is_foreign else False
+                ),
             }
             xml_content = self.env["ir.qweb"]._render(
                 "l10n_ec_withholding.l10n_ec_retention_xml", values
@@ -433,6 +501,9 @@ class AccountRetention(models.Model):
             attachment_ids.append(xml_attachment.id)
 
         compose_form = self.env.ref("mail.email_compose_message_wizard_form")
+        template = self.env.ref(
+            "l10n_ec_withholding.mail_template_retention", raise_if_not_found=False
+        )
         ctx = {
             "default_model": "account.retention",
             "default_res_ids": self.ids,
@@ -441,6 +512,13 @@ class AccountRetention(models.Model):
             "default_attachment_ids": attachment_ids,
             "default_composition_mode": "comment",
         }
+        if template:
+            # Antes de esto no habia mail.template para account.retention:
+            # el compositor abria con el cuerpo del correo completamente
+            # en blanco (bug reportado en produccion). default_template_id
+            # hace que mail.compose.message renderice el cuerpo/asunto de
+            # la plantilla via su propio onchange al abrir el asistente.
+            ctx["default_template_id"] = template.id
         return {
             "name": _("Enviar por Correo"),
             "type": "ir.actions.act_window",

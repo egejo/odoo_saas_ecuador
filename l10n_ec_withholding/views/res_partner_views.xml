@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_l10n_ec_withhold_foreign" model="ir.ui.view">
+        <field name="name">res.partner.form.l10n.ec.withhold.foreign</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='country_id']" position="after">
+                <!-- Solo relevantes para retener a un proveedor
+                     genuinamente del exterior (ver account_retention.py,
+                     action_send_sri): el SRI exige estos datos en el
+                     comprobante de retencion cuando
+                     tipoIdentificacionSujetoRetenido es '08'. -->
+                <field name="l10n_ec_withhold_foreign_country_code"
+                       invisible="country_id == %(base.ec)d or not country_id"
+                       placeholder="Ej: 249 (código Tabla SRI)"/>
+                <field name="l10n_ec_withhold_foreign_regime"
+                       invisible="country_id == %(base.ec)d or not country_id"/>
+                <field name="l10n_ec_withhold_double_taxation"
+                       invisible="country_id == %(base.ec)d or not country_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
