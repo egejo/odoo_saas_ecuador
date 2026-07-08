@@ -7,10 +7,20 @@
         <field name="arch" type="xml">
             <!-- Header Buttons -->
             <xpath expr="//header" position="inside">
+                 <!-- Solo documentos de VENTA se transmiten al SRI (out_invoice/
+                      out_refund, incluida la nota de debito que Odoo crea como
+                      out_invoice con debit_origin_id). Un vendor bill
+                      (in_invoice/in_refund) es un comprobante que el proveedor
+                      YA emitio y transmitio al SRI -- Odoo solo lo recibe, nunca
+                      lo genera ni lo envia. Sin este filtro el boton aparecia
+                      tambien en vendor bills y, al presionarlo, generate_access_key
+                      reventaba con un ValueError criptico porque esos moves nunca
+                      tienen l10n_latam_document_type_id asignado igual que una
+                      factura de venta (bug reportado en produccion). -->
                  <button name="action_send_sri" string="Send to SRI" type="object" class="oe_highlight"
-                         invisible="state != 'posted' or l10n_ec_sri_status in ('sent', 'authorized')"/>
+                         invisible="state != 'posted' or l10n_ec_sri_status in ('sent', 'authorized') or move_type not in ('out_invoice', 'out_refund')"/>
                  <button name="action_check_sri" string="Check SRI Status" type="object"
-                         invisible="l10n_ec_sri_status != 'sent'"/>
+                         invisible="l10n_ec_sri_status != 'sent' or move_type not in ('out_invoice', 'out_refund')"/>
             </xpath>
 
             <!-- Forma de pago (SRI) e Informacion Adicional del RIDE: antes

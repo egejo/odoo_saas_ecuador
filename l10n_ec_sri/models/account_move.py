@@ -34,6 +34,23 @@ class AccountMove(models.Model):
         Orchestrator: Key Gen -> XML Gen -> Sign -> Send
         """
         for move in self:
+            if move.move_type not in ("out_invoice", "out_refund"):
+                # Vendor bills/refunds son comprobantes RECIBIDOS: el
+                # proveedor ya los transmitio al SRI, Odoo nunca los genera
+                # ni los envia. Sin este guard, generate_access_key
+                # reventaba con un ValueError criptico ("invalid literal
+                # for int() with base 10: 'e'") porque un vendor bill nunca
+                # tiene l10n_latam_document_type_id asignado igual que una
+                # factura de venta (bug reportado en produccion).
+                raise UserError(
+                    _(
+                        "'%s' es un comprobante recibido del proveedor, no se "
+                        "transmite al SRI. Este boton solo aplica a "
+                        "documentos de venta (factura, nota de credito, "
+                        "nota de debito)."
+                    )
+                    % move.name
+                )
             if move.l10n_ec_sri_status in ["authorized", "sent"]:
                 continue
 
