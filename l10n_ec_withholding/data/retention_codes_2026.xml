@@ -129,22 +129,47 @@
         </record>
 
         <!-- ========================================================= -->
-        # TABLA 21: RETENCIONES IVA (2026)
+        # TABLA 20: RETENCION DEL IVA (2026)
+        # Nota 2026-07-08: la seccion de renta de mas arriba llevaba el
+        # encabezado "TABLA 19" desde el dia 1 del fork, pero segun la
+        # Ficha Tecnica oficial del SRI la Tabla 19 real es solo el
+        # selector de impuesto (RENTA=1/IVA=2/ISD=6, ver
+        # _RETENTION_TAX_TYPE_CODE en account_retention.py) -- el
+        # catalogo de codigos por concepto de renta (303, 304, 312, etc.)
+        # vive en el Catalogo del Anexo Transaccional Simplificado (ATS),
+        # un documento distinto, sin numero de "Tabla" propio en la Ficha
+        # Tecnica. Esta seccion de IVA si es la Tabla 20 real. No se
+        # renombro el encabezado de renta para minimizar el diff de una
+        # correccion puramente cosmetica (los codigos/porcentajes ya
+        # auditados siguen siendo correctos, ver checkpoint 2026-07-08 en
+        # CLAUDE.md).
         <!-- ========================================================= -->
         <!-- 2026-07-08: auditado contra la tabla oficial de porcentajes de
              retencion de IVA vigente. El "codigoRetencion" de cada linea
              IVA en el XML (ver retention_template.xml) no es un catalogo
              de conceptos como en Tabla 19 (renta), sino un codigo fijo
-             por PORCENTAJE: 0%->7, 10%->9, 20%->10, 30%->1, 50%->11,
-             70%->2, 100%->3. Verificado contra Enterprise l10n_ec_edi
+             por PORCENTAJE: 10%->9, 20%->10, 30%->1, 50%->11, 70%->2,
+             100%->3. Primero verificado contra Enterprise l10n_ec_edi
              (account_move.py, diccionario L10N_EC_WITHHOLD_VAT_CODES,
              usado como referencia estructural). Bug real encontrado: el
              registro "No Procede Retencion IVA (0%)" tenia el codigo 9,
-             que en realidad corresponde a 10%, no a 0% (el codigo
-             correcto para 0% es 7) - nunca se uso en produccion
-             (account.retention.line count = 0), corregido aqui. Se
-             completa ademas el resto de la tabla (10%, 20%, 50%), que no
-             tenia ningun registro en absoluto antes. -->
+             que en realidad corresponde a 10%. Se completa ademas el
+             resto de la tabla (10%, 20%, 50%), que no tenia ningun
+             registro en absoluto antes.
+
+             2026-07-08, correccion posterior el mismo dia: localizada la
+             Ficha Tecnica oficial del SRI (Manual de usuario, catalogo y
+             especificaciones tecnicas, v2.26, actualizada marzo-2024),
+             que trae la Tabla 20 completa y distingue DOS codigos para
+             0% que Enterprise colapsa en uno solo: codigo 7 = "Retencion
+             en cero" (0.00%, un caso puntual segun la Disposicion
+             Transitoria Unica de la Resolucion NAC-DGERCGC15-00000284) y
+             codigo 8 = "No procede retencion" (0.00%, el caso general).
+             El registro de este fork, semanticamente "No Procede
+             Retencion", se corrige de codigo 7 a codigo 8 (el que
+             realmente le corresponde por nombre); se agrega ademas un
+             registro nuevo para el codigo 7 propiamente dicho. Ninguno
+             de los dos tenia uso en produccion antes de esta correccion. -->
 
         <record id="tax_ret_iva_1" model="l10n_ec.withholding.tax">
             <field name="code">1</field>
@@ -168,8 +193,18 @@
         </record>
 
         <record id="tax_ret_iva_9" model="l10n_ec.withholding.tax">
-            <field name="code">7</field>
+            <field name="code">8</field>
             <field name="name">No Procede Retención IVA (0%)</field>
+            <field name="type">iva</field>
+            <field name="percentage">0.0</field>
+        </record>
+
+        <!-- Caso puntual: Disposición Transitoria Única de la Resolución
+             NAC-DGERCGC15-00000284. No confundir con el código 8 de
+             arriba (caso general de "no procede retención"). -->
+        <record id="tax_ret_iva_7" model="l10n_ec.withholding.tax">
+            <field name="code">7</field>
+            <field name="name">Retención en Cero IVA (0%)</field>
             <field name="type">iva</field>
             <field name="percentage">0.0</field>
         </record>
@@ -193,6 +228,37 @@
             <field name="name">Retención IVA 50%</field>
             <field name="type">iva</field>
             <field name="percentage">50.0</field>
+        </record>
+
+        <!-- ========================================================= -->
+        # ISD: RETENCION IMPUESTO A LA SALIDA DE DIVISAS (2026)
+        <!-- ========================================================= -->
+        <!-- 2026-07-08: auditado (tipo "isd" existia en el modelo desde
+             el dia 1 del fork -ver l10n_ec_withholding_tax.py, wizard,
+             y _RETENTION_TAX_TYPE_CODE en account_retention.py, codigo
+             de cabecera Tabla 19 = 6- pero sin NINGUN registro cargado:
+             el desplegable de codigo de retencion quedaba vacio para
+             cualquier retencion ISD, imposible de crear en la practica.
+             A diferencia de renta/IVA, ISD no tiene una tabla de codigos
+             por concepto ni por porcentaje: un unico codigo fijo, 4580,
+             para cualquier tarifa (confirmado en la Ficha Tecnica
+             oficial del SRI, v2.26, marzo-2024: "Codigo Impuesto ISD =
+             4580" en el campo adicional de retenciones). La tarifa SI
+             cambia por decreto ejecutivo (5% hasta 2021, bajando
+             gradualmente hasta 3.5% en 2023-2024 segun la misma ficha
+             tecnica); la vigente para 2026 es 5% de nuevo, fijada por el
+             Decreto Ejecutivo No. 272 (30-dic-2025, vigente desde
+             01-ene-2026); ese decreto tambien fija tarifas reducidas
+             (0%/2.5%) para subpartidas arancelarias especificas de
+             sectores farmaceutico/productivo en IMPORTACIONES, un caso
+             mas estrecho que no se modela aqui (no hay evidencia de que
+             Adrenasports importe bajo esas subpartidas; se puede agregar
+             despues si hace falta). -->
+        <record id="tax_ret_isd_4580" model="l10n_ec.withholding.tax">
+            <field name="code">4580</field>
+            <field name="name">Impuesto a la Salida de Divisas (5%)</field>
+            <field name="type">isd</field>
+            <field name="percentage">5.0</field>
         </record>
 
     </data>
