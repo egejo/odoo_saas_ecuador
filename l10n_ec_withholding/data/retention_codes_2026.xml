@@ -6,16 +6,35 @@
         <!-- ========================================================= -->
 
         <!-- RIMPE -->
+        <!-- 2026-07-08: auditado contra el catalogo oficial vigente del SRI
+             ("Retenciones Marzo 2026", columna "Codigo del Anexo", el
+             mismo codigo que usa codigoRetencion en el XML, ver
+             retention_template.xml). tax_ret_ir_332b y tax_ret_ir_343a
+             tenian el codigo SRI equivocado desde el dia 1 de este fork,
+             independientemente de la Resolucion NAC-DGERCGC26-00000009: el
+             codigo real de "RIMPE Negocio Popular" es 332 (no 332B, ese
+             codigo es "Compra de bienes inmuebles", 0% tambien pero un
+             concepto distinto), y el de "RIMPE Emprendedor" es 343 (no
+             343A, ese codigo es "Energia electrica"). Antes de la
+             resolucion (tabla julio-2025) 343 cubria Energia Electrica Y
+             RIMPE Emprendedores juntos al 1%; la resolucion los separo en
+             dos codigos con tarifas distintas (343 sigue en 1% solo para
+             RIMPE Emprendedor, 343A pasa a su propio codigo al 2% solo
+             para Energia Electrica). Se corrige aqui el codigo/nombre de
+             estos dos registros (nunca se uso ninguno de los dos en
+             produccion, verificado por account.retention.line count = 0
+             antes del fix) y se agrega 343A como su propio registro mas
+             abajo. -->
         <record id="tax_ret_ir_332b" model="l10n_ec.withholding.tax">
-            <field name="code">332B</field>
-            <field name="name">RIMPE Negocio Popular (0%)</field>
+            <field name="code">332</field>
+            <field name="name">RIMPE Negocio Popular / Otras Compras No Sujetas a Retención (0%)</field>
             <field name="type">renta</field>
             <field name="percentage">0.0</field>
         </record>
 
         <record id="tax_ret_ir_343a" model="l10n_ec.withholding.tax">
-            <field name="code">343A</field>
-            <field name="name">RIMPE Emprendedor (1%)</field>
+            <field name="code">343</field>
+            <field name="name">RIMPE Emprendedor / Otras Retenciones 1% (1%)</field>
             <field name="type">renta</field>
             <field name="percentage">1.0</field>
         </record>
@@ -26,12 +45,7 @@
              retencion de renta). Encontrado como bug real: el propio
              validador del SRI rechazo un comprobante de retencion de
              prueba end-to-end con "La tarifa (1.75) no es igual al
-             parametrizado (2.0) para el codigo de porcentaje 312". Esa
-             misma resolucion cambio otras tarifas (energia electrica,
-             tarjetas de credito/debito, seguros, construccion,
-             arrendamiento mercantil, etc.): valdria la pena auditar el
-             resto de este catalogo contra esa resolucion, no solo este
-             codigo. -->
+             parametrizado (2.0) para el codigo de porcentaje 312". -->
         <record id="tax_ret_ir_312" model="l10n_ec.withholding.tax">
             <field name="code">312</field>
             <field name="name">Transferencia Bienes Muebles (2%)</field>
@@ -39,11 +53,15 @@
             <field name="percentage">2.0</field>
         </record>
 
+        <!-- 2026-07-08: 2.75% era la tarifa vigente hasta julio-2025 (tabla
+             oficial del SRI de esa fecha); la Resolucion
+             NAC-DGERCGC26-00000009 la subio a 3% desde 01-mar-2026. Sin
+             uso en produccion (0 lineas). -->
         <record id="tax_ret_ir_3440" model="l10n_ec.withholding.tax">
             <field name="code">3440</field>
-            <field name="name">Otras Retenciones (2.75%)</field>
+            <field name="name">Otras Retenciones (3%)</field>
             <field name="type">renta</field>
-            <field name="percentage">2.75</field>
+            <field name="percentage">3.0</field>
         </record>
 
         <!-- PROFESSIONAL SERVICES -->
@@ -54,11 +72,60 @@
             <field name="percentage">10.0</field>
         </record>
 
+        <!-- 2026-07-08: 8% era la tarifa vigente hasta julio-2025 solo para
+             los sub-codigos 304C/304D (deportistas/artistas); la
+             Resolucion NAC-DGERCGC26-00000009 unifico TODA la familia 304
+             (incluido el codigo generico 304 que usa este registro) a
+             10% desde 01-mar-2026. Sin uso en produccion (0 lineas). -->
         <record id="tax_ret_ir_304" model="l10n_ec.withholding.tax">
             <field name="code">304</field>
-            <field name="name">Servicios Predomina Intelecto (8%)</field>
+            <field name="name">Servicios Predomina Intelecto (10%)</field>
             <field name="type">renta</field>
-            <field name="percentage">8.0</field>
+            <field name="percentage">10.0</field>
+        </record>
+
+        <!-- 2026-07-08: 4 codigos agregados al auditar el catalogo contra
+             NAC-DGERCGC26-00000009, cuyos conceptos no tenian ningun
+             registro (ni correcto ni incorrecto) en este catalogo antes.
+             322 y 343B efectivamente subieron de tarifa por esta
+             resolucion (1%->2% y 1.75%->2%); 319 y 344A NO cambiaron de
+             tarifa en esta resolucion (ya estaban en 2% desde antes),
+             se agregan igual porque son conceptos de uso comun (alquiler
+             de local, pagos con tarjeta) que antes no eran seleccionables
+             en absoluto. -->
+        <record id="tax_ret_ir_343a_energia" model="l10n_ec.withholding.tax">
+            <field name="code">343A</field>
+            <field name="name">Energía Eléctrica (2%)</field>
+            <field name="type">renta</field>
+            <field name="percentage">2.0</field>
+        </record>
+
+        <record id="tax_ret_ir_322" model="l10n_ec.withholding.tax">
+            <field name="code">322</field>
+            <field name="name">Seguros y Reaseguros (2%)</field>
+            <field name="type">renta</field>
+            <field name="percentage">2.0</field>
+        </record>
+
+        <record id="tax_ret_ir_343b" model="l10n_ec.withholding.tax">
+            <field name="code">343B</field>
+            <field name="name">Construcción de Obra Material Inmueble (2%)</field>
+            <field name="type">renta</field>
+            <field name="percentage">2.0</field>
+        </record>
+
+        <record id="tax_ret_ir_319" model="l10n_ec.withholding.tax">
+            <field name="code">319</field>
+            <field name="name">Cuotas de Arrendamiento Mercantil (2%)</field>
+            <field name="type">renta</field>
+            <field name="percentage">2.0</field>
+        </record>
+
+        <record id="tax_ret_ir_344a" model="l10n_ec.withholding.tax">
+            <field name="code">344A</field>
+            <field name="name">Pago Local Tarjeta de Crédito/Débito (2%)</field>
+            <field name="type">renta</field>
+            <field name="percentage">2.0</field>
         </record>
 
         <!-- ========================================================= -->
