@@ -6,7 +6,7 @@
 
 {
     "name": "Ecuador - Withholding Management (Retenciones)",
-    "version": "18.0.1.1.0",
+    "version": "18.0.1.2.1",
     "category": "Accounting/Localizations",
     "summary": "Vendor Bill Withholding, SRI Authorization, 5-Day Rule",
     "description": """
@@ -16,8 +16,8 @@ Ecuador Withholding Module (Retenciones)
 Complete withholding management for Ecuador:
 
 * Retention document (Comprobante de Retención)
-* Income Tax withholdings (IR codes 303, 304, 312, etc.)
-* IVA withholdings (codes 721, 723, 725, 727, 729, 731)
+* Income Tax withholdings (IR codes 303, 304, 312, etc. — SRI Tabla 19)
+* IVA withholdings (codes 1, 2, 3, 7, 9, 10, 11 — SRI Tabla 21, one per retention percentage)
 * 5-day rule enforcement (must issue within 5 days of invoice)
 * SRI electronic transmission
 * XML generation and XAdES signing

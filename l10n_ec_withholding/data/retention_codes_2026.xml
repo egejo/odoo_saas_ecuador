@@ -131,6 +131,20 @@
         <!-- ========================================================= -->
         # TABLA 21: RETENCIONES IVA (2026)
         <!-- ========================================================= -->
+        <!-- 2026-07-08: auditado contra la tabla oficial de porcentajes de
+             retencion de IVA vigente. El "codigoRetencion" de cada linea
+             IVA en el XML (ver retention_template.xml) no es un catalogo
+             de conceptos como en Tabla 19 (renta), sino un codigo fijo
+             por PORCENTAJE: 0%->7, 10%->9, 20%->10, 30%->1, 50%->11,
+             70%->2, 100%->3. Verificado contra Enterprise l10n_ec_edi
+             (account_move.py, diccionario L10N_EC_WITHHOLD_VAT_CODES,
+             usado como referencia estructural). Bug real encontrado: el
+             registro "No Procede Retencion IVA (0%)" tenia el codigo 9,
+             que en realidad corresponde a 10%, no a 0% (el codigo
+             correcto para 0% es 7) - nunca se uso en produccion
+             (account.retention.line count = 0), corregido aqui. Se
+             completa ademas el resto de la tabla (10%, 20%, 50%), que no
+             tenia ningun registro en absoluto antes. -->
 
         <record id="tax_ret_iva_1" model="l10n_ec.withholding.tax">
             <field name="code">1</field>
@@ -148,16 +162,37 @@
 
         <record id="tax_ret_iva_3" model="l10n_ec.withholding.tax">
             <field name="code">3</field>
-            <field name="name">Retención IVA 100% (Profesionales/Arriendo)</field>
+            <field name="name">Retención IVA 100% (Profesionales/Arriendo/Liquidación de Compra)</field>
             <field name="type">iva</field>
             <field name="percentage">100.0</field>
         </record>
 
         <record id="tax_ret_iva_9" model="l10n_ec.withholding.tax">
-            <field name="code">9</field>
+            <field name="code">7</field>
             <field name="name">No Procede Retención IVA (0%)</field>
             <field name="type">iva</field>
             <field name="percentage">0.0</field>
+        </record>
+
+        <record id="tax_ret_iva_9b" model="l10n_ec.withholding.tax">
+            <field name="code">9</field>
+            <field name="name">Retención IVA 10%</field>
+            <field name="type">iva</field>
+            <field name="percentage">10.0</field>
+        </record>
+
+        <record id="tax_ret_iva_10" model="l10n_ec.withholding.tax">
+            <field name="code">10</field>
+            <field name="name">Retención IVA 20%</field>
+            <field name="type">iva</field>
+            <field name="percentage">20.0</field>
+        </record>
+
+        <record id="tax_ret_iva_11" model="l10n_ec.withholding.tax">
+            <field name="code">11</field>
+            <field name="name">Retención IVA 50%</field>
+            <field name="type">iva</field>
+            <field name="percentage">50.0</field>
         </record>
 
     </data>
