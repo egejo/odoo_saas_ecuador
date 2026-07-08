@@ -11,7 +11,7 @@
                       out_refund, incluida la nota de debito que Odoo crea como
                       out_invoice con debit_origin_id). Un vendor bill
                       (in_invoice/in_refund) es un comprobante que el proveedor
-                      YA emitio y transmitio al SRI -- Odoo solo lo recibe, nunca
+                      YA emitio y transmitio al SRI: Odoo solo lo recibe, nunca
                       lo genera ni lo envia. Sin este filtro el boton aparecia
                       tambien en vendor bills y, al presionarlo, generate_access_key
                       reventaba con un ValueError criptico porque esos moves nunca
