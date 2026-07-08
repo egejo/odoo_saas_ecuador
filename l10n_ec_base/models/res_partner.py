@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class ResPartner(models.Model):
@@ -15,6 +19,69 @@ class ResPartner(models.Model):
         string="Identifier Type",
         help="Type of Ecuadorian Identification",
     )
+
+    @api.onchange("l10n_latam_identification_type_id")
+    def _onchange_l10n_latam_identification_type_id_ec(self):
+        """
+        Evita pedir el tipo de identificacion dos veces en el mismo
+        formulario. l10n_latam_identification_type_id (campo nativo) es
+        la fuente real que usan TODAS las rutas activas de EDI/
+        retenciones/ATS (via _l10n_ec_get_identification_type());
+        l10n_ec_identifier_type (campo propio de este fork, vocabulario
+        reducido ruc/cedula/pasaporte, usado solo por el reporte ATS y
+        por el exportador EDI legado) se mantenia totalmente
+        desconectado del nativo -- el usuario tenia que fijarlo aparte a
+        mano, y si no coincidian el XML transmitido podia terminar
+        clasificando al contacto distinto de como se veia en pantalla.
+        Se sincroniza automaticamente aqui en vez de pedirlo dos veces.
+        """
+        if self.country_id and self.country_id.code != "EC":
+            return
+        mapping = {
+            "cedula": "cedula",
+            "ruc": "ruc",
+            "ec_passport": "pasaporte",
+            "passport": "pasaporte",
+            "foreign": "pasaporte",
+        }
+        ec_type = self._l10n_ec_get_identification_type()
+        if ec_type in mapping:
+            self.l10n_ec_identifier_type = mapping[ec_type]
+
+    def _l10n_ec_get_identification_type(self):
+        # EXTENDS l10n_ec
+        """
+        Bug real visto en produccion (STARLINK ECUADOR STAREC C.LTDA.,
+        RUC 1793200738001, partner id 14 en Adrenasports): el metodo
+        base de l10n_ec cae a 'foreign' apenas
+        l10n_latam_identification_type_id no es exactamente uno de los
+        pocos xmlids que reconoce (RUC/Cedula/Pasaporte EC, o Pasaporte/
+        ID Extranjera/VAT genericos de l10n_latam_base) -- un contacto
+        ecuatoriano real con un tipo de identificacion generico sin
+        country_id propio (ej. "NIF", el default que Odoo asigna a
+        muchas compañias si nadie lo cambia a mano) termina clasificado
+        como 'foreign' aunque el partner.country_id sea Ecuador y su vat
+        tenga exactamente la forma de un RUC real. Esa clasificacion
+        incorrecta se propaga al XML de retenciones
+        (tipoIdentificacionSujetoRetenido=08, "exterior"), que el SRI
+        rechaza con "ERROR EN DIFERENCIAS" porque exige tambien
+        tipoSujetoRetenido (campo que solo aplica -- y que este fork no
+        implementa todavia -- para proveedores realmente extranjeros).
+        Antes de aceptar 'foreign', si el partner es de Ecuador y su vat
+        tiene la longitud de un RUC/cedula real, se reclasifica por
+        forma en vez de asumir "exterior" a ciegas.
+        """
+        result = super()._l10n_ec_get_identification_type()
+        if result != "foreign" or self.country_id.code != "EC":
+            return result
+        vat = (self.vat or "").strip()
+        if not vat.isdigit():
+            return result
+        if len(vat) == 13:
+            return "ruc"
+        if len(vat) == 10:
+            return "cedula"
+        return result
 
     l10n_ec_taxpayer_type = fields.Selection(
         [
@@ -244,11 +311,25 @@ class ResPartner(models.Model):
                 pass
 
             if not self._validate_ec_document(vat):
-                raise ValidationError(
-                    _(
-                        "Invalid Ecuadorian Identity Number (%s): Check Digit Verification Failed."
-                    )
-                    % vat
+                # Bug real reportado en produccion: un RUC de empresa real
+                # (1793200738001, STARLINK ECUADOR STAREC C.LTDA.) no supera
+                # el modulo 11 "de libro" y esto bloqueaba crear/editar el
+                # contacto. El propio modulo core l10n_ec (ver
+                # l10n_ec/models/res_partner.py, campo
+                # l10n_ec_vat_validation) NO bloquea por esta razon --
+                # solo advierte, con el comentario explicito de que "SRI ha
+                # declarado que esta validacion ya no es obligatoria para
+                # algunos numeros de RUC/cedula". Se alinea este modulo al
+                # mismo criterio: el digito verificador ya no bloquea el
+                # guardado, solo queda registrado en el log. La validacion
+                # de longitud/formato de arriba (que si detecta errores de
+                # digitacion inequivocos) se mantiene.
+                _logger.info(
+                    "Identificación EC '%s' (%s) no supera el dígito "
+                    "verificador estándar (módulo 10/11) -- no se bloquea "
+                    "el guardado, el SRI no siempre lo exige.",
+                    vat,
+                    partner.l10n_ec_identifier_type,
                 )
 
     def _validate_ec_document(self, document_number):

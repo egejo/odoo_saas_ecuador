@@ -62,17 +62,24 @@ class TestEcIdentity(common.TransactionCase):
                 }
             )
 
-    def test_invalid_mod10(self):
-        """Test invalid Modulo 10 Check Digit"""
-        with self.assertRaises(ValidationError):
-            self.env["res.partner"].create(
-                {
-                    "name": "Invalid Check Digit",
-                    "country_id": self.ec.id,
-                    "l10n_ec_identifier_type": "cedula",
-                    "vat": "1710034069",  # Last digit modified
-                }
-            )
+    def test_invalid_mod10_does_not_block_save(self):
+        """
+        Un dígito verificador que no cuadra ya NO bloquea el guardado
+        (bug real: un RUC de empresa real, 1793200738001, fallaba el
+        módulo 11 "de libro" y bloqueaba crear/editar el contacto). Se
+        alinea con el criterio del propio módulo core l10n_ec
+        (l10n_ec_vat_validation), que solo advierte, nunca bloquea, con
+        el mismo argumento: el SRI no siempre exige esta validación.
+        """
+        partner = self.env["res.partner"].create(
+            {
+                "name": "Invalid Check Digit",
+                "country_id": self.ec.id,
+                "l10n_ec_identifier_type": "cedula",
+                "vat": "1710034069",  # Last digit modified
+            }
+        )
+        self.assertTrue(partner)
 
     def test_pasaporte(self):
         """Pasaporte accepts alphanumeric > 5 chars"""
