@@ -278,22 +278,36 @@ class AccountRetention(models.Model):
             )
             is_foreign = identifier_code == "08"
 
+            # l10n_ec_base trae el catalogo de paises del SRI
+            # (res.country.l10n_ec_code_ats) -- se usa como fuente
+            # principal del codigo de pais, y el campo manual del
+            # proveedor (l10n_ec_withhold_foreign_country_code) queda
+            # como override solo para el caso de un pais fuera del
+            # catalogo o un codigo que el SRI cambio y el catalogo del
+            # modulo todavia no refleja.
+            foreign_country_code = (
+                partner.l10n_ec_withhold_foreign_country_code
+                or partner.country_id.l10n_ec_code_ats
+            )
+
             if is_foreign:
                 # Bug real reportado en produccion: retener a un
                 # proveedor identificado como exterior (codigo '08')
-                # sin este campo, el SRI rechaza con "ERROR EN
+                # sin este dato, el SRI rechaza con "ERROR EN
                 # DIFERENCIAS: Si el tipo de identificacion corresponde
                 # a identificacion del exterior, se debe especificar el
                 # tipo de Sujeto Retenido." Ademas, pagoLocExt pasa a
                 # '02' y el schema real (verificado contra Enterprise
                 # l10n_ec_edi, ver retention_template.xml) exige
-                # tambien tipoRegi/paisEfecPago/aplicConvDobTrib -- sin
-                # catalogo de paises SRI en este sistema (exclusivo de
-                # Enterprise), se piden a mano en la ficha del
-                # proveedor en vez de adivinar un dato incorrecto.
+                # tambien tipoRegi/paisEfecPago/aplicConvDobTrib.
                 missing = []
-                if not partner.l10n_ec_withhold_foreign_country_code:
-                    missing.append(_("Código País SRI"))
+                if not foreign_country_code:
+                    missing.append(
+                        _(
+                            "Código País SRI (el país del contacto no está "
+                            "en el catálogo SRI; complételo a mano)"
+                        )
+                    )
                 if not partner.l10n_ec_withhold_foreign_regime:
                     missing.append(_("Tipo de Régimen Fiscal"))
                 if missing:
@@ -345,9 +359,7 @@ class AccountRetention(models.Model):
                     partner.l10n_ec_withhold_foreign_regime if is_foreign else False
                 ),
                 "foreign_country_code": (
-                    partner.l10n_ec_withhold_foreign_country_code
-                    if is_foreign
-                    else False
+                    foreign_country_code if is_foreign else False
                 ),
                 "foreign_double_taxation": "SI" if double_taxation else "NO",
                 "foreign_subject_withhold": (

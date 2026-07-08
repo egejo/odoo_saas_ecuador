@@ -13,7 +13,7 @@
                      tipoIdentificacionSujetoRetenido es '08'. -->
                 <field name="l10n_ec_withhold_foreign_country_code"
                        invisible="country_id == %(base.ec)d or not country_id"
-                       placeholder="Ej: 249 (código Tabla SRI)"/>
+                       placeholder="Autocompletado desde el catálogo de países SRI"/>
                 <field name="l10n_ec_withhold_foreign_regime"
                        invisible="country_id == %(base.ec)d or not country_id"/>
                 <field name="l10n_ec_withhold_double_taxation"
