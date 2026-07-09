@@ -121,12 +121,14 @@ class AccountRetention(models.Model):
         """
         from datetime import date
 
+        from odoo.addons.l10n_ec_edi.models.access_key import AccessKey
+
         self.ensure_one()
 
         if not self.date:
             return True
 
-        today = date.today()
+        today = AccessKey.today_ec()
         emission_date = self.date
 
         # Calcular fecha límite: día 7 del mes siguiente

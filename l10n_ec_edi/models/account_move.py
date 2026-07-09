@@ -139,7 +139,7 @@ class AccountMove(models.Model):
             if move.state == "cancel" and move.l10n_ec_sri_status == "authorized":
                 if move.invoice_date:
                     emission_date = move.invoice_date
-                    today = date.today()
+                    today = AccessKey.today_ec()
 
                     # Calculate deadline: day 7 of next month
                     if emission_date.month == 12:
@@ -190,7 +190,7 @@ class AccountMove(models.Model):
             return True
 
         annulment_day = self._get_annulment_day()
-        today = date.today()
+        today = AccessKey.today_ec()
         emission = self.invoice_date
 
         # Calculate deadline

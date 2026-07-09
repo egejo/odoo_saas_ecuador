@@ -7,12 +7,33 @@ Usage: from odoo.addons.l10n_ec_edi.models.access_key import AccessKey
 import random
 from datetime import datetime
 
+import pytz
+
+# Ecuador continental no usa horario de verano (UTC-5 todo el ano), pero
+# se resuelve via pytz/tzdata en vez de un offset fijo por si el propio
+# fuso cambiara. El contenedor Docker corre en UTC: cerca de medianoche
+# UTC (~19:00-24:00 hora Ecuador), `datetime.now()`/`date.today()` sin
+# zona horaria ya devuelven el dia siguiente segun UTC mientras en
+# Ecuador todavia es el dia anterior. El SRI compara la fecha de emision
+# contra su propio reloj (hora Ecuador) y rechaza el comprobante con el
+# error 65 "FECHA EMISION EXTEMPORANEA" si queda fechado un dia adelante.
+_ECUADOR_TZ = pytz.timezone("America/Guayaquil")
+
 
 class AccessKey:
     """
     Helper class to generate SRI Access Key (49 digits).
     Structure: Date(8) + DocType(2) + RUC(13) + Env(1) + Estab(3) + PtoEmi(3) + Seq(9) + NumCode(8) + Emission(1) + Check(1)
     """
+
+    @staticmethod
+    def today_ec():
+        """
+        Fecha de "hoy" segun el calendario de Ecuador, independiente de
+        la zona horaria del reloj del servidor/contenedor -- ver
+        comentario junto a `_ECUADOR_TZ` arriba.
+        """
+        return datetime.now(pytz.utc).astimezone(_ECUADOR_TZ).date()
 
     @staticmethod
     def compute_check_digit(key_48):
@@ -58,7 +79,7 @@ class AccessKey:
         Generates the 49-digit Access Key.
         """
         if not invoice_date:
-            invoice_date = datetime.now().date()
+            invoice_date = cls.today_ec()
 
         date_str = invoice_date.strftime("%d%m%Y")  # 8
         doc_type = str(doc_type).zfill(2)  # 2
