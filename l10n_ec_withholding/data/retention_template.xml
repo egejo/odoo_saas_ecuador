@@ -33,6 +33,7 @@
                     <secuencial t-out="access_key[30:39]"/>
                     <dirMatriz t-out="company.street[:300]"/>
                     <agenteRetencion t-if="company.l10n_ec_withhold_agent" t-out="company.l10n_ec_withhold_resolution"/>
+                    <contribuyenteRimpe t-if="company.l10n_ec_regime == 'rimpe'">CONTRIBUYENTE RÉGIMEN RIMPE</contribuyenteRimpe>
                 </infoTributaria>
                 <infoCompRetencion>
                     <fechaEmision t-out="retention.date.strftime('%d/%m/%Y')"/>

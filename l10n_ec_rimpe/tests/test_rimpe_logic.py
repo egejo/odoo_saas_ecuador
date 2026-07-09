@@ -30,10 +30,10 @@ class TestRimpeLogic(TransactionCase):
         move = self.Move.new({})
 
         code_pop = move._get_rimpe_retention_code(self.partner_popular)
-        self.assertEqual(code_pop, "332B", "Popular Business must calculate 332B (0%)")
+        self.assertEqual(code_pop, "332", "Popular Business must calculate 332 (0%)")
 
         code_ent = move._get_rimpe_retention_code(self.partner_entrepreneur)
-        self.assertEqual(code_ent, "343A", "Entrepreneur must calculate 343A (1%)")
+        self.assertEqual(code_ent, "343", "Entrepreneur must calculate 343 (1%)")
 
         code_none = move._get_rimpe_retention_code(self.partner_none)
         self.assertIsNone(code_none, "General Regime should return None")

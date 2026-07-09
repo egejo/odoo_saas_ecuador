@@ -8,9 +8,9 @@
         Implements LORTI Art. 97 (RIMPE).
         Supports:
         - Partner Classification (Popular vs Entrepreneur)
-        - Document Type 02 (Notas de Venta) logic
-        - Special Retention Codes (332B, 343A)
-        - Retention Restrictions (0% for Popular)
+        - Special Retention Codes (332 Negocio Popular 0%, 343 Emprendedor 1%) suggested automatically when creating a withholding against a RIMPE-classified vendor
+
+        NOTE: "Notas de Venta" (SRI document type 02) is a pre-printed paper document, not part of the electronic invoicing schema, and was dropped from this description (it was listed before but never implementable within this EDI scope).
     """,
     "author": "Somatech Ecuador",
     "depends": ["account", "l10n_ec_base", "l10n_ec_withholding"],

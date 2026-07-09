@@ -19,6 +19,9 @@
                             <field name="l10n_ec_special_resolution"/>
                             <field name="l10n_ec_forced_accounting"/>
                         </group>
+                        <group string="Régimen Tributario">
+                            <field name="l10n_ec_regime"/>
+                        </group>
                     </group>
                     <group string="SRI Web Service URLs">
                         <field name="l10n_ec_sri_reception_url"/>

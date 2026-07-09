@@ -14,6 +14,7 @@
         <ptoEmi>001</ptoEmi>
         <secuencial><t t-esc="record.name.split('-')[-1]"/></secuencial>
         <dirMatriz><t t-esc="record.company_id.street"/></dirMatriz>
+        <contribuyenteRimpe t-if="record.company_id.l10n_ec_regime == 'rimpe'">CONTRIBUYENTE RÉGIMEN RIMPE</contribuyenteRimpe>
     </infoTributaria>
     <infoFactura>
         <fechaEmision><t t-esc="record.invoice_date.strftime('%d/%m/%Y')"/></fechaEmision>
@@ -82,6 +83,7 @@
         <ptoEmi>001</ptoEmi>
         <secuencial><t t-esc="record.name.split('-')[-1]"/></secuencial>
         <dirMatriz><t t-esc="record.company_id.street"/></dirMatriz>
+        <contribuyenteRimpe t-if="record.company_id.l10n_ec_regime == 'rimpe'">CONTRIBUYENTE RÉGIMEN RIMPE</contribuyenteRimpe>
     </infoTributaria>
     <infoNotaCredito>
         <fechaEmision><t t-esc="record.invoice_date.strftime('%d/%m/%Y')"/></fechaEmision>
@@ -153,6 +155,7 @@
         <ptoEmi>001</ptoEmi>
         <secuencial><t t-esc="record.name.split('-')[-1]"/></secuencial>
         <dirMatriz><t t-esc="record.company_id.street"/></dirMatriz>
+        <contribuyenteRimpe t-if="record.company_id.l10n_ec_regime == 'rimpe'">CONTRIBUYENTE RÉGIMEN RIMPE</contribuyenteRimpe>
     </infoTributaria>
     <infoNotaDebito>
         <fechaEmision><t t-esc="record.invoice_date.strftime('%d/%m/%Y')"/></fechaEmision>
