@@ -26,8 +26,17 @@ SRI Tax reporting for Ecuador:
 **Filing Deadlines**: Monthly, by RUC 9th digit
 
 **Regulatory Compliance**: SRI 2026
+
+--------------------------------------------------------------------
+Estado real (fork egejo/odoo_saas_ecuador, ver README.md del fork)
+--------------------------------------------------------------------
+Instalado y carga sin error, con traducciones es_EC agregadas -- pero
+la generacion real del XML del ATS y el Formulario 104 NO ha sido
+probada todavia. Cada modulo de este fork que si se probo de verdad
+tuvo al menos un bug real -- no asumir que este funciona correctamente
+solo porque instala limpio.
     """,
-    "author": "Somatech.dev, Odoo Community Association (OCA)",
+    "author": "Somatech.dev, Odoo Community Association (OCA), egejo (fork: instalado y traducido, sin auditar funcionalmente todavía)",
     "website": "https://github.com/somatechlat/odoo_saas_ecuador",
     "license": "LGPL-3",
     "depends": [

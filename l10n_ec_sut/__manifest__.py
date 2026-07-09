@@ -15,8 +15,16 @@ Generates compliance files for the **Sistema Único de Trabajo (SUT)**:
 3. **Utilidades**: (Placement for future logic).
 
 Ensures Art. 13 and Art. 14 compliance reporting.
+
+--------------------------------------------------------------------
+Estado real (fork egejo/odoo_saas_ecuador, ver README.md del fork)
+--------------------------------------------------------------------
+Instalado y traducido (es_EC), pero la generacion real de TXT de
+decimo tercero/cuarto NO ha sido probada todavia. El reporte de
+Utilidades sigue siendo un placeholder vacio en el codigo -- no es
+"falta probar", es que directamente no esta implementado.
     """,
-    "author": "Somatech.dev",
+    "author": "Somatech.dev, egejo (fork: instalado y traducido, sin auditar funcionalmente todavía)",
     "depends": ["l10n_ec_hr_payroll"],
     "data": [
         "security/ir.model.access.csv",

@@ -27,8 +27,24 @@ Complete SRI (Servicio de Rentas Internas) integration:
 - Production: cel.sri.gob.ec
 
 **Regulatory Compliance**: SRI 2026
+
+--------------------------------------------------------------------
+Estado real (fork egejo/odoo_saas_ecuador, ver README.md del fork)
+--------------------------------------------------------------------
+Este es el modulo con mas trabajo de correccion de todo el fork (19
+commits). Al recibirlo, Nota de Credito no estaba implementada en
+absoluto (siempre renderizaba el XML de factura sin importar el tipo
+de documento -- la primera NC real habria chocado contra la factura
+original en el SRI). Se implemento Nota de Credito y Nota de Debito
+desde cero, se corrigio el desglose de impuestos y el tipo de
+identificacion del comprador, se rediseno el RIDE completo (bordes,
+forma de pago, informacion adicional, envio por correo con XML+PDF
+segun Art. 6 Res. NAC-DGERCGC18-00000233), y se agrego la leyenda de
+regimen RIMPE. Factura, NC y ND confirmadas AUTORIZADO end-to-end
+contra el SRI real (ambiente de pruebas). Guia de Remision sigue sin
+implementar (tampoco existe en el modulo oficial de Enterprise).
     """,
-    "author": "Somatech.dev, Odoo Community Association (OCA)",
+    "author": "Somatech.dev, Odoo Community Association (OCA), egejo (fork: Nota de Credito/Debito implementadas desde cero, RIDE rediseñado, verificado AUTORIZADO contra SRI real)",
     "website": "https://github.com/somatechlat/odoo_saas_ecuador",
     "license": "LGPL-3",
     "depends": [

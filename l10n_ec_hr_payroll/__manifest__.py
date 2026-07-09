@@ -28,8 +28,24 @@ Complete payroll management for Ecuador (SBU 2026: $482):
 * Income Tax (Impuesto a la Renta)
 
 **Regulatory Compliance**: Ministerio del Trabajo 2026, IESS 2026
+
+--------------------------------------------------------------------
+Estado real (fork egejo/odoo_saas_ecuador, ver README.md del fork)
+--------------------------------------------------------------------
+Bug real de empaquetado corregido: este modulo redeclaraba claves de
+`ir.config_parameter` (aporte personal/patronal IESS, etc.) ya
+registradas por `l10n_ec_base` con el mismo valor pero violando la
+constraint de unicidad, bloqueando la instalacion junto a otros 10
+modulos. Corregido. Ademas, un menu padre inexistente
+(`l10n_ec_hr_payroll.menu_l10n_ec_hr_payroll_root`, el real es
+`menu_l10n_ec_payroll_root`) era referenciado por otros modulos de
+este fork (`l10n_ec_loans`/`l10n_ec_vacation`) y causaba el mismo tipo
+de fallo -- corregido ahi. Fuera de estos bugs de empaquetado, ningun
+empleado ni contrato real esta configurado todavia: IESS, decimos,
+fondos de reserva, utilidades y horas extra siguen SIN probar con
+datos reales.
     """,
-    "author": "Somatech.dev, Odoo Community Association (OCA)",
+    "author": "Somatech.dev, Odoo Community Association (OCA), egejo (fork: bug de empaquetado corregido, sin auditar funcionalmente todavía)",
     "website": "https://github.com/somatechlat/odoo_saas_ecuador",
     "license": "LGPL-3",
     "depends": ["hr", "hr_contract"],

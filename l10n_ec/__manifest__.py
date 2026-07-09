@@ -34,6 +34,20 @@ Este módulo instala **TODA** la localización ecuatoriana con **UN SOLO CLIC**:
    - IVA: 15%
 
 Desarrollado por Somatech.dev
+
+--------------------------------------------------------------------
+Estado real (fork egejo/odoo_saas_ecuador, ver README.md del fork)
+--------------------------------------------------------------------
+ADVERTENCIA: este modulo NUNCA se monta en el `addons_path` de la
+instalacion de produccion que mantiene este fork -- su nombre tecnico
+`l10n_ec` choca directamente con el modulo `l10n_ec` OFICIAL de Odoo
+Community (la localizacion base real de Ecuador que Odoo ya trae). Los
+dos no pueden coexistir. Como resultado, nadie ha instalado ni probado
+este modulo ni una sola vez en el contexto de este fork -- todo lo que
+dice arriba (✅ en cada linea) es texto heredado del repositorio
+original, nunca verificado aqui. Se mantiene en el repositorio solo
+por compatibilidad con quien clone el proyecto completo fuera de este
+despliegue especifico.
     """,
     "author": "Somatech.dev, Odoo Community Association (OCA)",
     "website": "https://github.com/somatechlat/odoo_saas_ecuador",

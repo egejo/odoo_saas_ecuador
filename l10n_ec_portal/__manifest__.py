@@ -14,8 +14,15 @@ Allows employees to log in (website user) and:
 2.  View their **Loans** status.
 
 Surpasses competitor "Ease of Use" by eliminating HR email requests.
+
+--------------------------------------------------------------------
+Estado real (fork egejo/odoo_saas_ecuador, ver README.md del fork)
+--------------------------------------------------------------------
+Instalado, pero SIN crear todavia ningun usuario de portal para un
+empleado real -- no se ha confirmado que pueda ver/descargar su rol de
+pagos ni el estado de sus prestamos.
     """,
-    "author": "Somatech.dev",
+    "author": "Somatech.dev, egejo (fork: instalado, sin auditar funcionalmente todavía)",
     "depends": [
         "portal",
         "l10n_ec_hr_payroll",

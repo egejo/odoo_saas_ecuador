@@ -26,8 +26,15 @@ Features:
 - Quality check templates
 - BPM compliance tracking
 - Certificate management
+
+--------------------------------------------------------------------
+Estado real (fork egejo/odoo_saas_ecuador, ver README.md del fork)
+--------------------------------------------------------------------
+Instalado y traducido (es_EC), pero SIN probar ningun punto de control
+real de calidad en fabricacion -- solo aplica si la empresa fabrica
+productos, que no es el caso principal de esta instalacion.
     """,
-    "author": "Somatech.dev",
+    "author": "Somatech.dev, egejo (fork: instalado y traducido, sin auditar funcionalmente todavía)",
     "website": "https://github.com/somatechlat/odoo_saas_ecuador",
     "license": "LGPL-3",
     "depends": ["mrp", "stock"],

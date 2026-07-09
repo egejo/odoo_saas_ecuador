@@ -25,8 +25,23 @@ This module provides full SRI electronic invoicing:
 
 **Ficha Técnica**: Version 2.32
 **Regulatory Compliance**: SRI 2026, Resolution NAC-DGERCGC25-00000017
+
+--------------------------------------------------------------------
+Estado real (fork egejo/odoo_saas_ecuador, ver README.md del fork)
+--------------------------------------------------------------------
+La firma XAdES-BES original era criptograficamente invalida (bug de
+canonicalizacion c14n al usar namespace por defecto en vez de
+prefijos ds:/etsi:) y el certificado .p12 ni siquiera se
+deserializaba (bug de tipos str/bytes) -- ninguna factura firmada con
+el codigo original habria sido aceptada nunca por el SRI. Ambos
+corregidos y verificados con `signxml` contra un certificado real.
+Tambien se agrego el regimen tributario de la propia compañia
+(l10n_ec_regime, ausente por completo) y se corrigio un bug de zona
+horaria que fechaba comprobantes un dia adelante cerca de medianoche
+UTC. Guía de Remisión sigue sin implementar pese a estar listada
+arriba (tampoco existe en el módulo oficial de Enterprise).
     """,
-    "author": "Somatech.dev, Odoo Community Association (OCA)",
+    "author": "Somatech.dev, Odoo Community Association (OCA), egejo (fork: firma XAdES-BES corregida de invalida a verificada, regimen RIMPE agregado)",
     "website": "https://github.com/somatechlat/odoo_saas_ecuador",
     "license": "LGPL-3",
     "depends": [

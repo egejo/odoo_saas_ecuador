@@ -23,8 +23,15 @@ SRI electronic invoicing integration for Point of Sale:
 * Offline mode support
 
 **Regulatory Compliance**: SRI 2026
+
+--------------------------------------------------------------------
+Estado real (fork egejo/odoo_saas_ecuador, ver README.md del fork)
+--------------------------------------------------------------------
+Instalado y traducido (es_EC), pero no hay ningun punto de venta
+configurado todavia (caja, metodos de pago) -- nada de lo listado
+arriba se ha probado en un flujo real de facturacion desde POS.
     """,
-    "author": "Somatech.dev, Odoo Community Association (OCA)",
+    "author": "Somatech.dev, Odoo Community Association (OCA), egejo (fork: instalado y traducido, sin auditar funcionalmente todavía)",
     "website": "https://github.com/somatechlat/odoo_saas_ecuador",
     "license": "LGPL-3",
     "depends": [

@@ -19,8 +19,15 @@ Usage:
 1.  Select Payslips in List View.
 2.  Action > Generate Cash Management File.
 3.  Upload to Bank Portal.
+
+--------------------------------------------------------------------
+Estado real (fork egejo/odoo_saas_ecuador, ver README.md del fork)
+--------------------------------------------------------------------
+Instalado y traducido (es_EC), pero la generacion real del archivo TXT
+a partir de roles de pago NO ha sido probada todavia (requiere ademas
+nomina real configurada, ver l10n_ec_hr_payroll).
     """,
-    "author": "Somatech.dev",
+    "author": "Somatech.dev, egejo (fork: instalado y traducido, sin auditar funcionalmente todavía)",
     "depends": ["l10n_ec_hr_payroll"],
     "data": [
         "security/ir.model.access.csv",

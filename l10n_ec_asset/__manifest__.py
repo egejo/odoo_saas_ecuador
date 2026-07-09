@@ -30,8 +30,14 @@ Features:
 - Automatic journal entries
 - Asset revaluation
 - Asset disposal
+
+--------------------------------------------------------------------
+Estado real (fork egejo/odoo_saas_ecuador, ver README.md del fork)
+--------------------------------------------------------------------
+Instalado y traducido (es_EC), pero SIN probar registro, depreciacion,
+revaluacion ni baja de un activo real todavia.
     """,
-    "author": "Somatech.dev",
+    "author": "Somatech.dev, egejo (fork: instalado y traducido, sin auditar funcionalmente todavía)",
     "website": "https://github.com/somatechlat/odoo_saas_ecuador",
     "license": "LGPL-3",
     "depends": ["account"],
