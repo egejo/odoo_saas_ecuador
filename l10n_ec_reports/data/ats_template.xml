@@ -8,7 +8,7 @@
                 <razonSocial t-out="company.name[:300]"/>
                 <Anio t-out="wizard.date_year"/>
                 <Mes t-out="wizard.date_month"/>
-                <numEstabRuc t-out="company.l10n_ec_entity or '001'"/>
+                <numEstabRuc t-out="'%03d' % num_estab_ruc"/>
                 <totalVentas t-out="format_float(total_sales, 2)"/>
                 <codigoOperativo>IVA</codigoOperativo>
 
@@ -20,6 +20,7 @@
                             <tpIdProv t-out="p.get('tpIdProv', '01')"/>
                             <idProv t-out="p.get('idProv', '9999999999999')"/>
                             <tipoComprobante t-out="p.get('tipoComprobante', '01')"/>
+                            <parteRel t-out="p.get('parteRel', 'NO')"/>
                             <fechaRegistro t-out="p.get('fechaRegistro')"/>
                             <establecimiento t-out="p.get('estab', '001')"/>
                             <puntoEmision t-out="p.get('ptoEmi', '001')"/>
@@ -29,11 +30,19 @@
                             <baseNoGraIva t-out="format_float(p.get('baseNoGraIva', 0.0), 2)"/>
                             <baseImponible t-out="format_float(p.get('baseImponible', 0.0), 2)"/>
                             <baseImpGrav t-out="format_float(p.get('baseImpGrav', 0.0), 2)"/>
-                            <baseImpExe t-out="0.00"/>
+                            <baseImpExe t-out="format_float(p.get('baseImpExe', 0.0), 2)"/>
                             <montoIce t-out="format_float(p.get('montoIce', 0.0), 2)"/>
                             <montoIva t-out="format_float(p.get('montoIva', 0.0), 2)"/>
 
-                            <!-- RETENCION (AIR) -->
+                            <!-- Retencion IVA por tarifa (Tabla 21) -->
+                            <valRetBien10 t-out="format_float(p.get('valRetBien10', 0.0), 2)"/>
+                            <valRetServ20 t-out="format_float(p.get('valRetServ20', 0.0), 2)"/>
+                            <valorRetBienes t-out="format_float(p.get('valorRetBienes', 0.0), 2)"/>
+                            <valRetServ50 t-out="format_float(p.get('valRetServ50', 0.0), 2)"/>
+                            <valorRetServicios t-out="format_float(p.get('valorRetServicios', 0.0), 2)"/>
+                            <valRetServ100 t-out="format_float(p.get('valRetServ100', 0.0), 2)"/>
+
+                            <!-- RETENCION (AIR) de Renta -->
                             <air>
                                 <t t-foreach="p.get('retentions', [])" t-as="r">
                                     <detalleAir>
@@ -50,6 +59,15 @@
                             <secRetencion1 t-out="p.get('secRet', '000000000')"/>
                             <autRetencion1 t-out="p.get('autRet', '0000000000')"/>
                             <fechaEmiRet1 t-out="p.get('fechaEmiRet')"/>
+
+                            <!-- Solo si es Nota de Credito/Debito (Tabla 4) -->
+                            <t t-if="p.get('docModificado')">
+                                <docModificado t-out="p.get('docModificado')"/>
+                                <estabModificado t-out="p.get('estabModificado')"/>
+                                <ptoEmiModificado t-out="p.get('ptoEmiModificado')"/>
+                                <secModificado t-out="p.get('secModificado')"/>
+                                <autModificado t-out="p.get('autModificado')"/>
+                            </t>
                         </detalleCompras>
                     </t>
                 </compras>
@@ -60,27 +78,44 @@
                         <detalleVentas>
                             <tpIdCliente t-out="s.get('tpIdCliente', '07')"/>
                             <idCliente t-out="s.get('idCliente', '9999999999999')"/>
-                            <parteRelVentas>NO</parteRelVentas> <!-- Default -->
+                            <parteRel t-out="s.get('parteRel', 'NO')"/>
                             <tipoComprobante t-out="s.get('tipoComprobante', '18')"/>
-                            <tipoEmision t-out="s.get('tipoEmision', 'F')"/>
+                            <tipoEm t-out="s.get('tipoEm', 'E')"/>
                             <numeroComprobantes t-out="s.get('count', 0)"/>
                             <baseNoGraIva t-out="format_float(s.get('baseNoGraIva', 0.0), 2)"/>
                             <baseImponible t-out="format_float(s.get('baseImponible', 0.0), 2)"/>
                             <baseImpGrav t-out="format_float(s.get('baseImpGrav', 0.0), 2)"/>
                             <montoIva t-out="format_float(s.get('montoIva', 0.0), 2)"/>
-                            <montoIce t-out="0.00"/>
-                            <valorRetIva t-out="0.00"/> <!-- Needs implementation if sold to agent -->
-                            <valorRetRenta t-out="0.00"/>
+                            <montoIce t-out="format_float(s.get('montoIce', 0.0), 2)"/>
+                            <valorRetIva t-out="format_float(s.get('valorRetIva', 0.0), 2)"/>
+                            <valorRetRenta t-out="format_float(s.get('valorRetRenta', 0.0), 2)"/>
+
+                            <t t-if="s.get('docModificado')">
+                                <docModificado t-out="s.get('docModificado')"/>
+                                <estabModificado t-out="s.get('estabModificado')"/>
+                                <ptoEmiModificado t-out="s.get('ptoEmiModificado')"/>
+                                <secModificado t-out="s.get('secModificado')"/>
+                                <autModificado t-out="s.get('autModificado')"/>
+                            </t>
                         </detalleVentas>
                     </t>
                 </ventas>
 
+                <!-- Talon resumen: solo ventas FISICAS se acumulan aqui
+                     (Tabla 20 / Ficha Tecnica ATS: si la emision es
+                     electronica, no se suma al talon resumen porque el
+                     detalle ya viaja en el XML autorizado de cada
+                     comprobante). -->
                 <ventasEstablecimiento>
-                    <ventaEst>
-                        <codEstab t-out="company.l10n_ec_entity or '001'"/>
-                        <ventasEstab t-out="format_float(total_sales, 2)"/>
-                        <ivaComp t-out="0.00"/>
-                    </ventaEst>
+                    <t t-foreach="establecimientos" t-as="estab_code">
+                        <ventaEst>
+                            <codEstab t-out="estab_code"/>
+                            <ventasEstab t-out="format_float(
+                                sum(s['net_sign'] * (s['baseImponible'] + s['baseImpGrav'] + s['baseNoGraIva'])
+                                    for s in sales if s['tipoEm'] == 'F' and s['estab'] == estab_code), 2)"/>
+                            <ivaComp t-out="0.00"/>
+                        </ventaEst>
+                    </t>
                 </ventasEstablecimiento>
 
                 <anulados>
@@ -89,8 +124,8 @@
                             <tipoComprobante t-out="c.get('tipo', '01')"/>
                             <establecimiento t-out="c.get('estab', '001')"/>
                             <puntoEmision t-out="c.get('pto', '001')"/>
-                            <secuencialInicio t-out="c.get('sec', '0')"/>
-                            <secuencialFin t-out="c.get('sec', '0')"/>
+                            <secuencialInicio t-out="c.get('sec', '000000000')"/>
+                            <secuencialFin t-out="c.get('sec', '000000000')"/>
                             <autorizacion t-out="c.get('aut', '0000000000')"/>
                         </detalleAnulados>
                     </t>

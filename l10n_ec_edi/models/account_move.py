@@ -34,19 +34,41 @@ class AccountMove(models.Model):
     l10n_ec_xml_data = fields.Binary("Signed XML", attachment=True, copy=False)
     l10n_ec_sri_response = fields.Text("SRI Response", copy=False)
 
-    # Purchses Extensions (ATS)
+    # Purchases Extensions (ATS) -- Tabla 5 de la Ficha Tecnica ATS del SRI.
+    # Catalogo corregido 2026-07-10: la version anterior (heredada del
+    # upstream) tenia las etiquetas 05/06/07 equivocadas (mezclaba
+    # "Liquidacion Reembolsos"/"Sin Credito Tributario"/"Pagos Reembolsos",
+    # que no son las descripciones reales de esos codigos en la Tabla 5) --
+    # mismo patron de codigos SRI mal etiquetados ya visto varias veces en
+    # este fork (retenciones, ICE). Se completa ademas con los codigos
+    # 00/08-13 que faltaban por completo.
     l10n_ec_sustento_code = fields.Selection(
         [
-            ("01", "01 - Crédito Tributario para IVA"),
-            ("02", "02 - Costo o Gasto"),
-            ("03", "03 - Activo Fijo"),
-            ("04", "04 - Liquidación Gastos"),
-            ("05", "05 - Liquidación Reembolsos"),
-            ("06", "06 - Sin Crédito Tributario"),
-            ("07", "07 - Pagos Reembolsos"),
+            (
+                "01",
+                "01 - Crédito Tributario para declaración de IVA (bienes/servicios)",
+            ),
+            ("02", "02 - Costo o Gasto para declaración de IR (bienes/servicios)"),
+            ("03", "03 - Activo Fijo - Crédito Tributario para IVA"),
+            ("04", "04 - Activo Fijo - Costo o Gasto para IR"),
+            (
+                "05",
+                "05 - Liquidación Gastos de Viaje, hospedaje y alimentación (IR)",
+            ),
+            ("06", "06 - Inventario - Crédito Tributario para IVA"),
+            ("07", "07 - Inventario - Costo o Gasto para IR"),
+            ("08", "08 - Valor pagado para solicitar Reembolso de Gasto"),
+            ("09", "09 - Reembolso por Siniestros"),
+            ("10", "10 - Distribución de Dividendos, Beneficios o Utilidades"),
+            ("11", "11 - Convenios de débito o recaudación para IFI's"),
+            ("12", "12 - Impuestos y retenciones presuntivos"),
+            (
+                "13",
+                "13 - Valores reconocidos por entidades del sector público",
+            ),
         ],
         string="Sustento Tributario",
-        help="SRI code explaining the purchase purpose (ATS)",
+        help="Código SRI (Tabla 5 de la Ficha Técnica ATS) que sustenta la compra.",
     )
 
     # =========================================================================

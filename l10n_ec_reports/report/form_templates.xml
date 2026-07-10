@@ -22,9 +22,9 @@
                                 <tr t-foreach="data['retentions']" t-as="r">
                                     <td><span t-esc="r['code']"/></td>
                                     <td><span t-esc="r['name']"/></td>
-                                    <td class="text-right"><span t-esc="r['base']" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/></td>
+                                    <td class="text-right"><span t-esc="r['base']" t-options='{"widget": "monetary", "display_currency": env.company.currency_id}'/></td>
                                     <td class="text-right"><span t-esc="r['percent']"/>%</td>
-                                    <td class="text-right"><span t-esc="r['amount']" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/></td>
+                                    <td class="text-right"><span t-esc="r['amount']" t-options='{"widget": "monetary", "display_currency": env.company.currency_id}'/></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -44,11 +44,11 @@
                         <table class="table table-sm table-bordered">
                             <tr>
                                 <td>Local Sales (Excludes Fixed Assets)</td>
-                                <td class="text-right"><span t-esc="data['sales_base']" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/></td>
+                                <td class="text-right"><span t-esc="data['sales_base']" t-options='{"widget": "monetary", "display_currency": env.company.currency_id}'/></td>
                             </tr>
                             <tr>
                                 <td>Total IVA Generated</td>
-                                <td class="text-right"><span t-esc="data['sales_iva']" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/></td>
+                                <td class="text-right"><span t-esc="data['sales_iva']" t-options='{"widget": "monetary", "display_currency": env.company.currency_id}'/></td>
                             </tr>
                         </table>
 
@@ -56,11 +56,11 @@
                         <table class="table table-sm table-bordered">
                             <tr>
                                 <td>Local Purchases (Inventory/Services)</td>
-                                <td class="text-right"><span t-esc="data['purchases_base']" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/></td>
+                                <td class="text-right"><span t-esc="data['purchases_base']" t-options='{"widget": "monetary", "display_currency": env.company.currency_id}'/></td>
                             </tr>
                              <tr>
                                 <td>Total IVA Input</td>
-                                <td class="text-right"><span t-esc="data['purchases_iva']" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/></td>
+                                <td class="text-right"><span t-esc="data['purchases_iva']" t-options='{"widget": "monetary", "display_currency": env.company.currency_id}'/></td>
                             </tr>
                         </table>
 
@@ -68,11 +68,11 @@
                         <table class="table table-sm table-bordered">
                             <tr>
                                 <td>Total ICE Payable (Sales)</td>
-                                <td class="text-right"><span t-esc="data['ice_payable']" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/></td>
+                                <td class="text-right"><span t-esc="data['ice_payable']" t-options='{"widget": "monetary", "display_currency": env.company.currency_id}'/></td>
                             </tr>
                              <tr>
                                 <td>ICE Tax Credit (Purchases)</td>
-                                <td class="text-right"><span t-esc="data['ice_credit']" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/></td>
+                                <td class="text-right"><span t-esc="data['ice_credit']" t-options='{"widget": "monetary", "display_currency": env.company.currency_id}'/></td>
                             </tr>
                         </table>
                     </div>

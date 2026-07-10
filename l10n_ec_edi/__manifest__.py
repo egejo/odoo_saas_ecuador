@@ -6,7 +6,7 @@
 
 {
     "name": "Ecuador - Electronic Invoicing (SRI 2026)",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.1.0",
     "category": "Accounting/Localizations",
     "summary": "Electronic Invoicing, XAdES-BES Signing, and SRI Transmission (Ficha 2.32)",
     "description": """

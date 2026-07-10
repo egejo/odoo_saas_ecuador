@@ -6,7 +6,7 @@
 
 {
     "name": "Ecuador - Withholding Management (Retenciones)",
-    "version": "18.0.1.3.0",
+    "version": "18.0.1.4.0",
     "category": "Accounting/Localizations",
     "summary": "Vendor Bill Withholding, SRI Authorization, Cancellation Deadline",
     "description": """
