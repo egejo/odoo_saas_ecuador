@@ -141,6 +141,24 @@ class L10nEcSriXml(models.AbstractModel):
 
     def _map_tax_codes(self, tax):
         ec_type = tax.tax_group_id.l10n_ec_type
+        if ec_type == "ice":
+            # Tabla 18 del SRI ("TARIFA DEL ICE") no es un codigo generico
+            # de porcentaje como en IVA: es el mismo codigo especifico por
+            # categoria/producto (3011 cigarrillos, 3031 alcohol, 3680
+            # fundas plasticas, ...) que ya usa l10n_ec.ice.category.code.
+            # Ni siquiera Odoo Enterprise (l10n_ec_edi) soporta esto -- su
+            # propio codigo lo admite explicitamente ("NOTE: non-IVA cases
+            # such as ICE ... not supported") y KeyError-ea si alguna vez
+            # se le pasa un impuesto ICE real.
+            category = tax.l10n_ec_ice_category_id
+            if not category:
+                raise ValidationError(
+                    "El impuesto ICE '%s' no tiene una Categoria ICE (SRI) "
+                    "asignada (l10n_ec_ice_category_id) -- es necesaria "
+                    "para construir el codigoPorcentaje real (Tabla 18 "
+                    "del SRI) en el XML." % tax.name
+                )
+            return self._TABLA17_CODIGO_IMPUESTO["ice"], category.code
         if (
             ec_type not in self._TABLA17_CODIGO_IMPUESTO
             or ec_type not in self._TABLA18_CODIGO_PORCENTAJE
@@ -174,17 +192,39 @@ class L10nEcSriXml(models.AbstractModel):
     def _get_line_taxes(self, line):
         """
         Impuestos aplicados a una linea de detalle, para <detalle>/<impuestos>.
+
+        Usa el motor real de Odoo (tax.compute_all) en vez de asumir
+        "base * tarifa / 100" -- esa formula solo es valida para impuestos
+        amount_type='percent' (IVA, ICE ad valorem). Para ICE
+        amount_type='fixed' (especifico/especifico con contenido, ver
+        l10n_ec_ice) tax.amount es un valor en dolares por unidad, no un
+        porcentaje: la formula vieja habria calculado un "valor" casi cero
+        para, por ejemplo, fundas plasticas o alcohol. El precio unitario
+        efectivo (post-descuento) se deriva de price_subtotal/quantity para
+        que compute_all reproduzca exactamente el mismo price_subtotal como
+        base, preservando ademas la cantidad real (necesaria para el
+        computo de impuestos 'fixed').
         """
         result = []
-        for tax in line.tax_ids:
+        if not line.tax_ids or not line.quantity:
+            return result
+        effective_price_unit = line.price_subtotal / line.quantity
+        computed = line.tax_ids.compute_all(
+            price_unit=effective_price_unit,
+            quantity=line.quantity,
+            product=line.product_id,
+            partner=line.move_id.partner_id,
+        )
+        for tax_data in computed["taxes"]:
+            tax = self.env["account.tax"].browse(tax_data["id"])
             codigo, codigo_porcentaje = self._map_tax_codes(tax)
             result.append(
                 {
                     "codigo": codigo,
                     "codigo_porcentaje": codigo_porcentaje,
                     "tarifa": tax.amount,
-                    "base_imponible": line.price_subtotal,
-                    "valor": line.price_subtotal * tax.amount / 100,
+                    "base_imponible": tax_data["base"],
+                    "valor": tax_data["amount"],
                 }
             )
         return result
