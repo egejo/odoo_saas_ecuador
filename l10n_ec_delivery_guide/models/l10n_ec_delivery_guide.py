@@ -248,9 +248,17 @@ class L10nEcDeliveryGuide(models.Model):
             return False
         return {
             "cod_doc_sustento": invoice.l10n_latam_document_type_id.code or "01",
+            # A diferencia de account.retention (que le quita los guiones
+            # a este mismo dato para SU propio docSustento), el schema
+            # real de guiaRemision exige el formato con guiones: el SRI
+            # rechazo un envio de prueba con error 35 "ARCHIVO NO CUMPLE
+            # ESTRUCTURA XML" citando literalmente el patron esperado
+            # '[0-9]{3}-[0-9]{3}-[0-9]{9}' para numDocSustento -- distinto
+            # de lo que la Ficha Tecnica sugiere ("Numerico 15") y de lo
+            # que retencion necesita para el suyo.
             "num_doc_sustento": (
                 invoice.l10n_latam_document_number or invoice.name or ""
-            ).replace("-", ""),
+            ),
             "num_aut_doc_sustento": invoice.l10n_ec_sri_access_key,
             "fecha_emision_doc_sustento": invoice.invoice_date,
         }
