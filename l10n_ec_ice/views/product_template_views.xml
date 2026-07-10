@@ -10,6 +10,8 @@
                     <field name="l10n_ec_ice_category_id"/>
                     <field name="l10n_ec_ice_unit_content" invisible="not l10n_ec_ice_category_id"/>
                     <field name="l10n_ec_pvp" invisible="not l10n_ec_ice_category_id"/>
+                    <field name="l10n_ec_ice_is_pickup_or_rescue"
+                           invisible="not l10n_ec_ice_category_id or not l10n_ec_pvp"/>
                 </group>
             </xpath>
         </field>
