@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_l10n_ec_driver,l10n_ec.driver,model_l10n_ec_driver,stock.group_stock_user,1,1,1,1
+access_l10n_ec_vehicle,l10n_ec.vehicle,model_l10n_ec_vehicle,stock.group_stock_user,1,1,1,1
+access_l10n_ec_delivery_guide,l10n_ec.delivery.guide,model_l10n_ec_delivery_guide,stock.group_stock_user,1,1,1,0
+access_l10n_ec_delivery_guide_manager,l10n_ec.delivery.guide manager,model_l10n_ec_delivery_guide,stock.group_stock_manager,1,1,1,1
+access_l10n_ec_delivery_guide_line,l10n_ec.delivery.guide.line,model_l10n_ec_delivery_guide_line,stock.group_stock_user,1,1,1,0
+access_l10n_ec_delivery_guide_line_manager,l10n_ec.delivery.guide.line manager,model_l10n_ec_delivery_guide_line,stock.group_stock_manager,1,1,1,1
+access_l10n_ec_delivery_guide_wizard,l10n_ec.delivery.guide.wizard,model_l10n_ec_delivery_guide_wizard,stock.group_stock_user,1,1,1,1
+access_l10n_ec_delivery_guide_wizard_line,l10n_ec.delivery.guide.wizard.line,model_l10n_ec_delivery_guide_wizard_line,stock.group_stock_user,1,1,1,1

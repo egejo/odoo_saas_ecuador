@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sin prefijo: el "estab-ptoEmi-" se arma en Python
+             (l10n_ec_delivery_guide.py create()) a partir de los campos
+             configurables de res.company, no queda fijo en este XML,
+             a diferencia de account.retention (l10n_ec_withholding), que
+             dejo el prefijo hardcodeado "001-001-" en su secuencia. -->
+        <record id="seq_l10n_ec_delivery_guide" model="ir.sequence">
+            <field name="name">Guías de Remisión</field>
+            <field name="code">l10n_ec.delivery.guide</field>
+            <field name="padding">9</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

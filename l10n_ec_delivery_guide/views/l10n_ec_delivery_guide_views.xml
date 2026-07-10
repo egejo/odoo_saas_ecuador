@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- LIST VIEW -->
+        <record id="view_l10n_ec_delivery_guide_tree" model="ir.ui.view">
+            <field name="name">l10n_ec.delivery.guide.tree</field>
+            <field name="model">l10n_ec.delivery.guide</field>
+            <field name="arch" type="xml">
+                <list string="Guías de Remisión">
+                    <field name="name"/>
+                    <field name="date_start"/>
+                    <field name="picking_id"/>
+                    <field name="partner_id"/>
+                    <field name="driver_id"/>
+                    <field name="l10n_ec_sri_status" widget="badge" decoration-success="l10n_ec_sri_status == 'authorized'" decoration-danger="l10n_ec_sri_status == 'rejected'"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- FORM VIEW -->
+        <record id="view_l10n_ec_delivery_guide_form" model="ir.ui.view">
+            <field name="name">l10n_ec.delivery.guide.form</field>
+            <field name="model">l10n_ec.delivery.guide</field>
+            <field name="arch" type="xml">
+                <form string="Guía de Remisión">
+                    <header>
+                        <button name="action_send_sri" string="Send to SRI" class="oe_highlight" type="object" invisible="l10n_ec_sri_status in ('sent', 'authorized')"/>
+                        <button name="action_check_sri" string="Check SRI Status" type="object" invisible="l10n_ec_sri_status != 'sent'"/>
+                        <button name="%(action_report_delivery_guide)d" string="Imprimir RIDE" type="action"/>
+                        <button name="action_send_by_email" string="Enviar por Correo" type="object" invisible="l10n_ec_sri_status != 'authorized'"/>
+                        <button name="action_cancel" string="Anular" type="object" invisible="not active" confirm="¿Anular esta guía de remisión?"/>
+                        <field name="l10n_ec_sri_status" widget="statusbar" statusbar_visible="draft,sent,authorized"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="picking_id" readonly="1"/>
+                                <field name="partner_id" widget="res_partner_many2one" context="{'show_vat': True}"/>
+                                <field name="transport_reason"/>
+                                <field name="sale_id"/>
+                            </group>
+                            <group>
+                                <field name="driver_id"/>
+                                <field name="vehicle_id"/>
+                                <field name="date_start"/>
+                                <field name="date_end"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="dir_partida"/>
+                            <field name="dir_destino"/>
+                            <field name="route"/>
+                        </group>
+                        <notebook>
+                            <page string="Detalle">
+                                <field name="line_ids">
+                                    <list editable="bottom">
+                                        <field name="product_id"/>
+                                        <field name="quantity"/>
+                                        <field name="uom_id"/>
+                                        <field name="lot_names" readonly="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="SRI Info">
+                                <group>
+                                    <field name="l10n_ec_sri_access_key"/>
+                                    <field name="l10n_ec_sri_status"/>
+                                    <field name="l10n_ec_authorization_date"/>
+                                    <field name="l10n_ec_sri_response"/>
+                                    <field name="l10n_ec_xml_data"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- ACTION -->
+        <record id="action_l10n_ec_delivery_guide" model="ir.actions.act_window">
+            <field name="name">Guías de Remisión</field>
+            <field name="res_model">l10n_ec.delivery.guide</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                Crear una nueva Guía de Remisión desde un despacho de bodega o transferencia interna
+              </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_l10n_ec_delivery_guide"
+                  name="Guías de Remisión"
+                  parent="stock.menu_stock_root"
+                  action="action_l10n_ec_delivery_guide"
+                  sequence="90"/>
+    </data>
+</odoo>

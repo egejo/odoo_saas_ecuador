@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_picking_form_inherit_l10n_ec_delivery_guide" model="ir.ui.view">
+            <field name="name">stock.picking.form.inherit.l10n_ec_delivery_guide</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <!-- Deliberadamente SIN condicion sobre state: se puede
+                     crear una guia con el despacho todavia en
+                     'draft'/'assigned' o ya en 'done' (ver
+                     l10n_ec_delivery_guide.py: picking_id no es unico a
+                     proposito para permitir varias guias por despacho). -->
+                <xpath expr="//header" position="inside">
+                    <button name="action_create_delivery_guide" string="Crear Guía de Remisión" type="object" class="oe_highlight" invisible="picking_type_code == 'incoming'"/>
+                </xpath>
+                <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                    <button name="action_view_delivery_guides" type="object" class="oe_stat_button" icon="fa-truck" invisible="l10n_ec_delivery_guide_count == 0">
+                        <field name="l10n_ec_delivery_guide_count" widget="statinfo" string="Guías de Remisión"/>
+                    </button>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

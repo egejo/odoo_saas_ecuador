@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Formato XML contra el esquema real v1.1.0 de la Ficha
+             Tecnica oficial del SRI (guiaRemision, codDoc 06, paginas
+             66-67 del PDF "FICHA TECNICA COMPROBANTES ELECTRONICOS
+             ESQUEMA OFFLINE Version 2.26"). El intento previo del
+             upstream (l10n_ec_stock/data/guia_template.xml, nunca
+             instalado) le faltaba el bloque docSustento completo, usaba
+             rucTransportista=numero de licencia (bug real) y
+             motivoTraslado=codigo interno de seleccion en vez de texto
+             legible: los tres corregidos aqui. -->
+        <template id="l10n_ec_delivery_guide_xml">
+            <guiaRemision id="comprobante" version="1.1.0">
+                <infoTributaria>
+                    <ambiente t-out="environment"/>
+                    <tipoEmision>1</tipoEmision>
+                    <razonSocial t-out="company.name[:300]"/>
+                    <nombreComercial t-if="company.l10n_ec_commercial_name" t-out="company.l10n_ec_commercial_name[:300]"/>
+                    <ruc t-out="company.vat"/>
+                    <claveAcceso t-out="access_key"/>
+                    <codDoc>06</codDoc>
+                    <estab t-out="access_key[24:27]"/>
+                    <ptoEmi t-out="access_key[27:30]"/>
+                    <secuencial t-out="access_key[30:39]"/>
+                    <dirMatriz t-out="company.street"/>
+                </infoTributaria>
+                <infoGuiaRemision>
+                    <dirEstablecimiento t-out="company.street"/>
+                    <dirPartida t-out="guide.dir_partida[:300]"/>
+                    <razonSocialTransportista t-out="guide.driver_id.name[:300]"/>
+                    <tipoIdentificacionTransportista t-out="transportista_identification_code"/>
+                    <rucTransportista t-out="guide.driver_id.identification_number"/>
+                    <obligadoContabilidad t-if="company.l10n_ec_forced_accounting">SI</obligadoContabilidad>
+                    <contribuyenteEspecial t-if="company.l10n_ec_special_resolution" t-out="company.l10n_ec_special_resolution"/>
+                    <fechaIniTransporte t-out="guide.date_start.strftime('%d/%m/%Y')"/>
+                    <fechaFinTransporte t-out="guide.date_end.strftime('%d/%m/%Y')"/>
+                    <placa t-out="guide.vehicle_id.license_plate"/>
+                </infoGuiaRemision>
+                <destinatarios>
+                    <destinatario>
+                        <identificacionDestinatario t-out="guide.partner_id.vat"/>
+                        <razonSocialDestinatario t-out="guide.partner_id.name[:300]"/>
+                        <dirDestinatario t-out="guide.dir_destino[:300]"/>
+                        <motivoTraslado t-out="motivo_traslado_label"/>
+                        <codDocSustento t-if="docsustento" t-out="docsustento['cod_doc_sustento']"/>
+                        <numDocSustento t-if="docsustento" t-out="docsustento['num_doc_sustento']"/>
+                        <numAutDocSustento t-if="docsustento" t-out="docsustento['num_aut_doc_sustento']"/>
+                        <fechaEmisionDocSustento t-if="docsustento" t-out="docsustento['fecha_emision_doc_sustento'].strftime('%d/%m/%Y')"/>
+                        <ruta t-if="guide.route" t-out="guide.route[:300]"/>
+                        <detalles>
+                            <t t-foreach="guide.line_ids" t-as="line">
+                                <detalle>
+                                    <codigoInterno t-out="line.product_id.default_code or line.product_id.id"/>
+                                    <descripcion t-out="line.product_id.name[:300]"/>
+                                    <cantidad t-out="format_float(line.quantity, 6)"/>
+                                    <detallesAdicionales t-if="line.lot_names">
+                                        <t t-foreach="line.move_line_ids.filtered(lambda ml: ml.lot_id or ml.lot_name)" t-as="move_line">
+                                            <detAdicional nombre="Serie/Lote" t-att-valor="move_line.lot_id.name or move_line.lot_name"/>
+                                        </t>
+                                    </detallesAdicionales>
+                                </detalle>
+                            </t>
+                        </detalles>
+                    </destinatario>
+                </destinatarios>
+                <infoAdicional t-if="company.phone or company.email">
+                    <campoAdicional t-if="company.phone" nombre="TELEFONO" t-out="company.phone"/>
+                    <campoAdicional t-if="company.email" nombre="E-MAIL" t-out="company.email"/>
+                </infoAdicional>
+            </guiaRemision>
+        </template>
+    </data>
+</odoo>

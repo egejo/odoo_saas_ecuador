@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- RIDE de la Guía de Remisión (codDoc 06): mismo layout de bordes
+         de celda (l10n_ec_sri.external_layout_ride) que factura/nota de
+         crédito/nota de débito/retención, para que todos los
+         comprobantes de este sistema compartan el mismo estilo visual. -->
+    <template id="report_delivery_guide_header">
+        <table class="l10n_ec_ride_box" style="margin-bottom: 6px; table-layout: fixed;">
+            <tr>
+                <td style="width: 45%;">
+                    <div class="text-center" t-if="o.company_id.logo">
+                        <img style="max-height: 65px; max-width: 100%;" t-att-src="image_data_uri(o.company_id.logo)" alt="Logo"/>
+                    </div>
+                    <h4 class="text-center" style="letter-spacing: 1px; margin-top: 4px;">
+                        <span t-esc="o.company_id.l10n_ec_commercial_name or o.company_id.name"/>
+                    </h4>
+                    <div style="font-size: 12px;">
+                        <strong>RUC: </strong>
+                        <span t-field="o.company_id.partner_id.vat"/>
+                        <br/>
+                        <t t-if="o.company_id.phone">
+                            <strong>Teléfono: </strong>
+                            <span t-field="o.company_id.phone"/>
+                            <br/>
+                        </t>
+                        <t t-if="o.company_id.email">
+                            <strong>Correo: </strong>
+                            <span t-field="o.company_id.email"/>
+                            <br/>
+                        </t>
+                        <strong>Ambiente: </strong>
+                        <t t-if="o.company_id.l10n_ec_sri_environment == 'production'">PRODUCCIÓN</t>
+                        <t t-else="">PRUEBAS</t>
+                        <br/>
+                        <strong>Emisión: </strong>NORMAL
+                        <br/>
+                        <t t-if="o.company_id.l10n_ec_regime == 'rimpe'">
+                            <strong>CONTRIBUYENTE RÉGIMEN RIMPE</strong>
+                            <br/>
+                        </t>
+                    </div>
+                </td>
+                <td style="width: 55%;">
+                    <div class="text-center">
+                        <h4 style="letter-spacing: 1px;">
+                            GUÍA DE REMISIÓN
+                            <br/>
+                            <span t-esc="o.name"/>
+                        </h4>
+                        <t t-if="o.l10n_ec_sri_status == 'authorized'">
+                            <div style="font-size: 12px">
+                                <strong>Número de Autorización: </strong>
+                                <span t-field="o.l10n_ec_sri_access_key"/>
+                            </div>
+                            <div t-if="o.l10n_ec_authorization_date" style="font-size: 12px">
+                                <strong>Fecha y Hora de Autorización: </strong>
+                                <span t-field="o.l10n_ec_authorization_date"/>
+                            </div>
+                            <div>
+                                <img style="width:100%; height:15mm;"
+                                    t-att-src="'/report/barcode/Code128/' + o.l10n_ec_sri_access_key"
+                                    alt="Código de barras: clave de acceso"
+                                />
+                            </div>
+                            <div style="font-size: 11px">
+                                <strong>Clave de Acceso: </strong>
+                                <span t-field="o.l10n_ec_sri_access_key"/>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="bg-danger text-white p-2" style="font-size: 13px;">
+                                <strong>
+                                    DOCUMENTO NO AUTORIZADO POR EL SRI
+                                    <span t-if="o.l10n_ec_sri_status"> (<span t-esc="o.l10n_ec_sri_status.upper()"/>)</span>
+                                </strong>
+                                <div>Este comprobante no tiene validez tributaria hasta ser autorizado.</div>
+                            </div>
+                        </t>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="l10n_ec_ride_box" style="table-layout: fixed;">
+            <tr>
+                <td colspan="2">
+                    <strong>Destinatario: </strong>
+                    <span t-esc="o.partner_id.name"/>
+                </td>
+                <td colspan="2">
+                    <strong>Identificación: </strong>
+                    <span t-field="o.partner_id.vat"/>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <strong>Dirección de Destino: </strong>
+                    <span t-esc="o.dir_destino"/>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <strong>Dirección de Partida: </strong>
+                    <span t-esc="o.dir_partida"/>
+                </td>
+                <td colspan="2">
+                    <strong>Motivo del Traslado: </strong>
+                    <span t-esc="dict(o._fields['transport_reason'].selection).get(o.transport_reason)"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Transportista: </strong>
+                    <span t-esc="o.driver_id.name"/>
+                </td>
+                <td>
+                    <strong>Identificación: </strong>
+                    <span t-esc="o.driver_id.identification_number"/>
+                </td>
+                <td>
+                    <strong>Placa: </strong>
+                    <span t-esc="o.vehicle_id.license_plate"/>
+                </td>
+                <td>
+                    <strong>Ruta: </strong>
+                    <span t-esc="o.route or ''"/>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <strong>Fecha Inicio Transporte: </strong>
+                    <span t-field="o.date_start"/>
+                </td>
+                <td colspan="2">
+                    <strong>Fecha Fin Transporte: </strong>
+                    <span t-field="o.date_end"/>
+                </td>
+            </tr>
+        </table>
+    </template>
+
+    <template id="report_delivery_guide_document">
+        <t t-call="l10n_ec_sri.external_layout_ride">
+            <t t-call="l10n_ec_delivery_guide.report_delivery_guide_header"/>
+
+            <table class="l10n_ec_ride_items" style="margin-top: 6px;">
+                <thead>
+                    <tr>
+                        <th class="text-start">Código</th>
+                        <th class="text-start">Descripción</th>
+                        <th class="text-end">Cantidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="o.line_ids" t-as="line">
+                        <td>
+                            <span t-esc="line.product_id.default_code or ''"/>
+                        </td>
+                        <td>
+                            <span t-esc="line.product_id.name"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-esc="'{:.2f}'.format(line.quantity)"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Anexo de Números de Serie/Lote: cumple el Art. 19 num. 2
+                 del Reglamento de Comprobantes de Venta, Retención y
+                 Documentos Complementarios (bienes identificados por
+                 número de serie deben consignar esa información), y es
+                 la funcionalidad que otro proveedor de facturación ya
+                 ofrece en su propio módulo de guías. Solo se muestra
+                 si al menos una línea tiene lotes/series registrados. -->
+            <table t-if="any(l.lot_names for l in o.line_ids)" class="l10n_ec_ride_box" style="table-layout: fixed; margin-top: 6px;">
+                <tr>
+                    <td>
+                        <strong>ANEXO: NÚMEROS DE SERIE/LOTE</strong>
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 4px;">
+                            <thead>
+                                <tr>
+                                    <th style="border: 0; text-align: left; padding: 1px 4px;">Producto</th>
+                                    <th style="border: 0; text-align: left; padding: 1px 4px;">Números de Serie/Lote</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.line_ids.filtered(lambda l: l.lot_names)" t-as="line">
+                                    <td style="border: 0; padding: 1px 4px;">
+                                        <span t-esc="line.product_id.name"/>
+                                    </td>
+                                    <td style="border: 0; padding: 1px 4px;">
+                                        <span t-esc="line.lot_names"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </t>
+    </template>
+
+    <template id="report_delivery_guide">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="o.partner_id.lang"/>
+                <t t-call="l10n_ec_delivery_guide.report_delivery_guide_document" t-lang="lang"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_delivery_guide" model="ir.actions.report">
+        <field name="name">Guía de Remisión (RIDE)</field>
+        <field name="model">l10n_ec.delivery.guide</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">l10n_ec_delivery_guide.report_delivery_guide</field>
+        <field name="report_file">l10n_ec_delivery_guide.report_delivery_guide</field>
+        <field name="print_report_name">'Guia de Remision %s' % (object.name or '')</field>
+        <field name="paperformat_id" ref="l10n_ec_sri.paperformat_ride"/>
+        <field name="binding_model_id" ref="model_l10n_ec_delivery_guide"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

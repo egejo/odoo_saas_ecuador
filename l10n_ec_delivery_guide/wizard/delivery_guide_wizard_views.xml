@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_l10n_ec_delivery_guide_wizard_form" model="ir.ui.view">
+        <field name="name">l10n_ec.delivery.guide.wizard.form</field>
+        <field name="model">l10n_ec.delivery.guide.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Crear Guía de Remisión">
+                <field name="picking_id" readonly="1" invisible="1"/>
+                <group>
+                    <group>
+                        <field name="partner_id"/>
+                        <field name="transport_reason"/>
+                        <field name="sale_id"/>
+                    </group>
+                    <group>
+                        <field name="driver_id"/>
+                        <field name="vehicle_id"/>
+                    </group>
+                </group>
+                <group>
+                    <group>
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                    </group>
+                    <group>
+                        <field name="dir_partida"/>
+                        <field name="dir_destino"/>
+                        <field name="route"/>
+                    </group>
+                </group>
+                <p class="text-muted">
+                    Ajuste las cantidades para repartir la carga en varias guías
+                    (puede volver a abrir este asistente sobre el mismo despacho
+                    para crear guías adicionales con el resto).
+                </p>
+                <field name="line_ids">
+                    <list editable="bottom">
+                        <field name="product_id"/>
+                        <field name="lot_id"/>
+                        <field name="quantity"/>
+                        <field name="uom_id"/>
+                        <field name="move_line_id" invisible="1"/>
+                        <field name="move_id" invisible="1"/>
+                    </list>
+                </field>
+                <footer>
+                    <button string="Crear Guía de Remisión" name="action_create_guide" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_l10n_ec_delivery_guide_wizard" model="ir.actions.act_window">
+        <field name="name">Crear Guía de Remisión</field>
+        <field name="res_model">l10n_ec.delivery.guide.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
