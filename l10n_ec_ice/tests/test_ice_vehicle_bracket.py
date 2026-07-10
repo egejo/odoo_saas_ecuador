@@ -34,14 +34,14 @@ class TestIceVehicleBracket(TransactionCase):
 
     def test_general_bracket_20k_to_30k(self):
         bracket = self.IceCategory.get_vehicle_bracket(25000, is_pickup_or_rescue=False)
-        self.assertEqual(bracket.code, "3686")
+        self.assertEqual(bracket.code, "3074")
         self.assertEqual(bracket.ad_valorem_rate, 10.0)
 
     def test_pickup_rescue_preferential_bracket(self):
         """A pickup/rescue vehicle at the same $25,000 PVP gets the
         preferential 5% bracket instead of the general 10% one."""
         bracket = self.IceCategory.get_vehicle_bracket(25000, is_pickup_or_rescue=True)
-        self.assertEqual(bracket.code, "3684")
+        self.assertEqual(bracket.code, "3072")
         self.assertEqual(bracket.ad_valorem_rate, 5.0)
 
     def test_pickup_rescue_falls_back_to_general_above_30k(self):
@@ -79,13 +79,13 @@ class TestIceVehicleBracket(TransactionCase):
         product.l10n_ec_pvp = 29000.0
         product.l10n_ec_ice_is_pickup_or_rescue = True
         product.product_tmpl_id._onchange_l10n_ec_ice_vehicle_pvp()
-        self.assertEqual(product.l10n_ec_ice_category_id.code, "3684")
+        self.assertEqual(product.l10n_ec_ice_category_id.code, "3072")
 
     def test_onchange_does_not_override_unrelated_category(self):
         """A product manually assigned to a non-vehicle ICE category
         (e.g. perfumes) must not be silently reclassified just because
         someone later fills in an unrelated PVP field."""
-        perfume_category = self.IceCategory.search([("code", "=", "3072")], limit=1)
+        perfume_category = self.IceCategory.search([("code", "=", "3610")], limit=1)
         product = self.env["product.product"].create(
             {
                 "name": "Perfume con PVP casual",
@@ -95,4 +95,4 @@ class TestIceVehicleBracket(TransactionCase):
         )
         product.l10n_ec_pvp = 25000.0
         product.product_tmpl_id._onchange_l10n_ec_ice_vehicle_pvp()
-        self.assertEqual(product.l10n_ec_ice_category_id.code, "3072")
+        self.assertEqual(product.l10n_ec_ice_category_id.code, "3610")

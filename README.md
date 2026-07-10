@@ -167,7 +167,7 @@ carga sin error, sin ejercitar con datos reales — queda ⚠️.
 | `l10n_ec_withholding` | Retenciones IR + IVA + ISD | ✅ Modelo consolidado, catálogo auditado, AUTORIZADO |
 | `l10n_ec_rimpe` | Régimen RIMPE emprendedores/populares | ✅ Implementado y AUTORIZADO 2026-07-09 |
 | `l10n_ec_income_tax` | Impuesto a la renta, gastos personales | ⚠️ Sin probar con empleado real |
-| `l10n_ec_ice` | Impuesto Consumos Especiales | ⚠️ Motor de cálculo corregido 2026-07-10 (nunca funcionó: dependía de `amount_type='code'`, inexistente en Odoo 18), catálogo actualizado a Resolución NAC-DGERCGC25-00000040; sin probar aún con un producto real en una factura |
+| `l10n_ec_ice` | Impuesto Consumos Especiales | ✅ Motor de cálculo y generación XML corregidos y AUTORIZADO contra SRI real 2026-07-10 (nunca funcionó antes); catálogo auditado contra 2 fuentes oficiales del SRI (Ficha Técnica + CATALOGO_ANEXO_ICE.xls) — Vehículos Motorizados con escalonamiento real por PVP (código 3092 corregido, era "TV Prepagada"), Perfumes/Videojuegos/Armas con códigos y tarifas corregidos (3072/3650/3610 → 3610/3620/3630); tarifa de Armas históricamente volátil, verificar decreto vigente |
 | `l10n_ec_reports` | ATS, Formulario 104 | ⚠️ Sin probar generación real |
 
 ### Módulos HR/Nómina

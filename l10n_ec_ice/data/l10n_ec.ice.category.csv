@@ -5,12 +5,12 @@ ice_3041,3041,Cerveza Industrial,specific_content,13.62,0.0,,0.0,0.0
 ice_3043,3043,Cerveza Artesanal,specific_content,1.56,0.0,,0.0,0.0
 ice_3680,3680,Fundas Plásticas,specific,0.08,0.0,,0.0,0.0
 ice_3053,3053,Bebidas Azucaradas (g/100g),specific_content,0.18,0.0,,0.0,0.0
-ice_3072,3072,Perfumes y Aguas de Tocador,ad_valorem,0.0,20.0,,0.0,0.0
-ice_3650,3650,Videojuegos,ad_valorem,0.0,35.0,,0.0,0.0
-ice_3610,3610,Armas de Fuego,ad_valorem,0.0,300.0,,0.0,0.0
+ice_3610,3610,Perfumes y Aguas de Tocador,ad_valorem,0.0,20.0,,0.0,0.0
+ice_3620,3620,Videojuegos,ad_valorem,0.0,0.0,,0.0,0.0
+ice_3630,3630,"Armas de Fuego, Armas Deportivas y Municiones (tarifa historicamente volatil, verificar decreto vigente)",ad_valorem,0.0,30.0,,0.0,0.0
 ice_3073,3073,Vehículos Motorizados PVP hasta USD 20.000,ad_valorem,0.0,5.0,general,0.0,20000.0
-ice_3686,3686,Vehículos Motorizados (excepto camionetas/rescate) PVP superior USD 20.000 hasta 30.000,ad_valorem,0.0,10.0,general,20000.0,30000.0
-ice_3684,3684,Camionetas y Vehículos de Rescate PVP hasta USD 30.000,ad_valorem,0.0,5.0,pickup_rescue,0.0,30000.0
+ice_3074,3074,Vehículos Motorizados (excepto camionetas/furgones) PVP superior USD 20.000 hasta 30.000,ad_valorem,0.0,10.0,general,20000.0,30000.0
+ice_3072,3072,Camionetas y Furgones PVP hasta USD 30.000,ad_valorem,0.0,5.0,pickup_rescue,0.0,30000.0
 ice_3075,3075,Vehículos Motorizados PVP superior USD 30.000 hasta 40.000,ad_valorem,0.0,15.0,general,30000.0,40000.0
 ice_3077,3077,Vehículos Motorizados PVP superior USD 40.000 hasta 50.000,ad_valorem,0.0,20.0,general,40000.0,50000.0
 ice_3078,3078,Vehículos Motorizados PVP superior USD 50.000 hasta 60.000,ad_valorem,0.0,25.0,general,50000.0,60000.0
