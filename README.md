@@ -93,8 +93,8 @@ transmitió contra el servicio de pruebas/certificación real del SRI
   desde un mismo despacho/transferencia interna, emisión con el despacho ya aprobado,
   anexo de números de serie/lote (exigido por el Art. 19 núm. 2 del Reglamento de
   Comprobantes de Venta), vínculo `docSustento` con la venta/factura que motiva el
-  traslado, anulación dentro del plazo, y transportista tanto cédula como RUC — todo
-  AUTORIZADO contra el SRI real.
+  traslado, anulación dentro del plazo, y transportista identificado por cédula, RUC o
+  pasaporte (los 3 tipos) — todo AUTORIZADO contra el SRI real.
 
 ### ⚠️ Lo que está instalado pero SIN probar con datos reales
 
@@ -337,7 +337,8 @@ fix, en `CLAUDE.md` del repo `egejo/odooCE-V18`.
   vínculo `docSustento` con una venta real facturada y autorizada (encontrado y
   corregido un bug real: `numDocSustento` debe conservar los guiones, patrón distinto
   al de retenciones); anulación de una guía autorizada (guard de plazo probado en ambos
-  sentidos); transportista tipo RUC además de cédula. Todos los casos **AUTORIZADO**.
+  sentidos); transportista identificado por RUC y por pasaporte, además de cédula.
+  Todos los casos **AUTORIZADO**.
 
 ---
 

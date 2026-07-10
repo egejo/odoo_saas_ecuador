@@ -6,7 +6,7 @@
 
 {
     "name": "Ecuador - Guía de Remisión Electrónica",
-    "version": "18.0.1.1.0",
+    "version": "18.0.1.2.0",
     "category": "Inventory/Localizations",
     "summary": "Guía de Remisión (codDoc 06): transportista, XML, firma y transmisión SRI",
     "description": """
@@ -76,9 +76,12 @@ varias rondas:
   fork no implementa ningún servicio de anulación real contra el SRI
   para ningún comprobante (la anulación real la dispara el receptor
   desde el portal web del SRI, no el emisor vía API).
-* Transportista identificado por RUC (empresa de transporte), además de
-  por cédula -- AUTORIZADO. Sin probar: transportista por pasaporte
-  (caso de borde menor, sin evidencia de que se necesite).
+* Transportista identificado por RUC (empresa de transporte) y por
+  pasaporte (transportista extranjero), además de por cédula -- los 3
+  tipos de identificación de la Tabla 6 del SRI que aplican a un
+  transportista, AUTORIZADO.
+
+Con esto no queda ningún caso pendiente de probar para este módulo.
 
 Ver `repos.yaml` para los SHAs exactos de cada ronda.
     """,
