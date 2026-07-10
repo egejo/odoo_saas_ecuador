@@ -36,6 +36,17 @@ class L10nEcDeliveryGuideWizard(models.TransientModel):
         "l10n_ec.delivery.guide.wizard.line", "wizard_id", string="Líneas"
     )
 
+    @staticmethod
+    def _flatten_address(address):
+        """
+        _display_address() devuelve la dirección multi-línea (según el
+        formato de dirección del país), con "\n" entre calle/ciudad/país
+        -- para dirPartida/dirDestino conviene una sola línea, más
+        cercano a como la Ficha Técnica del SRI muestra sus propios
+        ejemplos (ej. "Av. Eloy Alfaro 34 y Av. Libertad Esq.").
+        """
+        return ", ".join(line.strip() for line in address.splitlines() if line.strip())
+
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
@@ -49,12 +60,12 @@ class L10nEcDeliveryGuideWizard(models.TransientModel):
         res["picking_id"] = picking.id
         if picking.partner_id:
             res["partner_id"] = picking.partner_id.id
-            res["dir_destino"] = picking.partner_id._display_address(
-                without_company=True
+            res["dir_destino"] = self._flatten_address(
+                picking.partner_id._display_address(without_company=True)
             )
 
         warehouse_partner = picking.picking_type_id.warehouse_id.partner_id
-        res["dir_partida"] = (
+        res["dir_partida"] = self._flatten_address(
             warehouse_partner._display_address(without_company=True)
             if warehouse_partner
             else picking.company_id.partner_id._display_address(without_company=True)
