@@ -6,7 +6,7 @@
 
 {
     "name": "Ecuador - Guía de Remisión Electrónica",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.1.0",
     "category": "Inventory/Localizations",
     "summary": "Guía de Remisión (codDoc 06): transportista, XML, firma y transmisión SRI",
     "description": """
@@ -56,10 +56,31 @@ contra el esquema real, siguiendo el mismo patrón ya probado end-to-end
 de `account.retention` (`l10n_ec_withholding`) para documentos SRI que no
 son un `account.move`.
 
-Probado end-to-end contra el SRI de pruebas (`celcer.sri.gob.ec`):
-transferencia interna con 2 guías desde un mismo picking, un despacho ya
-en estado `done`, y un producto con seguimiento por número de serie --
-los tres casos AUTORIZADO. Ver `repos.yaml` para el SHA exacto.
+Probado end-to-end contra el SRI de pruebas (`celcer.sri.gob.ec`), en
+varias rondas:
+
+* Transferencia interna con 2 guías desde un mismo picking ya en estado
+  `done`, con un producto de seguimiento por número de serie repartido
+  entre ambas -- AUTORIZADO.
+* Vínculo `docSustento` con una venta real facturada y autorizada (venta
+  -> entrega -> factura AUTORIZADA -> guía referenciándola) -- encontrado
+  y corregido un bug real: `numDocSustento` debe conservar los guiones
+  (`NNN-NNN-NNNNNNNNN`), a diferencia del `docSustento` de
+  `account.retention`, que se los quita a este mismo dato; el SRI
+  rechazó el primer envío citando el patrón exacto exigido. Tras el fix,
+  AUTORIZADO.
+* Anulación de una guía ya autorizada (`action_cancel`): probado tanto
+  el rechazo correcto pasado el plazo del día 7 del mes siguiente (Res.
+  NAC-DGERCGC25-00000017) como la anulación real dentro del plazo. Es
+  solo una validación local de plazo + archivado del registro -- este
+  fork no implementa ningún servicio de anulación real contra el SRI
+  para ningún comprobante (la anulación real la dispara el receptor
+  desde el portal web del SRI, no el emisor vía API).
+* Transportista identificado por RUC (empresa de transporte), además de
+  por cédula -- AUTORIZADO. Sin probar: transportista por pasaporte
+  (caso de borde menor, sin evidencia de que se necesite).
+
+Ver `repos.yaml` para los SHAs exactos de cada ronda.
     """,
     "author": "Somatech.dev, egejo (implementación completa desde cero: "
     "el intento previo del upstream nunca se instaló por choque de "

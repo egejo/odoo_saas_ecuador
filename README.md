@@ -88,6 +88,13 @@ transmitió contra el servicio de pruebas/certificación real del SRI
   RIMPE de la propia compañía (leyenda en XML/RIDE).
 - Importador de XML de proveedor (factura recibida) hacia un vendor bill en borrador —
   funcionalidad que ni siquiera existe en el módulo oficial de Enterprise.
+- **Guía de Remisión** (`l10n_ec_delivery_guide`, implementada desde cero
+  2026-07-10 — tampoco existe en el módulo oficial de Enterprise): múltiples guías
+  desde un mismo despacho/transferencia interna, emisión con el despacho ya aprobado,
+  anexo de números de serie/lote (exigido por el Art. 19 núm. 2 del Reglamento de
+  Comprobantes de Venta), vínculo `docSustento` con la venta/factura que motiva el
+  traslado, anulación dentro del plazo, y transportista tanto cédula como RUC — todo
+  AUTORIZADO contra el SRI real.
 
 ### ⚠️ Lo que está instalado pero SIN probar con datos reales
 
@@ -100,9 +107,7 @@ criterio de este fork.
 
 ### ❌ Lo que no está implementado (pese a lo que decía este README antes)
 
-Guía de Remisión (ni XML ni RIDE — tampoco existe en el módulo oficial de Enterprise,
-así que no es una omisión exclusiva de este fork). Reporte de Utilidades en
-`l10n_ec_sut` (placeholder vacío en el código).
+Reporte de Utilidades en `l10n_ec_sut` (placeholder vacío en el código).
 
 Ver [`CLAUDE.md`](../../CLAUDE.md) del repo de infraestructura para el detalle completo,
 checkpoint por checkpoint, de cada bug encontrado y corregido.
@@ -117,7 +122,7 @@ checkpoint por checkpoint, de cada bug encontrado y corregido.
 |----------------|--------|
 | Firma digital XAdES-BES (SHA-256) | ✅ Corregida y verificada con `signxml` contra un certificado real |
 | Factura, Nota de Crédito, Nota de Débito, Comprobante de Retención | ✅ AUTORIZADO end-to-end contra SRI Pruebas |
-| Guía de Remisión | ❌ No implementada (tampoco existe en Enterprise) |
+| Guía de Remisión (múltiples guías/despacho, anexo series, docSustento, anulación) | ✅ Implementada 2026-07-10, AUTORIZADO end-to-end |
 | Generación RIDE PDF | ✅ Rediseñado con bordes, forma de pago e info adicional |
 | Clave de acceso 49 dígitos (Módulo 11) | ✅ |
 | Importador de XML de proveedor → vendor bill borrador | ✅ Feature propia de este fork, no existe en Enterprise |
@@ -178,7 +183,7 @@ carga sin error, sin ejercitar con datos reales — queda ⚠️.
 
 | Módulo | Descripción | Estado |
 |--------|-------------|--------|
-| `l10n_ec_stock` | Guía de Remisión electrónica | ❌ No implementada (ni XML ni RIDE) |
+| `l10n_ec_delivery_guide` | Guía de Remisión electrónica (reemplaza a `l10n_ec_stock`) | ✅ Implementada y AUTORIZADO 2026-07-10 |
 | `l10n_ec_pos` | Facturación electrónica en POS | ⚠️ Sin ningún punto de venta configurado |
 | `l10n_ec_customs` | DAU, partidas arancelarias, FODINFA, ISD | ⚠️ Sin probar con importación real |
 | `l10n_ec_quality` | Control calidad productos Ecuador | ⚠️ Solo aplica si la empresa fabrica |
@@ -210,9 +215,11 @@ gitaggregate -c scripts/repos.yaml
 ```
 
 Solo se montan en `addons_path` los módulos `l10n_ec_base`, `l10n_ec_edi`,
-`l10n_ec_sri`, `l10n_ec_withholding`, `l10n_ec_rimpe` y el resto de módulos
-fiscales/operacionales listados arriba — **nunca** `l10n_ec`/`l10n_ec_stock`, que
-chocan de nombre técnico con el core de Odoo.
+`l10n_ec_sri`, `l10n_ec_withholding`, `l10n_ec_rimpe`, `l10n_ec_delivery_guide` y el
+resto de módulos fiscales/operacionales listados arriba — **nunca** `l10n_ec`, que
+choca de nombre técnico con el core de Odoo. El antiguo `l10n_ec_stock` (mismo
+problema de colisión) fue eliminado de este fork y reemplazado por
+`l10n_ec_delivery_guide` (ver Historial de Correcciones).
 
 ### Requisitos Previos
 
@@ -318,6 +325,19 @@ fix, en `CLAUDE.md` del repo `egejo/odooCE-V18`.
   proveedor (existía con códigos equivocados sin usar en ningún lado desde el día 1,
   ahora corregido y conectado al wizard). Los 9 códigos de retención renta y los 7 de
   IVA confirmados **AUTORIZADO** contra el SRI real, uno por uno.
+- **2026-07-10** — **Guía de Remisión implementada desde cero** (nuevo módulo
+  `l10n_ec_delivery_guide`, reemplazando por completo el `l10n_ec_stock` heredado del
+  upstream que nunca se instaló ni se probó por chocar de nombre técnico con el core de
+  Odoo — y que además tenía bugs reales: RUC del transportista mal mapeado a su número
+  de licencia, motivo de traslado ilegible, sin bloque `docSustento`, sin RIDE/correo/
+  anulación). Diseño con relación N:1 hacia `stock.picking` (permite varias guías por
+  despacho) sin restricción de estado (se puede emitir con el despacho ya aprobado), más
+  anexo de números de serie/lote por línea. Probado end-to-end contra el SRI real en
+  varias rondas: transferencia interna con 2 guías y producto con número de serie;
+  vínculo `docSustento` con una venta real facturada y autorizada (encontrado y
+  corregido un bug real: `numDocSustento` debe conservar los guiones, patrón distinto
+  al de retenciones); anulación de una guía autorizada (guard de plazo probado en ambos
+  sentidos); transportista tipo RUC además de cédula. Todos los casos **AUTORIZADO**.
 
 ---
 
@@ -328,7 +348,7 @@ fix, en `CLAUDE.md` del repo `egejo/odooCE-V18`.
 | **SRI** | Facturación Electrónica (Factura/NC/ND/Retención) | ✅ AUTORIZADO en Pruebas |
 | **SRI** | Catálogo de retenciones NAC-DGERCGC26-00000009 | ✅ Auditado y AUTORIZADO |
 | **SRI** | Régimen RIMPE | ✅ AUTORIZADO |
-| **SRI** | Guía de Remisión | ❌ No implementada |
+| **SRI** | Guía de Remisión | ✅ Implementada y AUTORIZADO 2026-07-10 |
 | **SRI** | ATS / Formulario 104 | ⚠️ Instalado, sin probar |
 | **IESS** | Aportes, Décimos | ⚠️ Instalado, sin empleados reales |
 | **SENAE** | FODINFA, IVA importación, ISD | ⚠️ Instalado, sin importación real |
