@@ -17,6 +17,15 @@
  * vigente desde 2026), y se espera aqui -- del lado del navegador, sin
  * bloquear ningun worker de Odoo -- a que el SRI la autorice antes de
  * imprimir el ticket.
+ *
+ * Por normativa, TODA venta debe quedar facturada (no es una opcion del
+ * cajero) -- por eso is_to_invoice() se fuerza a true, y el cliente por
+ * defecto (Consumidor Final) se preselecciona en cada orden nueva. El
+ * boton nativo "Invoice"/"Facturar" de Odoo, si se deja tal cual, dispara
+ * SU PROPIO mecanismo (factura y descarga el PDF de inmediato, sin
+ * esperar la autorizacion del SRI -- por eso se veia "DOCUMENTO NO
+ * AUTORIZADO (DRAFT)"): shouldDownloadInvoice() se desactiva aqui para
+ * que ese camino nunca compita con el de este modulo.
  */
 
 import { PaymentScreen } from "@point_of_sale/app/screens/payment_screen/payment_screen";
@@ -33,6 +42,31 @@ function sleep(ms) {
 }
 
 patch(PosOrder.prototype, {
+    setup(vals) {
+        super.setup(...arguments);
+        // Preselecciona Consumidor Final en toda orden nueva sin cliente:
+        // la mayoria de ventas de mostrador no identifican al comprador,
+        // y facturar (obligatorio) requiere un partner en la orden.
+        if (
+            this.state === "draft" &&
+            !this.partner_id &&
+            this.config?.l10n_ec_sri_active &&
+            this.config?.l10n_ec_default_partner_id
+        ) {
+            this.set_partner(this.config.l10n_ec_default_partner_id);
+        }
+    },
+
+    // Por normativa la factura no es opcional: se ignora el valor
+    // guardado y se fuerza siempre a true (el boton "Invoice" del pago
+    // sigue siendo clickeable pero deja de tener efecto real).
+    is_to_invoice() {
+        if (this.config?.l10n_ec_sri_active) {
+            return true;
+        }
+        return super.is_to_invoice(...arguments);
+    },
+
     export_for_printing(baseUrl, headerData) {
         const result = super.export_for_printing(...arguments);
         result.l10n_ec_sri = this.l10n_ec_sri_receipt_data || null;
@@ -41,8 +75,25 @@ patch(PosOrder.prototype, {
 });
 
 patch(PaymentScreen.prototype, {
+    // Evita que el flujo nativo de Odoo (descargar el PDF de la factura
+    // apenas se crea, sin esperar autorizacion del SRI) compita con el
+    // de este modulo -- _l10n_ec_invoiceAndWaitForSri es quien maneja
+    // facturacion + espera + impresion del ticket de aqui en adelante.
+    shouldDownloadInvoice() {
+        if (this.pos.config.l10n_ec_sri_active) {
+            return false;
+        }
+        return super.shouldDownloadInvoice(...arguments);
+    },
+
     async afterOrderValidation() {
-        await this._l10n_ec_invoiceAndWaitForSri();
+        try {
+            await this._l10n_ec_invoiceAndWaitForSri();
+        } catch (error) {
+            // Defensa extra: bajo ninguna circunstancia un error aqui debe
+            // dejar la pantalla del POS colgada sin pasar al recibo.
+            console.error("l10n_ec_pos: error inesperado facturando/transmitiendo al SRI", error);
+        }
         return super.afterOrderValidation(...arguments);
     },
 
