@@ -10,6 +10,16 @@ class L10nEcPayslip(models.Model):
         "IESS/Company Loans", compute="_compute_loans", store=True
     )
 
+    # Redeclarar el compute de net_wage (no _compute_totals: ese nombre ya
+    # esta ocupado por l10n_ec_hr_payroll y computa ademas total_income/
+    # income_tax -- redefinirlo aqui con el mismo nombre lo reemplazaba por
+    # completo (misma resolucion de metodo de Python, ultimo modulo cargado
+    # gana), dejando total_income/income_tax sin calcular NUNCA. Bug real
+    # encontrado 2026-07-13 probando el primer payslip real.
+    net_wage = fields.Float(
+        "Net Wage", compute="_compute_net_wage_with_loans", store=True
+    )
+
     @api.depends("employee_id", "date_start", "date_end")
     def _compute_loans(self):
         for rec in self:
@@ -26,7 +36,6 @@ class L10nEcPayslip(models.Model):
             total = sum(installments.mapped("amount"))
             rec.loan_deduction = total
 
-    # Override total computation to include loans
     @api.depends(
         "total_income",
         "total_benefits_cash",
@@ -35,17 +44,8 @@ class L10nEcPayslip(models.Model):
         "advances",
         "loan_deduction",
     )
-    def _compute_totals(self):
-        # We need to call super or re-implement.
-        # Since we modified the original logic widely, let's re-implement strictly.
+    def _compute_net_wage_with_loans(self):
         for rec in self:
-            # Re-calc Totals (Copy of original + loan_deduction)
-            # Note: This overrides the previous method entirely if we use same @api.depends
-            # But since 'loan_deduction' is new, we should just subtract it from net_wage?
-            # No, net_wage compute needs to know about it.
-
-            # Re-triggering the base logic is messy if we don't fully override.
-            # We will just subtract it here:
             rec.net_wage = (
                 (rec.total_income + rec.total_benefits_cash)
                 - rec.iess_personal

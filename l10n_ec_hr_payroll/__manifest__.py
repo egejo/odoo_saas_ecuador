@@ -6,7 +6,7 @@
 
 {
     "name": "Ecuador - Payroll (IESS, Décimos, Utilidades)",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.1.0",
     "category": "Human Resources/Payroll",
     "summary": "Complete Ecuadorian payroll with IESS, Décimos, and Utilidades",
     "description": """
@@ -40,15 +40,27 @@ modulos. Corregido. Ademas, un menu padre inexistente
 (`l10n_ec_hr_payroll.menu_l10n_ec_hr_payroll_root`, el real es
 `menu_l10n_ec_payroll_root`) era referenciado por otros modulos de
 este fork (`l10n_ec_loans`/`l10n_ec_vacation`) y causaba el mismo tipo
-de fallo -- corregido ahi. Fuera de estos bugs de empaquetado, ningun
-empleado ni contrato real esta configurado todavia: IESS, decimos,
-fondos de reserva, utilidades y horas extra siguen SIN probar con
-datos reales.
+de fallo -- corregido ahi.
+
+Bug real de calculo encontrado el 2026-07-13, probando el primer
+payslip real (empleado+contrato sinteticos, SAVEPOINT/ROLLBACK):
+`l10n_ec.payslip._compute_totals` calcula `total_income` = 0 sin
+importar el sueldo del contrato, y por lo tanto TODO lo que depende de
+el (IESS personal/patronal, impuesto a la renta, decimo tercero, fondos
+de reserva, neto) tambien queda en 0 -- solo el decimo cuarto (que no
+depende de total_income) calculaba bien. Causa raiz: `_compute_totals`
+llama a `_compute_overtime_from_attendance()`, que busca en el modelo
+`hr.attendance` -- pero `hr_attendance` nunca estaba declarado como
+dependencia del manifiesto ni instalado en este servidor, asi que ese
+modelo no existe en el registro. Se agrego `hr_attendance` a `depends`.
+Con esto, la funcion de auto-calculo de horas extra desde biometrico/
+kiosko (ya presente en el codigo, sin usar hasta ahora) puede funcionar
+de verdad si se activa el control de asistencia.
     """,
-    "author": "Somatech.dev, Odoo Community Association (OCA), egejo (fork: bug de empaquetado corregido, sin auditar funcionalmente todavía)",
+    "author": "Somatech.dev, Odoo Community Association (OCA), egejo (fork: bug de empaquetado corregido, payslip real corregido 2026-07-13)",
     "website": "https://github.com/somatechlat/odoo_saas_ecuador",
     "license": "LGPL-3",
-    "depends": ["hr", "hr_contract"],
+    "depends": ["hr", "hr_contract", "hr_attendance"],
     "data": [
         "security/ir.model.access.csv",
         "data/l10n_ec_salary_rule_data.xml",

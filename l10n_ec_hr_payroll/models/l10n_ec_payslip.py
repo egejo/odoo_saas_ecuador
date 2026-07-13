@@ -19,8 +19,18 @@ class L10nEcPayslip(models.Model):
     wage = fields.Float(
         "Base Wage", compute="_compute_wage", store=True, readonly=False
     )
-    overtime_hours = fields.Float("Overtime (50%) Hours")
-    supplementary_hours = fields.Float("Supplementary (100%) Hours")
+    overtime_hours = fields.Float(
+        "Overtime (50%) Hours",
+        compute="_compute_overtime_from_attendance",
+        store=True,
+        readonly=False,
+    )
+    supplementary_hours = fields.Float(
+        "Supplementary (100%) Hours",
+        compute="_compute_overtime_from_attendance",
+        store=True,
+        readonly=False,
+    )
     commission = fields.Float("Commissions")
     bonus = fields.Float("Bonuses")
 
@@ -31,7 +41,9 @@ class L10nEcPayslip(models.Model):
     iess_personal = fields.Float(
         "IESS Personal (9.45%)", compute="_compute_iess", store=True
     )
-    income_tax = fields.Float("Impuesto Renta", default=0.0)
+    income_tax = fields.Float(
+        "Impuesto Renta", compute="_compute_totals", store=True
+    )
     advances = fields.Float("Salary Advances")
 
     # Employer Costs
@@ -67,12 +79,16 @@ class L10nEcPayslip(models.Model):
         for rec in self:
             rec.wage = rec.contract_id.wage if rec.contract_id else 0.0
 
-    @api.depends("wage", "overtime_hours", "supplementary_hours", "commission", "bonus")
+    @api.depends(
+        "wage",
+        "overtime_hours",
+        "supplementary_hours",
+        "commission",
+        "bonus",
+        "advances",
+    )
     def _compute_totals(self):
         for rec in self:
-            # Superiority Feature: Auto-calculate Overtime from Attendance
-            rec._compute_overtime_from_attendance()
-
             # Simple calc for now - assumes Wage is monthly
             ot_rate = (rec.wage / 240) * 1.5
             supp_rate = (rec.wage / 240) * 2.0
@@ -93,6 +109,7 @@ class L10nEcPayslip(models.Model):
                 - rec.advances
             )
 
+    @api.depends("employee_id", "date_start", "date_end")
     def _compute_overtime_from_attendance(self):
         """
         PacERP Killer: Auto-calculate overtime from Biometric/Kiosk data.
@@ -140,23 +157,8 @@ class L10nEcPayslip(models.Model):
                         extra = hours - 8.0
                         total_supp_50 += extra
 
-            # Update Fields if they are zero (Manual override allowed)
-            if rec.overtime_hours == 0 and total_extra_100 > 0:
-                rec.overtime_hours = total_extra_100  # In our model overtime_hours is mapped to 100% or 50%?
-                # Check model:
-                # overtime_hours = 50% (Wait, typically 50 is supplementary)
-                # supplementary_hours = 100%
-                # Let's fix mapping in field definition if needed, but assuming:
-                # overtime_hours field label says "Overtime (50%) Hours" in source code line 20
-                # supplementary_hours field label says "Supplementary (100%) Hours" in source code line 21
-                # Wait, Recargo Nocturno is usually 25, Suplementaria is 50, Extraordinaria is 100.
-                # In common Ecuador terms:
-                # 50% = Suplementaria (Weekday excess)
-                # 100% = Extraordinaria (Weekend)
-
-                pass
-
-            # Write to fields strictly
+            # overtime_hours = 50% (Suplementaria, exceso en dia de semana)
+            # supplementary_hours = 100% (Extraordinaria, fin de semana)
             rec.overtime_hours = total_supp_50  # 50%
             rec.supplementary_hours = total_extra_100  # 100%
 
