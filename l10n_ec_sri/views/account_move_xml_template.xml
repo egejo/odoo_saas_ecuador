@@ -41,7 +41,7 @@
     <detalles>
         <detalle t-foreach="record.invoice_line_ids" t-as="line">
             <codigoPrincipal><t t-esc="line.product_id.default_code or 'GEN'"/></codigoPrincipal>
-            <descripcion><t t-esc="line.name"/></descripcion>
+            <descripcion><t t-esc="' '.join((line.name or '').split())[:300]"/></descripcion>
             <cantidad><t t-esc="line.quantity"/></cantidad>
             <precioUnitario><t t-esc="line.price_unit"/></precioUnitario>
             <descuento>0.00</descuento>
@@ -111,7 +111,7 @@
     <detalles>
         <detalle t-foreach="record.invoice_line_ids" t-as="line">
             <codigoInterno><t t-esc="line.product_id.default_code[:25] if line.product_id.default_code else 'GEN'"/></codigoInterno>
-            <descripcion><t t-esc="line.name"/></descripcion>
+            <descripcion><t t-esc="' '.join((line.name or '').split())[:300]"/></descripcion>
             <cantidad><t t-esc="line.quantity"/></cantidad>
             <precioUnitario><t t-esc="line.price_unit"/></precioUnitario>
             <descuento>0.00</descuento>
