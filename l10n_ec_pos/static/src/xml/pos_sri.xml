@@ -23,7 +23,7 @@
                 </div>
 
                 <div style="text-align:center;margin:4px 0;">
-                    RUC: <t t-esc="props.data.company.vat"/><br/>
+                    RUC: <t t-esc="props.data.headerData.company.vat"/><br/>
                     <t t-if="props.data.l10n_ec_sri.company_street" t-esc="props.data.l10n_ec_sri.company_street"/><br/>
                     Fecha Emisión: <t t-esc="props.data.l10n_ec_sri.invoice_date"/>
                 </div>
