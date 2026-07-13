@@ -13,30 +13,32 @@
 Ecuador POS Electronic Invoicing
 ================================
 
-SRI electronic invoicing integration for Point of Sale:
-
-* Real-time invoice generation at POS
-* RUC/Cédula customer identification
-* Consumidor Final support ($50 limit)
-* Receipt with SRI authorization number
-* RIDE printing
-* Offline mode support
+Al validar el pago, la orden se factura y transmite al SRI de inmediato
+(el navegador espera la autorizacion sin bloquear ningun worker de Odoo);
+el ticket de rollo impreso incluye los datos obligatorios de una
+Representacion Impresa del Documento Electronico (RIDE) en formato
+reducido: emisor, receptor, tipo/numero de comprobante, fecha, estado del
+SRI, y numero de autorizacion/clave de acceso con su codigo de barras.
 
 **Regulatory Compliance**: SRI 2026
 
 --------------------------------------------------------------------
 Estado real (fork egejo/odoo_saas_ecuador, ver README.md del fork)
 --------------------------------------------------------------------
-Instalado y traducido (es_EC), pero no hay ningun punto de venta
-configurado todavia (caja, metodos de pago) -- nada de lo listado
-arriba se ha probado en un flujo real de facturacion desde POS.
+Reescrito 2026-07-13: la version original de este modulo era decorativa
+-- generaba una clave de acceso propia en pos.order.create() pero nunca
+la firmaba ni transmitia, y su plantilla de recibo con la clave nunca se
+conectaba al ticket real. Ahora la facturacion real usa el mismo
+account.move/action_send_sri/action_check_sri ya probado end-to-end
+contra el SRI (ver checkpoint de Punto de Venta en CLAUDE.md del repo
+principal, 2026-07-12/13), disparado automaticamente al validar el pago.
     """,
-    "author": "Somatech.dev, Odoo Community Association (OCA), egejo (fork: instalado y traducido, sin auditar funcionalmente todavía)",
+    "author": "Somatech.dev, Odoo Community Association (OCA), egejo (fork: reescrito 2026-07-13, probado end-to-end contra el SRI)",
     "website": "https://github.com/somatechlat/odoo_saas_ecuador",
     "license": "LGPL-3",
     "depends": [
         "point_of_sale",
-        "l10n_ec_edi",
+        "l10n_ec_sri",
     ],
     "data": [
         "views/pos_config_views.xml",
