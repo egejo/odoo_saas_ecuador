@@ -174,9 +174,12 @@ class L10nEcSutReportWizard(models.TransientModel):
             employee_data[emp_id]["name"] = p.employee_id.name
             employee_data[emp_id]["cedula"] = p.employee_id.identification_id or ""
             employee_data[emp_id]["days"] += p.days_worked or 0
-            # Get cargas familiares from employee or contract
+            # Cargas familiares para Utilidades (Codigo de Trabajo Art. 97:
+            # conyuge/hijos <18 o con discapacidad) -- campo propio, distinto
+            # del que usa la rebaja de impuesto a la renta de LORTI (que si
+            # cuenta padres dependientes, ver hr_employee_ec.py).
             employee_data[emp_id]["cargas"] = (
-                getattr(p.employee_id, "l10n_ec_family_loads", 0) or 0
+                getattr(p.employee_id, "l10n_ec_utilidades_family_loads", 0) or 0
             )
 
         total_days = sum(emp["days"] for emp in employee_data.values())

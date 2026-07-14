@@ -56,8 +56,23 @@ modelo no existe en el registro. Se agrego `hr_attendance` a `depends`.
 Con esto, la funcion de auto-calculo de horas extra desde biometrico/
 kiosko (ya presente en el codigo, sin usar hasta ahora) puede funcionar
 de verdad si se activa el control de asistencia.
+
+Bug real encontrado auditando Utilidades el 2026-07-14 (ver
+l10n_ec_sut): el unico campo `l10n_ec_family_loads` (Cargas
+Familiares) se usaba tanto para la rebaja de impuesto a la renta
+(LORTI Art. 10, que SI cuenta padres/madres dependientes) como para el
+5% de Utilidades (Codigo de Trabajo Art. 97, que NO cuenta padres,
+solo conyuge/hijos <18 o con discapacidad) -- un empleado con un padre
+a cargo pero sin conyuge/hijos hubiera recibido de mas en Utilidades.
+Se agrego un campo separado `l10n_ec_utilidades_family_loads` con su
+propia definicion legal, y una vista nueva (antes ninguno de estos
+campos era editable desde la UI, solo por ORM) para que ambos se vean
+y editen por separado en la ficha del empleado. No se copio el valor
+del campo viejo al nuevo automaticamente (arrastraria el mismo error
+que se esta corrigiendo) -- revisar/completar el nuevo campo por
+empleado a mano.
     """,
-    "author": "Somatech.dev, Odoo Community Association (OCA), egejo (fork: bug de empaquetado corregido, payslip real corregido 2026-07-13)",
+    "author": "Somatech.dev, Odoo Community Association (OCA), egejo (fork: bug de empaquetado corregido, payslip real corregido 2026-07-13, cargas familiares de Utilidades separadas 2026-07-14)",
     "website": "https://github.com/somatechlat/odoo_saas_ecuador",
     "license": "LGPL-3",
     "depends": ["hr", "hr_contract", "hr_attendance"],
@@ -68,6 +83,7 @@ de verdad si se activa el control de asistencia.
         "report/form_107_template.xml",
         "views/hr_contract_views.xml",
         "views/l10n_ec_payslip_views.xml",
+        "views/hr_employee_views.xml",
     ],
     "images": ["static/description/banner.png"],
     "installable": True,

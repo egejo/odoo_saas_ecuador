@@ -31,16 +31,24 @@ se repartia solo por cantidad de cargas, ignorando por completo los
 dias trabajados -- un empleado de 1 mes con las mismas cargas que uno
 de 12 meses se llevaba la misma proporcion del 5%. Corregido para
 ponderar por dias_trabajados x cargas, como exige el Art. 97.
+
+Segundo fix el mismo dia: el campo de cargas familiares que usaba este
+reporte (`l10n_ec_family_loads`) era el mismo que usa la rebaja
+tributaria de renta (LORTI Art. 10, que SI cuenta padres/madres
+dependientes) -- mientras que "cargas familiares" para Utilidades
+(Art. 97) solo cuenta conyuge/conviviente e hijos menores de 18 o con
+discapacidad, NUNCA padres. Se separo en un campo propio
+(`hr.employee.l10n_ec_utilidades_family_loads`, en
+`l10n_ec_hr_payroll`) con su propia definicion legal y su propia
+vista editable; este reporte ahora lee ese campo nuevo, no el de
+renta. El valor viejo no se copio automaticamente al nuevo -- hay que
+revisar/completar el nuevo campo por empleado a mano.
+
 Pendiente (fuera de esta ronda, requiere mas alcance): el tope legal
 de 24 SBU por trabajador (el excedente va al regimen de prestaciones
 solidarias del IESS, NO se redistribuye a otros trabajadores) no esta
-implementado; y el campo `l10n_ec_family_loads` que usa este reporte
-es el mismo que usa la rebaja tributaria de renta (LORTI Art. 10, que
-sí cuenta padres dependientes), mientras que "cargas familiares" para
-utilidades (Art. 97) solo cuenta conyuge/conviviente e hijos
-menores de 18 o con discapacidad -- un empleado con un padre a cargo
-pero sin conyuge/hijos podria recibir 5% de mas si se usa el mismo
-campo para ambos calculos.
+implementado -- bajo riesgo real hoy dado el tamaño de la nomina, mas
+prioridad si algun empleado se acerca a ese monto.
     """,
     "author": "Somatech.dev, egejo (fork: Utilidades auditada y corregida 2026-07-14; decimo tercero/cuarto instalados y traducidos, sin auditar)",
     "depends": ["l10n_ec_hr_payroll"],

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_employee_view_form_inherit_l10n_ec" model="ir.ui.view">
+        <field name="name">hr.employee.view.form.inherit.l10n.ec</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Ecuador - Cargas Familiares" name="l10n_ec_family_loads">
+                    <group>
+                        <group string="Rebaja Impuesto a la Renta (LORTI Art. 10)">
+                            <field name="l10n_ec_family_loads"/>
+                            <field name="l10n_ec_catastrophic_disease"/>
+                        </group>
+                        <group string="Utilidades (Codigo de Trabajo Art. 97)">
+                            <field name="l10n_ec_utilidades_family_loads"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
