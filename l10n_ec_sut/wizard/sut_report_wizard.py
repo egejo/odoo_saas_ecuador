@@ -180,7 +180,14 @@ class L10nEcSutReportWizard(models.TransientModel):
             )
 
         total_days = sum(emp["days"] for emp in employee_data.values())
-        total_cargas = sum(emp["cargas"] for emp in employee_data.values())
+        # Art. 97: el 5% se reparte en proporción a las cargas familiares de
+        # cada trabajador durante el tiempo que trabajó en el ejercicio -- el
+        # peso real es dias_trabajados x cargas, no cargas por si solas (un
+        # empleado de 1 mes con las mismas cargas que uno de 12 meses no
+        # puede llevarse la misma proporcion del 5%).
+        total_weighted_cargas = sum(
+            emp["days"] * emp["cargas"] for emp in employee_data.values()
+        )
 
         # Calculate per employee
         content = "Cedula,Nombres,Dias_Trabajados,Cargas_Familiares,Utilidad_10pct,Utilidad_5pct,Total_Utilidad\n"
@@ -192,9 +199,10 @@ class L10nEcSutReportWizard(models.TransientModel):
             else:
                 utilidad_10 = 0
 
-            # 5% portion: proportional to cargas
-            if total_cargas > 0 and emp["cargas"] > 0:
-                utilidad_5 = (emp["cargas"] / total_cargas) * cargas_portion
+            # 5% portion: proportional to (dias trabajados x cargas)
+            weighted_cargas = emp["days"] * emp["cargas"]
+            if total_weighted_cargas > 0 and weighted_cargas > 0:
+                utilidad_5 = (weighted_cargas / total_weighted_cargas) * cargas_portion
             else:
                 utilidad_5 = 0
 

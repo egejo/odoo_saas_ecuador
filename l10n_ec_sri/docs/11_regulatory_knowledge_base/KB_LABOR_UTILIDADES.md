@@ -101,10 +101,18 @@ Workers who did not work the full year receive proportional share based on:
 
 ## 7. MAXIMUM PER EMPLOYEE
 
+**CORRECTION (2026-07-14, verified via web search against Código de Trabajo
+Art. 97 text)**: this section originally said the excess above the cap gets
+redistributed proportionally to other workers -- that is WRONG. The real
+rule: utilidades paid to a single worker cannot exceed 24 SBU; any excess
+is deposited by the employer into IESS's **régimen de prestaciones
+solidarias de la Seguridad Social** (within 15 days of the payment
+deadline), not handed to other employees.
+
 | Attribute | Value |
 |:----------|:------|
 | **Individual Cap** | 24 × SBU = 24 × $482 = **$11,568** (2026) |
-| **Excess Distribution** | Proportionally to other workers |
+| **Excess Distribution** | Deposited to IESS régimen de prestaciones solidarias -- NOT redistributed to other workers |
 
 ---
 
@@ -122,7 +130,7 @@ For `l10n_ec_hr_payroll` module:
 2. **Days Worked**: Track actual working days per fiscal year
 3. **Two-Step Calculation**: Calculate 10% and 5% separately
 4. **Cap Validation**: Enforce 24×SBU maximum
-5. **Excess Redistribution**: Algorithm for redistributing excess
+5. **Excess Handling**: Deposit excess to IESS régimen de prestaciones solidarias (NOT redistribute to other workers -- see correction in section 7)
 6. **Report Generation**: Ministry registration report
 7. **Ex-Employee Handling**: Include terminated workers proportionally
 
