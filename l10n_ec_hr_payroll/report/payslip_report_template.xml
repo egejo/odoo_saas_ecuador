@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="report_payslip">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <h2>ROL DE PAGOS</h2>
+                            <p><strong>Empleado:</strong> <span t-esc="o.employee_name"/></p>
+                            <p><strong>Cédula:</strong> <span t-esc="o.employee_identification_id"/></p>
+                            <p><strong>Período:</strong> <span t-field="o.date_start"/> - <span t-field="o.date_end"/></p>
+
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Ingresos</th>
+                                        <th class="text-right">Valor</th>
+                                        <th>Egresos</th>
+                                        <th class="text-right">Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Sueldo</td>
+                                        <td class="text-right"><span t-field="o.wage" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></td>
+                                        <td>Aporte Personal IESS</td>
+                                        <td class="text-right"><span t-field="o.iess_personal" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Décimo Tercero</td>
+                                        <td class="text-right"><span t-field="o.thirteenth" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></td>
+                                        <td>Impuesto a la Renta</td>
+                                        <td class="text-right"><span t-field="o.income_tax" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Décimo Cuarto</td>
+                                        <td class="text-right"><span t-field="o.fourteenth" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></td>
+                                        <td>Préstamos</td>
+                                        <td class="text-right"><span t-field="o.loan_deduction" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Fondos de Reserva</td>
+                                        <td class="text-right"><span t-field="o.reserve_funds" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></td>
+                                        <td>Anticipos</td>
+                                        <td class="text-right"><span t-field="o.advances" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Total Ingresos</strong></td>
+                                        <td class="text-right"><strong><span t-field="o.total_income" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></strong></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3"><strong>NETO A RECIBIR</strong></td>
+                                        <td class="text-right"><strong><span t-field="o.net_wage" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <record id="action_report_payslip" model="ir.actions.report">
+            <field name="name">Rol de Pagos</field>
+            <field name="model">l10n_ec.payslip</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">l10n_ec_hr_payroll.report_payslip</field>
+            <field name="report_file">l10n_ec_hr_payroll.report_payslip</field>
+            <field name="binding_model_id" ref="model_l10n_ec_payslip"/>
+            <field name="binding_type">report</field>
+        </record>
+    </data>
+</odoo>

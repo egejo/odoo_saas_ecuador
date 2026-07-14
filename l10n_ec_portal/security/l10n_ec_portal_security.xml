@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Sin estas reglas, otorgar acceso de lectura a nivel de modelo
+         (ir.model.access.csv) dejaria a cualquier usuario de portal leer
+         el rol de pagos/prestamos de cualquier empleado. Estas reglas
+         restringen cada registro al propio empleado del usuario logueado,
+         mismo patron que usan sale.order/account.move para portal en el
+         core de Odoo. -->
+    <record id="l10n_ec_payslip_portal_rule" model="ir.rule">
+        <field name="name">Rol de Pagos: solo el propio (portal)</field>
+        <field name="model_id" ref="l10n_ec_hr_payroll.model_l10n_ec_payslip"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+    </record>
+
+    <record id="l10n_ec_loan_portal_rule" model="ir.rule">
+        <field name="name">Préstamos: solo el propio (portal)</field>
+        <field name="model_id" ref="l10n_ec_loans.model_l10n_ec_loan"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+    </record>
+</odoo>

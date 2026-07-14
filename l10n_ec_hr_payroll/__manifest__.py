@@ -6,7 +6,7 @@
 
 {
     "name": "Ecuador - Payroll (IESS, Décimos, Utilidades)",
-    "version": "18.0.1.1.0",
+    "version": "18.0.1.2.0",
     "category": "Human Resources/Payroll",
     "summary": "Complete Ecuadorian payroll with IESS, Décimos, and Utilidades",
     "description": """
@@ -71,8 +71,33 @@ y editen por separado en la ficha del empleado. No se copio el valor
 del campo viejo al nuevo automaticamente (arrastraria el mismo error
 que se esta corrigiendo) -- revisar/completar el nuevo campo por
 empleado a mano.
+
+Auditando el portal de empleado (`l10n_ec_portal`) el 2026-07-14 se
+encontro que su boton "Descargar PDF" del rol de pagos apuntaba a un
+reporte (`l10n_ec_hr_payroll.report_payslip`) que nunca existio en
+este modulo -- solo existia `action_report_form_107` (Formulario 107).
+Se agrego un reporte real (`action_report_payslip`, QWeb) con el
+desglose de ingresos/egresos y neto a recibir.
+
+Probando ese reporte/portal bajo la identidad real de un usuario de
+portal (no sudo) aparecio un bug de plataforma real, no de este fork:
+leer `payslip.employee_id.company_id` (o cualquier campo de
+`hr.employee`) desde un contexto de portal puede reventar con
+`AccessError` si el lote de prefetch de Odoo arrastra OTRO registro de
+`hr.employee` ya en cache (de otro empleado) cuyos campos no son
+visibles para "perfiles publicos" -- un solo campo restringido ahi
+tumba el lote completo, aunque el campo pedido no sea sensible.
+Solucion: se agregaron 3 campos `related(store=True)` directamente en
+`l10n_ec.payslip` (`company_id`, `employee_name`,
+`employee_identification_id`), para que el portal/reporte nunca
+necesite volver a tocar `hr.employee` al momento de leer. De paso,
+`employee_identification_id` necesito `groups=""` explicito: un campo
+`related` hereda automaticamente el `groups="hr.group_hr_user"` de
+`hr.employee.identification_id`, y sin anularlo un empleado no podia
+ver su propia cedula en su propio rol de pagos (correctamente
+restringido a el mismo por el `ir.rule` de `l10n_ec_portal`).
     """,
-    "author": "Somatech.dev, Odoo Community Association (OCA), egejo (fork: bug de empaquetado corregido, payslip real corregido 2026-07-13, cargas familiares de Utilidades separadas 2026-07-14)",
+    "author": "Somatech.dev, Odoo Community Association (OCA), egejo (fork: bug de empaquetado corregido, payslip real corregido 2026-07-13, cargas familiares de Utilidades separadas 2026-07-14, reporte PDF de rol de pagos agregado 2026-07-14)",
     "website": "https://github.com/somatechlat/odoo_saas_ecuador",
     "license": "LGPL-3",
     "depends": ["hr", "hr_contract", "hr_attendance"],
@@ -81,6 +106,7 @@ empleado a mano.
         "data/l10n_ec_salary_rule_data.xml",
         "data/l10n_ec_payroll_data.xml",
         "report/form_107_template.xml",
+        "report/payslip_report_template.xml",
         "views/hr_contract_views.xml",
         "views/l10n_ec_payslip_views.xml",
         "views/hr_employee_views.xml",

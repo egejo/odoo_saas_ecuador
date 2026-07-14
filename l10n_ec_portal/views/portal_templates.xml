@@ -61,7 +61,7 @@
                         <tr>
                             <td><a t-attf-href="/my/payslips/#{payslip.id}"><t t-esc="payslip.name"/></a></td>
                             <td><span t-field="payslip.date_start"/> - <span t-field="payslip.date_end"/></td>
-                            <td class="text-right"><span t-field="payslip.net_wage" t-options='{"widget": "monetary", "display_currency": payslip.employee_id.company_id.currency_id}'/></td>
+                            <td class="text-right"><span t-field="payslip.net_wage" t-options='{"widget": "monetary", "display_currency": payslip.company_id.currency_id}'/></td>
                             <td><span t-field="payslip.state"/></td>
                         </tr>
                     </t>
@@ -116,7 +116,7 @@
                     </div>
                     <div class="row mt-5">
                        <div class="col-12 text-center">
-                           <a class="btn btn-primary" t-attf-href="/report/pdf/l10n_ec_hr_payroll.report_payslip/#{payslip.id}" download="true">
+                           <a class="btn btn-primary" t-attf-href="/report/pdf/l10n_ec_hr_payroll.action_report_payslip/#{payslip.id}" download="true">
                                <i class="fa fa-download"/> Download PDF
                            </a>
                        </div>

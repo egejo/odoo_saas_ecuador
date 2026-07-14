@@ -10,6 +10,31 @@ class L10nEcPayslip(models.Model):
     employee_id = fields.Many2one("hr.employee", required=True)
     contract_id = fields.Many2one("hr.contract", required=True)
 
+    # Guardado en la propia linea (no leido de employee_id.company_id al
+    # vuelo) a proposito: un usuario de portal leyendo su propio payslip
+    # dispara el prefetch por lotes de Odoo sobre hr.employee, y ese
+    # prefetch puede arrastrar otros registros de hr.employee ya en cache
+    # (de otros empleados, restringidos para "perfiles publicos") en la
+    # misma consulta -- un solo campo bloqueado ahi revienta el lote
+    # completo con AccessError, aunque el campo que de verdad se pidio
+    # (company_id) no sea sensible. Bug real encontrado 2026-07-14
+    # auditando el portal de empleado con un usuario de portal sintetico.
+    company_id = fields.Many2one(
+        "res.company", related="employee_id.company_id", store=True, readonly=True
+    )
+    # Mismo motivo que company_id de arriba -- el reporte PDF/portal no
+    # debe volver a tocar hr.employee al momento de renderizar.
+    employee_name = fields.Char(related="employee_id.name", store=True, readonly=True)
+    # hr.employee.identification_id tiene groups="hr.group_hr_user" -- un
+    # campo related hereda ese groups automaticamente salvo que se anule
+    # explicitamente aqui. Es correcto que la cedula no sea visible para
+    # cualquiera, pero un empleado viendo SU PROPIO rol de pagos (ya
+    # restringido a el mismo por el ir.rule de l10n_ec_portal) debe poder
+    # ver su propia cedula, igual que en cualquier rol de pagos impreso.
+    employee_identification_id = fields.Char(
+        related="employee_id.identification_id", store=True, readonly=True, groups=""
+    )
+
     date_start = fields.Date(required=True)
     date_end = fields.Date(required=True)
 
