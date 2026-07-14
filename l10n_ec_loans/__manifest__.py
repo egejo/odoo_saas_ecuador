@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Ecuador - Loans & IESS Extension",
-    "version": "18.0.1.1.0",
+    "version": "18.0.1.2.0",
     "category": "Human Resources",
     "summary": "Manage Company Loans and IESS Deductions",
     "description": """
@@ -36,8 +36,39 @@ total_income=0). Corregido: se redeclara el campo `net_wage` con su
 propio metodo de compute (`_compute_net_wage_with_loans`) en vez de
 reusar el nombre `_compute_totals`, dejando intacto el calculo original
 de `total_income`/`income_tax` del modulo base.
+
+Wizard de importacion IESS auditado 2026-07-14 (probado con datos
+sinteticos reales, SAVEPOINT/ROLLBACK) -- tenia 4 bugs reales, nunca
+detectados porque nadie lo habia probado antes con datos parecidos a
+un archivo real:
+1. El parseo de columnas era sensible a mayusculas/acentos exactos
+   (`row.get("cedula")`/`row.get("valor")` literal) -- una cabecera
+   real con distinta capitalizacion ("Cedula"/"Valor") hacia que TODAS
+   las filas se saltearan en silencio, con el wizard reportando
+   "0 préstamos importados" como si hubiera funcionado, sin ningun
+   error. Corregido con normalizacion de encabezados (minusculas +
+   sin acentos) y un `UserError` explicito si no se reconoce ninguna
+   columna de cedula.
+2. El parseo de montos (`.replace(",", ".")`) revienta con
+   `ValueError` no controlado ante cualquier valor con separador de
+   miles (ej. "1.234,56") -- crashea toda la importacion sin aislar la
+   fila problematica. Corregido con un parser que distingue miles de
+   decimales por cual separador aparece de ultimo.
+3. Reimportar el mismo archivo (accion facil de repetir por error)
+   creaba un SEGUNDO prestamo completo para el mismo empleado, sin
+   ninguna deteccion de duplicados -- doble descuento silencioso.
+   Corregido: se salta la fila si ya existe una cuota con la misma
+   fecha para ese empleado, y se informa cuantas se saltearon.
+4. La columna "Tipo" (Quirografario/Hipotecario) del archivo se leia
+   pero nunca se usaba -- el prestamo se creaba SIEMPRE como
+   `iess_qui`, sin importar lo que dijera el archivo. Corregido para
+   mapear el valor real de la columna.
+De paso, se agrego un campo `date_due` explicito en el wizard (antes
+usaba `fields.Date.today()` a ciegas) para que el usuario controle en
+que periodo/rol de pagos debe aparecer el descuento, en vez de asumir
+que la fecha de importacion siempre cae dentro del periodo correcto.
     """,
-    "author": "Somatech.dev, egejo (fork: bug de menú/vista corregido; bug critico de calculo de nomina corregido 2026-07-13)",
+    "author": "Somatech.dev, egejo (fork: bug de menú/vista corregido; bug critico de calculo de nomina corregido 2026-07-13; wizard de importacion IESS auditado y corregido 2026-07-14)",
     "depends": ["l10n_ec_hr_payroll"],
     "data": [
         "security/ir.model.access.csv",
