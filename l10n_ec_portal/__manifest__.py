@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Ecuador - Employee Portal (Self-Service)",
-    "version": "18.0.1.1.0",
+    "version": "18.0.1.2.0",
     "category": "Human Resources",
     "summary": "Payslips and Loans for Employees in Website Portal",
     "description": """

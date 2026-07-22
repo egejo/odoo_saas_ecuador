@@ -4,8 +4,8 @@
     <template id="portal_my_home_menu_payslip" name="Portal layout : Payslips" inherit_id="portal.portal_breadcrumbs" priority="20">
         <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
             <li t-if="page_name == 'payslip' or payslip" t-attf-class="breadcrumb-item #{'active' if not payslip else ''}">
-                <a t-if="payslip" t-attf-href="/my/payslips?{{ keep_query() }}">Payslips</a>
-                <t t-else="">Payslips</t>
+                <a t-if="payslip" t-attf-href="/my/payslips?{{ keep_query() }}">Roles de Pago</a>
+                <t t-else="">Roles de Pago</t>
             </li>
             <li t-if="payslip" class="breadcrumb-item active">
                 <span t-field="payslip.name"/>
@@ -16,7 +16,7 @@
     <template id="portal_my_home_menu_loan" name="Portal layout : Loans" inherit_id="portal.portal_breadcrumbs" priority="25">
         <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
             <li t-if="page_name == 'loan'" class="breadcrumb-item active">
-                Loans
+                Préstamos
             </li>
         </xpath>
     </template>
@@ -25,7 +25,8 @@
     <template id="portal_my_home_payslip" name="Show Payslips" inherit_id="portal.portal_my_home" customize_show="True" priority="20">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
              <t t-call="portal.portal_docs_entry">
-                <t t-set="title">Payslips</t>
+                <t t-set="title">Roles de Pago</t>
+                <t t-set="text">Consulta y descarga tus roles de pago</t>
                 <t t-set="url" t-value="'/my/payslips'"/>
                 <t t-set="placeholder_count" t-value="'payslip_count'"/>
             </t>
@@ -35,7 +36,8 @@
     <template id="portal_my_home_loan" name="Show Loans" inherit_id="portal.portal_my_home" customize_show="True" priority="25">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
              <t t-call="portal.portal_docs_entry">
-                <t t-set="title">Loans</t>
+                <t t-set="title">Préstamos</t>
+                <t t-set="text">Revisa el estado de tus préstamos</t>
                 <t t-set="url" t-value="'/my/loans'"/>
                 <t t-set="placeholder_count" t-value="'loan_count'"/>
             </t>
@@ -45,7 +47,12 @@
     <!-- List View: Payslips -->
     <template id="portal_my_payslips">
         <t t-call="portal.portal_layout">
-            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <!-- Sin breadcrumbs_searchbar: esa variable le dice al layout que
+                 las migas las renderizará un portal_searchbar (que esta página
+                 no usa) — con ella activa, las migas no salían nunca y la
+                 página quedaba sin título ni vía de regreso (bug reportado
+                 2026-07-22). Estándar del proyecto: miga estándar + título h3. -->
+            <h3 class="mb-3">Roles de Pago</h3>
 
             <t t-call="portal.portal_table">
                 <thead>
@@ -129,6 +136,8 @@
     <!-- List View: Loans -->
     <template id="portal_my_loans">
         <t t-call="portal.portal_layout">
+            <h3 class="mb-3">Préstamos</h3>
+
             <t t-call="portal.portal_table">
                 <thead>
                     <tr class="active">
