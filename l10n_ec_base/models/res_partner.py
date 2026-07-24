@@ -404,14 +404,111 @@ class ResPartner(models.Model):
         return False
 
     # =========================================================================
-    # SRI AUTO-LOAD: Carga automática de datos del SRI al ingresar RUC
+    # SRI AUTO-LOAD: carga automatica de datos al ingresar cedula o RUC
     # =========================================================================
+    #
+    # Originalmente esto solo funcionaba con RUC (13 digitos): quien
+    # ingresaba una cedula (10 digitos) -- el caso mas comun en el mostrador
+    # y en el POS, donde casi todo cliente es persona natural -- tenia que
+    # escribir el nombre a mano. Se extendio a cedula usando
+    # `consultar_cedula`, que deriva el RUC de persona natural
+    # (cedula + "001") porque el endpoint de cedula del SRI esta deprecado
+    # (404). Limitacion conocida y esperada: una persona que nunca saco RUC
+    # no figura en el catastro -- eso NO es un error, es el caso normal de
+    # "escriba el nombre a mano".
+
+    def _l10n_ec_sri_query(self, vat):
+        """Consulta el catastro del SRI por cedula (10) o RUC (13).
+
+        Devuelve `(kind, data)`:
+          - `(None, None)`  el numero no tiene forma de cedula ni de RUC,
+                            asi que no hay nada que consultar (pasaporte,
+                            identificacion extranjera, numero incompleto).
+          - `(kind, None)`  se consulto y el catastro no devolvio nada
+                            (o el servicio fallo).
+          - `(kind, dict)`  datos del contribuyente.
+
+        Nunca propaga excepciones: capturar un contacto no puede caerse
+        porque el SRI este fuera de linea o cambie su API.
+        """
+        vat = str(vat or "").strip()
+        if not vat.isdigit() or len(vat) not in (10, 13):
+            return None, None
+        kind = "ruc" if len(vat) == 13 else "cedula"
+        try:
+            service = self.env["l10n_ec.sri.ruc.service"]
+            result = (
+                service.consultar_ruc(vat)
+                if kind == "ruc"
+                else service.consultar_cedula(vat)
+            )
+        except Exception as e:  # noqa: BLE001 - el flujo nunca se cae
+            _logger.warning(f"Error al consultar el SRI para {vat}: {e}")
+            return kind, None
+        if not result.get("success"):
+            _logger.info(
+                f"{kind} {vat} sin resultado en el catastro del SRI: "
+                f"{result.get('error')}"
+            )
+            return kind, None
+        return kind, result.get("data") or {}
+
+    def _l10n_ec_apply_sri_data(self, kind, data, overwrite=False):
+        """Vuelca en la ficha lo que devolvio el catastro.
+
+        Con `overwrite=False` (el onchange) nunca pisa lo que el usuario ya
+        escribio; con `overwrite=True` (el boton manual) si, porque ahi
+        pedir la actualizacion es un acto explicito.
+        """
+        def _fill(field, value):
+            # "/" es el marcador de "sin nombre todavia" que usa Odoo en un
+            # contacto recien abierto: cuenta como vacio.
+            if value and (overwrite or not self[field] or self[field] == "/"):
+                self[field] = value
+
+        _fill("name", data.get("razon_social"))
+        _fill("street", data.get("direccion"))
+        _fill("city", data.get("canton"))
+        _fill("phone", data.get("telefono"))
+        _fill("email", data.get("email"))
+        if data.get("nombre_comercial"):
+            self.company_registry = data.get("nombre_comercial")
+        if not self.country_id:
+            self.country_id = self.env.ref("base.ec")
+
+        # Tipo de identificacion: se fija por la forma del numero, en los
+        # DOS campos, para no dejarlos peleados entre si (el propio del
+        # fork y el nativo de l10n_latam, que es el que usan las rutas de
+        # EDI/retenciones/ATS).
+        self.l10n_ec_identifier_type = kind
+        # Una cedula es, por definicion, una persona natural: Odoo abre
+        # todo contacto nuevo como "Empresa" por defecto y sin esto quedaba
+        # una persona guardada como compañia.
+        if kind == "cedula":
+            self.company_type = "person"
+        id_type = self.env.ref(
+            "l10n_ec.ec_ruc" if kind == "ruc" else "l10n_ec.ec_dni",
+            raise_if_not_found=False,
+        )
+        if id_type:
+            self.l10n_latam_identification_type_id = id_type
+
+        # Tipo de contribuyente segun SRI
+        if data.get("regimen_rimpe"):
+            if "EMPRENDEDOR" in data.get("regimen_rimpe", "").upper():
+                self.l10n_ec_taxpayer_type = "rimpe_e"
+            elif "POPULAR" in data.get("regimen_rimpe", "").upper():
+                self.l10n_ec_taxpayer_type = "rimpe_p"
+        elif data.get("contribuyente_especial"):
+            self.l10n_ec_taxpayer_type = "special"
+        else:
+            self.l10n_ec_taxpayer_type = "general"
 
     @api.onchange("vat")
     def _onchange_vat_load_sri(self):
         """
         Carga automáticamente los datos del contribuyente desde el SRI
-        cuando se ingresa un RUC válido de Ecuador.
+        cuando se ingresa una cédula o un RUC de Ecuador.
         """
         if not self.vat:
             return
@@ -422,112 +519,71 @@ class ResPartner(models.Model):
 
         vat = str(self.vat).strip()
 
-        # Solo consultar si parece un RUC ecuatoriano (13 dígitos)
-        if len(vat) != 13 or not vat.isdigit():
+        # Aqui habia un guard anti-repeticion que hacia
+        # `self._sri_loaded_ruc = vat`. Eso es imposible en Odoo 18: los
+        # recordsets definen __slots__, asi que la asignacion siempre
+        # lanzaba AttributeError -- lo tapaba el `except Exception` que
+        # envolvia todo el metodo. Nunca evito una sola consulta y, peor,
+        # abortaba el metodo justo antes del aviso de "contribuyente no
+        # activo", que por eso jamas se mostro. Se elimina: el onchange
+        # solo dispara cuando `vat` cambia de verdad, asi que no hay
+        # consulta repetida que evitar.
+        kind, data = self._l10n_ec_sri_query(vat)
+        if not data:
+            # Ni pasaporte ni "no esta en el catastro" son un error: el
+            # usuario simplemente escribe el nombre a mano.
             return
 
-        # Evitar consultas repetidas
-        if hasattr(self, "_sri_loaded_ruc") and self._sri_loaded_ruc == vat:
-            return
+        self._l10n_ec_apply_sri_data(kind, data)
 
-        try:
-            service = self.env["l10n_ec.sri.ruc.service"]
-            result = service.consultar_ruc(vat)
-
-            if result.get("success"):
-                data = result["data"]
-
-                # Auto-completar campos
-                if not self.name or self.name == "/":
-                    self.name = data.get("razon_social", "")
-
-                if data.get("nombre_comercial"):
-                    self.company_registry = data.get("nombre_comercial")
-
-                # Dirección
-                if not self.street:
-                    self.street = data.get("direccion", "")
-                if not self.city:
-                    self.city = data.get("canton", "")
-
-                # Contacto
-                if not self.phone and data.get("telefono"):
-                    self.phone = data.get("telefono")
-                if not self.email and data.get("email"):
-                    self.email = data.get("email")
-
-                # País Ecuador
-                if not self.country_id:
-                    self.country_id = self.env.ref("base.ec")
-
-                # Tipo de identificación
-                self.l10n_ec_identifier_type = "ruc"
-
-                # Tipo de contribuyente según SRI
-                if data.get("regimen_rimpe"):
-                    if "EMPRENDEDOR" in data.get("regimen_rimpe", "").upper():
-                        self.l10n_ec_taxpayer_type = "rimpe_e"
-                    elif "POPULAR" in data.get("regimen_rimpe", "").upper():
-                        self.l10n_ec_taxpayer_type = "rimpe_p"
-                elif data.get("contribuyente_especial"):
-                    self.l10n_ec_taxpayer_type = "special"
-                else:
-                    self.l10n_ec_taxpayer_type = "general"
-
-                # Marcar como cargado
-                self._sri_loaded_ruc = vat
-
-                # Advertir si no está ACTIVO
-                estado = data.get("estado", "").upper()
-                if estado and estado != "ACTIVO":
-                    return {
-                        "warning": {
-                            "title": "⚠️ Contribuyente No Activo",
-                            "message": f"El contribuyente '{data.get('razon_social')}' tiene estado: {estado}. "
-                            f"Verifique en el SRI antes de continuar.",
-                        }
-                    }
-
-        except Exception as e:
-            # Silenciamos errores para no interrumpir el flujo
-            import logging
-
-            _logger = logging.getLogger(__name__)
-            _logger.warning(f"Error al consultar SRI para RUC {vat}: {e}")
+        # Advertir si no está ACTIVO
+        estado = (data.get("estado") or "").upper()
+        if estado and estado != "ACTIVO":
+            return {
+                "warning": {
+                    "title": "⚠️ Contribuyente No Activo",
+                    "message": f"El contribuyente '{data.get('razon_social')}' tiene estado: {estado}. "
+                    f"Verifique en el SRI antes de continuar.",
+                }
+            }
 
     def action_load_from_sri(self):
         """
         Acción para cargar/actualizar datos desde el SRI manualmente.
-        Puede ser invocado desde un botón en la vista.
+        Invocable desde el botón de la ficha de contacto.
         """
         self.ensure_one()
 
         if not self.vat:
-            raise ValidationError(_("Ingrese un RUC para consultar en el SRI"))
+            raise ValidationError(
+                _("Ingrese la cédula o el RUC del contacto para consultarlo.")
+            )
 
-        service = self.env["l10n_ec.sri.ruc.service"]
-        result = service.consultar_ruc(self.vat)
+        vat = str(self.vat).strip()
+        kind, data = self._l10n_ec_sri_query(vat)
+        if kind is None:
+            raise ValidationError(
+                _(
+                    "El número '%s' no tiene forma de cédula (10 dígitos) ni "
+                    "de RUC (13 dígitos), así que no se puede consultar. "
+                    "Ingrese los datos a mano.",
+                    vat,
+                )
+            )
+        if not data:
+            raise ValidationError(
+                _(
+                    "No se encontró %(kind)s %(vat)s en el catastro del SRI. "
+                    "Puede que el contacto nunca haya tenido RUC: ingrese los "
+                    "datos a mano.",
+                    kind="el RUC" if kind == "ruc" else "la cédula",
+                    vat=vat,
+                )
+            )
 
-        if not result.get("success"):
-            raise ValidationError(_(result.get("error", "Error al consultar SRI")))
-
-        data = result["data"]
-
-        # Actualizar todos los campos
-        vals = {
-            "name": data.get("razon_social", self.name),
-            "street": data.get("direccion", self.street),
-            "city": data.get("canton", self.city),
-            "phone": data.get("telefono", self.phone),
-            "email": data.get("email", self.email),
-            "country_id": self.env.ref("base.ec").id,
-            "l10n_ec_identifier_type": "ruc",
-        }
-
-        if data.get("nombre_comercial"):
-            vals["company_registry"] = data.get("nombre_comercial")
-
-        self.write(vals)
+        # El botón es una petición explícita de actualizar, así que aquí sí
+        # se sobrescribe lo que ya estaba en la ficha.
+        self._l10n_ec_apply_sri_data(kind, data, overwrite=True)
 
         return {
             "type": "ir.actions.client",

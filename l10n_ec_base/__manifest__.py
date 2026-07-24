@@ -6,7 +6,7 @@
 
 {
     "name": "Ecuador - Base Localization (NEC 2026)",
-    "version": "18.0.1.2.0",
+    "version": "18.0.1.3.0",
     "category": "Accounting/Localizations",
     "summary": "Chart of Accounts, Tax Templates, and Identity Validation (SRI 2026)",
     "description": """

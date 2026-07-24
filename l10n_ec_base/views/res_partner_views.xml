@@ -8,6 +8,17 @@
             <xpath expr="//field[@name='vat']" position="before">
                 <field name="l10n_ec_identifier_type" invisible="country_id != %(base.ec)d" required="country_id == %(base.ec)d"/>
             </xpath>
+            <!-- El metodo action_load_from_sri existia desde el dia 1 del
+                 fork pero nunca estuvo en ninguna vista: era inalcanzable
+                 desde la UI. Sirve para re-consultar/actualizar un contacto
+                 ya guardado (el onchange solo dispara al teclear el numero). -->
+            <xpath expr="//field[@name='vat']" position="after">
+                <button name="action_load_from_sri" type="object"
+                        string="Consultar datos" class="btn-link ps-0"
+                        icon="fa-refresh"
+                        invisible="country_id != %(base.ec)d or not vat"
+                        help="Trae el nombre y la dirección del contacto a partir de su cédula o RUC."/>
+            </xpath>
             <xpath expr="//field[@name='country_id']" position="after">
                 <field name="l10n_ec_taxpayer_type" invisible="country_id != %(base.ec)d"/>
                 <field name="l10n_ec_related_party" invisible="country_id != %(base.ec)d"/>
