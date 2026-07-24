@@ -6,7 +6,7 @@
 
 {
     "name": "Ecuador - Payroll (IESS, Décimos, Utilidades)",
-    "version": "18.0.1.2.0",
+    "version": "18.0.1.3.0",
     "category": "Human Resources/Payroll",
     "summary": "Complete Ecuadorian payroll with IESS, Décimos, and Utilidades",
     "description": """

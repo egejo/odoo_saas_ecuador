@@ -20,6 +20,60 @@ class ResPartner(models.Model):
         help="Type of Ecuadorian Identification",
     )
 
+    # El default nativo de `l10n_latam_base` es "NIF" (it_vat), pero apenas
+    # se ejecuta su onchange de pais (que corre siempre al abrir una ficha
+    # nueva, aun con el pais vacio, porque cae a
+    # `company.account_fiscal_country_id`) lo reemplaza por el tipo marcado
+    # `is_vat` del pais -- que en Ecuador es el RUC. En el mostrador, y en
+    # el POS que abre esta misma ficha, la enorme mayoria de los clientes
+    # son personas naturales con cedula, y ademas la consulta al catastro
+    # se hace por cedula; abrir siempre en RUC obligaba a corregir el tipo
+    # en cada venta. Se fija Cedula como default para compañias
+    # ecuatorianas (el onchange de pais de l10n_latam_base respeta este
+    # valor porque ec_dni ya es del pais correcto, y sigue sustituyendolo
+    # solo si el usuario cambia el pais del contacto).
+    l10n_latam_identification_type_id = fields.Many2one(
+        default=lambda self: self._l10n_ec_default_identification_type(),
+    )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Deriva el tipo de identificacion del numero cuando quien crea el
+        contacto no lo indica.
+
+        Hace falta por el default de arriba: un contacto creado por codigo
+        (el importador del XML del proveedor, un checkout, una sincronizacion)
+        no ejecuta los onchange del formulario, asi que se quedaba con el
+        default -- Cedula -- aunque trajera un RUC de 13 digitos, y la
+        restriccion de `l10n_ec` (Cedula obliga a 10 digitos) hacia fallar la
+        creacion entera. Si el llamador SI indica el tipo, se respeta tal
+        cual: que un tipo explicito y un numero incoherente choquen contra la
+        restriccion es el comportamiento correcto.
+        """
+        for vals in vals_list:
+            if vals.get("l10n_latam_identification_type_id"):
+                continue
+            vat = str(vals.get("vat") or "").strip()
+            if not vat.isdigit() or len(vat) not in (10, 13):
+                continue
+            id_type = self.env.ref(
+                "l10n_ec.ec_ruc" if len(vat) == 13 else "l10n_ec.ec_dni",
+                raise_if_not_found=False,
+            )
+            if id_type:
+                vals["l10n_latam_identification_type_id"] = id_type.id
+        return super().create(vals_list)
+
+    @api.model
+    def _l10n_ec_default_identification_type(self):
+        company = self.env.company
+        country = company.account_fiscal_country_id or company.country_id
+        if country.code == "EC":
+            id_type = self.env.ref("l10n_ec.ec_dni", raise_if_not_found=False)
+            if id_type:
+                return id_type
+        return self.env.ref("l10n_latam_base.it_vat", raise_if_not_found=False)
+
     @api.onchange("l10n_latam_identification_type_id")
     def _onchange_l10n_latam_identification_type_id_ec(self):
         """
@@ -453,6 +507,65 @@ class ResPartner(models.Model):
             return kind, None
         return kind, result.get("data") or {}
 
+    # Campos que solo se completan si estan vacios cuando la carga es
+    # automatica (el onchange): lo que el usuario ya escribio a mano manda.
+    # Los demas describen la clasificacion tributaria del contribuyente, no
+    # una preferencia del usuario, asi que siempre reflejan el catastro.
+    _L10N_EC_SRI_SOFT_FIELDS = ("name", "street", "city", "phone", "email")
+
+    def _l10n_ec_sri_values(self, kind, data):
+        """Traduce la respuesta del catastro a valores de la ficha.
+
+        Se separo de `_l10n_ec_apply_sri_data` para que el boton
+        "Consultar datos" pueda pedir los valores por RPC y volcarlos en el
+        formulario del navegador SIN guardar el contacto -- guardarlo es lo
+        que hacia que el POS cerrara la ventana a mitad de la carga (el POS
+        pasa un `onSave` que cierra el dialogo y devuelve el cliente en
+        cuanto el registro se graba, ver `makeActionAwaitable`).
+        """
+        values = {}
+        for field, key in (
+            ("name", "razon_social"),
+            ("street", "direccion"),
+            ("city", "canton"),
+            ("phone", "telefono"),
+            ("email", "email"),
+        ):
+            if data.get(key):
+                values[field] = data[key]
+        if data.get("nombre_comercial"):
+            values["company_registry"] = data["nombre_comercial"]
+
+        # Tipo de identificacion: se fija por la forma del numero, en los
+        # DOS campos, para no dejarlos peleados entre si (el propio del
+        # fork y el nativo de l10n_latam, que es el que usan las rutas de
+        # EDI/retenciones/ATS).
+        values["l10n_ec_identifier_type"] = kind
+        # Una cedula es, por definicion, una persona natural: Odoo abre
+        # todo contacto nuevo como "Empresa" por defecto y sin esto quedaba
+        # una persona guardada como compañia.
+        if kind == "cedula":
+            values["company_type"] = "person"
+        id_type = self.env.ref(
+            "l10n_ec.ec_ruc" if kind == "ruc" else "l10n_ec.ec_dni",
+            raise_if_not_found=False,
+        )
+        if id_type:
+            values["l10n_latam_identification_type_id"] = id_type
+
+        # Tipo de contribuyente segun SRI
+        regimen = (data.get("regimen_rimpe") or "").upper()
+        if regimen:
+            if "EMPRENDEDOR" in regimen:
+                values["l10n_ec_taxpayer_type"] = "rimpe_e"
+            elif "POPULAR" in regimen:
+                values["l10n_ec_taxpayer_type"] = "rimpe_p"
+        elif data.get("contribuyente_especial"):
+            values["l10n_ec_taxpayer_type"] = "special"
+        else:
+            values["l10n_ec_taxpayer_type"] = "general"
+        return values
+
     def _l10n_ec_apply_sri_data(self, kind, data, overwrite=False):
         """Vuelca en la ficha lo que devolvio el catastro.
 
@@ -460,49 +573,15 @@ class ResPartner(models.Model):
         escribio; con `overwrite=True` (el boton manual) si, porque ahi
         pedir la actualizacion es un acto explicito.
         """
-        def _fill(field, value):
-            # "/" es el marcador de "sin nombre todavia" que usa Odoo en un
-            # contacto recien abierto: cuenta como vacio.
-            if value and (overwrite or not self[field] or self[field] == "/"):
-                self[field] = value
-
-        _fill("name", data.get("razon_social"))
-        _fill("street", data.get("direccion"))
-        _fill("city", data.get("canton"))
-        _fill("phone", data.get("telefono"))
-        _fill("email", data.get("email"))
-        if data.get("nombre_comercial"):
-            self.company_registry = data.get("nombre_comercial")
+        for field, value in self._l10n_ec_sri_values(kind, data).items():
+            if field in self._L10N_EC_SRI_SOFT_FIELDS and not overwrite:
+                # "/" es el marcador de "sin nombre todavia" que usa Odoo en
+                # un contacto recien abierto: cuenta como vacio.
+                if self[field] and self[field] != "/":
+                    continue
+            self[field] = value
         if not self.country_id:
             self.country_id = self.env.ref("base.ec")
-
-        # Tipo de identificacion: se fija por la forma del numero, en los
-        # DOS campos, para no dejarlos peleados entre si (el propio del
-        # fork y el nativo de l10n_latam, que es el que usan las rutas de
-        # EDI/retenciones/ATS).
-        self.l10n_ec_identifier_type = kind
-        # Una cedula es, por definicion, una persona natural: Odoo abre
-        # todo contacto nuevo como "Empresa" por defecto y sin esto quedaba
-        # una persona guardada como compañia.
-        if kind == "cedula":
-            self.company_type = "person"
-        id_type = self.env.ref(
-            "l10n_ec.ec_ruc" if kind == "ruc" else "l10n_ec.ec_dni",
-            raise_if_not_found=False,
-        )
-        if id_type:
-            self.l10n_latam_identification_type_id = id_type
-
-        # Tipo de contribuyente segun SRI
-        if data.get("regimen_rimpe"):
-            if "EMPRENDEDOR" in data.get("regimen_rimpe", "").upper():
-                self.l10n_ec_taxpayer_type = "rimpe_e"
-            elif "POPULAR" in data.get("regimen_rimpe", "").upper():
-                self.l10n_ec_taxpayer_type = "rimpe_p"
-        elif data.get("contribuyente_especial"):
-            self.l10n_ec_taxpayer_type = "special"
-        else:
-            self.l10n_ec_taxpayer_type = "general"
 
     @api.onchange("vat")
     def _onchange_vat_load_sri(self):
@@ -546,6 +625,87 @@ class ResPartner(models.Model):
                     f"Verifique en el SRI antes de continuar.",
                 }
             }
+
+    @api.model
+    def l10n_ec_sri_lookup(self, vat, country_id=None):
+        """Consulta el catastro y DEVUELVE los valores, sin tocar la ficha.
+
+        Lo llama el boton "Consultar datos" desde el navegador (widget
+        `l10n_ec_sri_lookup`) para volcar el resultado en el formulario
+        abierto. Deliberadamente no escribe ni guarda nada: el boton
+        anterior era un `type="object"`, y en Odoo cualquier boton de ese
+        tipo graba el registro antes de ejecutarse -- en el POS eso
+        disparaba el `onSave` con el que abre la ficha (`makeActionAwaitable`
+        de `pos_store`), que cierra el dialogo y devuelve el cliente a la
+        orden, dejando al cajero sin poder completar correo/direccion.
+
+        Devuelve siempre un dict serializable (nunca lanza), con:
+          `ok`      si hubo datos para volcar,
+          `values`  cambios listos para el formulario (m2o como [id, nombre]),
+          `message` texto para la notificacion,
+          `title`   titulo de la notificacion,
+          `type`    success / warning.
+        """
+        vat = str(vat or "").strip()
+        if not vat:
+            return {
+                "ok": False,
+                "type": "warning",
+                "title": "Falta la identificación",
+                "message": "Ingrese la cédula o el RUC del contacto para "
+                "consultarlo.",
+            }
+
+        kind, data = self._l10n_ec_sri_query(vat)
+        if kind is None:
+            return {
+                "ok": False,
+                "type": "warning",
+                "title": "No se puede consultar",
+                "message": f"El número '{vat}' no tiene forma de cédula (10 "
+                "dígitos) ni de RUC (13 dígitos). Ingrese los datos a mano.",
+            }
+        if not data:
+            return {
+                "ok": False,
+                "type": "warning",
+                "title": "Sin resultados en el SRI",
+                "message": f"No se encontró {'el RUC' if kind == 'ruc' else 'la cédula'} "
+                f"{vat} en el catastro del SRI. Puede que el contacto nunca "
+                "haya tenido RUC: ingrese los datos a mano.",
+            }
+
+        values = self._l10n_ec_sri_values(kind, data)
+        # El formulario del navegador espera los many2one como
+        # [id, nombre] (ver `_completeMany2OneValue` del modelo relacional).
+        id_type = values.get("l10n_latam_identification_type_id")
+        if id_type:
+            values["l10n_latam_identification_type_id"] = [
+                id_type.id,
+                id_type.display_name,
+            ]
+        if not country_id:
+            ecuador = self.env.ref("base.ec", raise_if_not_found=False)
+            if ecuador:
+                values["country_id"] = [ecuador.id, ecuador.display_name]
+
+        estado = (data.get("estado") or "").upper()
+        if estado and estado != "ACTIVO":
+            return {
+                "ok": True,
+                "values": values,
+                "type": "warning",
+                "title": "⚠️ Contribuyente no activo",
+                "message": f"{data.get('razon_social')} tiene estado {estado} "
+                "en el SRI. Verifique antes de facturar.",
+            }
+        return {
+            "ok": True,
+            "values": values,
+            "type": "success",
+            "title": "Datos cargados",
+            "message": data.get("razon_social") or "",
+        }
 
     def action_load_from_sri(self):
         """

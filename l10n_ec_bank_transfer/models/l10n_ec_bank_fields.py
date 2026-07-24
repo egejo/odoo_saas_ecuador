@@ -34,4 +34,5 @@ class HrEmployeeBank(models.Model):
         "bancario. La inmensa mayoría de empleados en Ecuador tiene "
         "cédula -- cambiar solo para el caso raro de un extranjero con "
         "pasaporte.",
+        groups="hr.group_hr_user",
     )

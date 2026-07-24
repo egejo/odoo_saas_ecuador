@@ -13,11 +13,13 @@ class HrEmployee(models.Model):
         "OJO: esta definicion incluye padres/madres dependientes y es "
         "distinta de la que usa Utilidades (ver l10n_ec_utilidades_family_loads) "
         "-- no usar este campo para calcular el 5% de Utilidades.",
+        groups="hr.group_hr_user",
     )
     l10n_ec_catastrophic_disease = fields.Boolean(
         "Catastrophic/Rare Disease",
         default=False,
         help="Check if employee or dependent has a certified catastrophic disease (Max Rebate 20 Baskets).",
+        groups="hr.group_hr_user",
     )
 
     # Codigo de Trabajo Art. 97: Cargas Familiares para Utilidades (5%).
@@ -34,4 +36,5 @@ class HrEmployee(models.Model):
         "o con discapacidad de cualquier edad. NO incluye padres/madres "
         "dependientes (Codigo de Trabajo Art. 97, distinto de la rebaja de "
         "impuesto a la renta de LORTI Art. 10).",
+        groups="hr.group_hr_user",
     )

@@ -6,7 +6,7 @@
 
 {
     "name": "Ecuador - Base Localization (NEC 2026)",
-    "version": "18.0.1.3.0",
+    "version": "18.0.1.4.0",
     "category": "Accounting/Localizations",
     "summary": "Chart of Accounts, Tax Templates, and Identity Validation (SRI 2026)",
     "description": """
@@ -74,6 +74,22 @@ por `l10n_ec_withholding` para retenciones a proveedores extranjeros.
         "views/res_company_views.xml",
         "views/res_country_views.xml",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "l10n_ec_base/static/src/js/**/*",
+            "l10n_ec_base/static/src/xml/**/*",
+        ],
+        # El POS abre esta misma ficha de contacto (su accion apunta a
+        # base.view_partner_form), pero se sirve con su propio bundle, que
+        # NO incluye web.assets_backend. Sin esta linea el boton de
+        # consulta quedaria sin componente justo donde mas se usa. La
+        # entrada es inerte si point_of_sale no esta instalado: ese bundle
+        # solo se construye cuando el modulo existe.
+        "point_of_sale._assets_pos": [
+            "l10n_ec_base/static/src/js/**/*",
+            "l10n_ec_base/static/src/xml/**/*",
+        ],
+    },
     "demo": [],  # Demo data is wizard-controlled, not auto-loaded
     "images": ["static/description/banner.png"],
     "installable": True,

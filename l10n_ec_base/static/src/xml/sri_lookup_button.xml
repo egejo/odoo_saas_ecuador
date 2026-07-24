@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="l10n_ec_base.SriLookupButton">
+        <button type="button" class="btn btn-link ps-0 py-0"
+                t-on-click="onClick"
+                title="Trae el nombre y la dirección del contacto a partir de su cédula o RUC, sin cerrar esta ventana.">
+            <i class="fa fa-refresh me-1" role="img"/>Consultar datos
+        </button>
+    </t>
+
+    <t t-name="l10n_ec_base.VatAutofocus">
+        <span t-ref="root" class="d-none"/>
+    </t>
+
+</templates>

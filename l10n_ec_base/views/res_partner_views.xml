@@ -8,16 +8,32 @@
             <xpath expr="//field[@name='vat']" position="before">
                 <field name="l10n_ec_identifier_type" invisible="country_id != %(base.ec)d" required="country_id == %(base.ec)d"/>
             </xpath>
-            <!-- El metodo action_load_from_sri existia desde el dia 1 del
-                 fork pero nunca estuvo en ninguna vista: era inalcanzable
-                 desde la UI. Sirve para re-consultar/actualizar un contacto
-                 ya guardado (el onchange solo dispara al teclear el numero). -->
+            <!-- Foco inicial en el numero de identificacion, no en el
+                 nombre (que es donde lo pone la vista base de Odoo). En
+                 Ecuador el nombre no se teclea: se trae del catastro del
+                 SRI escribiendo la cedula o el RUC, asi que empezar por el
+                 nombre invierte el orden real de trabajo del cajero.
+
+                 No se resuelve con `default_focus` porque aqui no
+                 funciona: el motor de formularios busca el campo por su
+                 `id` en el DOM, y tanto `name` como `vat` usan el widget
+                 `field_partner_autocomplete`, que renderiza su propio
+                 input SIN ese id, y el foco terminaba siempre en el primer
+                 input de la pagina (el nombre) por el camino de respaldo.
+                 De ahi el widget de abajo, que lo hace en el navegador. -->
             <xpath expr="//field[@name='vat']" position="after">
-                <button name="action_load_from_sri" type="object"
-                        string="Consultar datos" class="btn-link ps-0"
-                        icon="fa-refresh"
-                        invisible="country_id != %(base.ec)d or not vat"
-                        help="Trae el nombre y la dirección del contacto a partir de su cédula o RUC."/>
+                <widget name="l10n_ec_vat_autofocus"/>
+            </xpath>
+            <!-- Consulta manual al catastro, para re-consultar/actualizar
+                 un contacto ya guardado (el onchange solo dispara al
+                 teclear el numero). Es un widget y no un
+                 boton de tipo objeto a proposito: un boton de objeto graba
+                 el registro antes de ejecutarse, y eso cerraba la ficha en
+                 el POS a mitad de la carga (ver el comentario completo en
+                 static/src/js/sri_lookup_button.js). -->
+            <xpath expr="//field[@name='vat']" position="after">
+                <widget name="l10n_ec_sri_lookup"
+                        invisible="country_id != %(base.ec)d or not vat"/>
             </xpath>
             <xpath expr="//field[@name='country_id']" position="after">
                 <field name="l10n_ec_taxpayer_type" invisible="country_id != %(base.ec)d"/>
