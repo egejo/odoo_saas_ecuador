@@ -159,40 +159,24 @@ class L10nEcSriRucService(models.AbstractModel):
                 "error": "La cédula debe tener 10 dígitos numéricos",
             }
 
-        try:
-            _logger.info(f"Consultando Cédula {cedula} en SRI...")
-
-            url = f"{SRI_CEDULA_ENDPOINT}?cedula={cedula}"
-            headers = {
-                "Accept": "application/json",
-                "User-Agent": "Odoo/18.0 SomatechEC/1.0",
-            }
-
-            response = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
-
-            if response.status_code == 200:
-                data = response.json()
-
-                if data and isinstance(data, list) and len(data) > 0:
-                    contribuyente = data[0]
-                    return {
-                        "success": True,
-                        "data": self._parse_sri_response(contribuyente),
-                    }
-                else:
-                    return {
-                        "success": False,
-                        "error": f"Cédula {cedula} no encontrada en el SRI",
-                    }
-            else:
-                return {
-                    "success": False,
-                    "error": f"Error al consultar cédula (código {response.status_code})",
-                }
-
-        except Exception as e:
-            _logger.exception(f"Error consultando cédula: {e}")
-            return {"success": False, "error": str(e)}
+        # El SRI ya no expone un endpoint de cédula vigente
+        # (obtenerPorNumeroCedula devuelve 404). La cédula de una persona
+        # natural corresponde al RUC `cédula + "001"`, que SÍ está en el
+        # catastro consultable por obtenerPorNumerosRuc — se deriva y se
+        # consulta por esa vía. Limitación conocida: solo devuelve nombre si
+        # la persona figura en el catastro del SRI (alguna vez sacó RUC); un
+        # ciudadano sin RUC no aparece y se ingresa a mano.
+        _logger.info(f"Consultando Cédula {cedula} en SRI (vía RUC {cedula}001)...")
+        result = self.consultar_ruc(cedula + "001")
+        if result.get("success"):
+            return result
+        return {
+            "success": False,
+            "error": (
+                f"Cédula {cedula} no encontrada en el catastro del SRI; "
+                "ingrese los datos a mano."
+            ),
+        }
 
     def _parse_sri_response(self, data):
         """
